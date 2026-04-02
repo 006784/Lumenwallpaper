@@ -78,6 +78,18 @@ export function MoodCard({ card }: MoodCardProps) {
         <p className="mt-1 text-[9px] uppercase tracking-[0.28em] text-paper/65">
           {card.meta}
         </p>
+        {card.aiTags && card.aiTags.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {card.aiTags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="border border-paper/20 px-1.5 py-0.5 text-[7px] uppercase tracking-[0.22em] text-paper/45"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
     </Link>
   );

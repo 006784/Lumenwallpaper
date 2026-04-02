@@ -13,6 +13,7 @@ import {
   getWallpaperFavoriteState,
 } from "@/lib/wallpapers";
 import { WallpaperDetailSidebar } from "@/components/wallpaper/wallpaper-detail-sidebar";
+import { WallpaperVideoPlayer } from "@/components/wallpaper/wallpaper-video-player";
 
 type WallpaperPageProps = {
   params: {
@@ -76,10 +77,14 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
   return (
     <section className="border-b-frame border-ink px-4 py-16 md:px-10 md:py-24">
       <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.1fr_0.9fr]">
-        <div
-          className="min-h-[420px] border-frame border-ink bg-paper"
-          style={artworkStyle}
-        />
+        {wallpaper.videoUrl ? (
+          <WallpaperVideoPlayer title={wallpaper.title} videoUrl={wallpaper.videoUrl} />
+        ) : (
+          <div
+            className="min-h-[420px] border-frame border-ink bg-paper"
+            style={artworkStyle}
+          />
+        )}
         <div>
           <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
             Wallpaper Detail

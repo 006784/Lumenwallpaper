@@ -50,6 +50,18 @@ export function DarkroomCard({ item }: DarkroomCardProps) {
         <p className="mt-1 text-[9px] uppercase tracking-[0.28em] text-paper/60">
           {item.meta}
         </p>
+        {item.aiTags && item.aiTags.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            {item.aiTags.slice(0, 2).map((tag) => (
+              <span
+                key={tag}
+                className="border border-paper/20 px-1.5 py-0.5 text-[7px] uppercase tracking-[0.2em] text-paper/45"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
     </Link>
   );
