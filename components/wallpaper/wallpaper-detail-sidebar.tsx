@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
+import { cn } from "@/lib/utils";
+
 import type { WallpaperFavoriteSnapshot } from "@/types/wallpaper";
 import { WallpaperReportPanel } from "@/components/wallpaper/wallpaper-report-panel";
 
@@ -51,13 +53,83 @@ export function WallpaperDetailSidebar({
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  /** 0–100 while downloading, null when idle */
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
 
   const favoritePath = `/api/wallpapers/${encodeURIComponent(identifier)}/favorite`;
   const downloadPath = `/api/wallpapers/${encodeURIComponent(identifier)}/download`;
 
-  function handleDownloadClick() {
+  const isDownloading =
+    downloadProgress !== null && downloadProgress < 100;
+
+  async function handleDownload() {
     setFeedback(null);
-    setDownloadsCount((current) => current + 1);
+    setDownloadProgress(0);
+
+    try {
+      const response = await fetch(downloadPath);
+
+      if (!response.ok || !response.body) {
+        throw new Error("下载失败，请稍后重试。");
+      }
+
+      // Update download count from response header
+      const countHeader = response.headers.get("X-Wallpaper-Downloads-Count");
+      if (countHeader) {
+        setDownloadsCount(parseInt(countHeader, 10));
+      } else {
+        setDownloadsCount((c) => c + 1);
+      }
+
+      // Extract filename from Content-Disposition
+      const disposition = response.headers.get("Content-Disposition") ?? "";
+      const filenameMatch =
+        disposition.match(/filename\*=UTF-8''(.+)$/i) ??
+        disposition.match(/filename="?([^"]+)"?/i);
+      const filename = filenameMatch
+        ? decodeURIComponent(filenameMatch[1])
+        : "Lumen Wallpaper";
+
+      const contentType =
+        response.headers.get("Content-Type") ?? "application/octet-stream";
+      const contentLengthHeader = response.headers.get("Content-Length");
+      const total = contentLengthHeader
+        ? parseInt(contentLengthHeader, 10)
+        : 0;
+
+      const reader = response.body.getReader();
+      const chunks: Uint8Array<ArrayBuffer>[] = [];
+      let received = 0;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.length;
+        if (total > 0) {
+          setDownloadProgress(Math.round((received / total) * 100));
+        }
+      }
+
+      // Trigger browser save-file dialog via Blob URL
+      const blob = new Blob(chunks, { type: contentType });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+
+      setDownloadProgress(100);
+      setTimeout(() => setDownloadProgress(null), 2000);
+    } catch (error) {
+      setDownloadProgress(null);
+      setFeedback(
+        error instanceof Error ? error.message : "下载失败，请稍后重试。",
+      );
+    }
   }
 
   async function toggleFavorite() {
@@ -142,15 +214,45 @@ export function WallpaperDetailSidebar({
 
       <div className="mt-10 flex flex-wrap gap-3">
         {canDownload ? (
-          <a
-            className="inline-flex border-frame border-ink bg-ink px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-paper transition hover:bg-red"
-            href={downloadPath}
-            onClick={handleDownloadClick}
-            rel="noreferrer"
-            target="_blank"
-          >
-            下载原图
-          </a>
+          <div className="relative">
+            <button
+              aria-label={
+                isDownloading
+                  ? "正在下载"
+                  : downloadProgress === 100
+                    ? "下载完成"
+                    : "下载原图"
+              }
+              className={cn(
+                "relative inline-flex overflow-hidden border-frame border-ink px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-paper transition",
+                isDownloading || downloadProgress === 100
+                  ? "cursor-wait bg-ink"
+                  : "bg-ink hover:bg-red",
+              )}
+              disabled={isDownloading}
+              type="button"
+              onClick={handleDownload}
+            >
+              {/* Progress fill bar */}
+              {isDownloading ? (
+                <span
+                  aria-hidden
+                  className="absolute inset-y-0 left-0 bg-red/60 transition-[width] duration-100"
+                  style={{ width: `${downloadProgress ?? 0}%` }}
+                />
+              ) : null}
+
+              <span className="relative z-10">
+                {isDownloading
+                  ? downloadProgress === 0
+                    ? "连接中…"
+                    : `${downloadProgress}%`
+                  : downloadProgress === 100
+                    ? "↓ 完成"
+                    : "下载原图"}
+              </span>
+            </button>
+          </div>
         ) : null}
         <button
           className="inline-flex border-frame border-ink bg-transparent px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper disabled:cursor-not-allowed disabled:opacity-50"
