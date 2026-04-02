@@ -4,7 +4,7 @@ import Image from "next/image";
 
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
-import { getCreatorPageSnapshot } from "@/lib/creators";
+import { getCachedCreatorPageSnapshot } from "@/lib/public-wallpaper-cache";
 
 export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 
@@ -17,7 +17,7 @@ type CreatorPageProps = {
 export async function generateMetadata({
   params,
 }: CreatorPageProps): Promise<Metadata> {
-  const snapshot = await getCreatorPageSnapshot(params.username);
+  const snapshot = await getCachedCreatorPageSnapshot(params.username);
   if (!snapshot) {
     return { title: `@${params.username}` };
   }
@@ -60,7 +60,7 @@ function formatCount(n: number): string {
 // ─── 主页面 ───────────────────────────────────────────────────────────────────
 
 export default async function CreatorPage({ params }: CreatorPageProps) {
-  const snapshot = await getCreatorPageSnapshot(params.username);
+  const snapshot = await getCachedCreatorPageSnapshot(params.username);
   if (!snapshot) notFound();
 
   const { creator, stats, wallpapers } = snapshot;
