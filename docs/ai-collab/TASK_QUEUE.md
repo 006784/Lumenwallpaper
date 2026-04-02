@@ -13,12 +13,9 @@ _（暂无）_
 ## 待处理
 
 ### TASK-002 · 首页静态数据迁真实 API
-- **状态**: ✅ codex done → 🔜 claude pending
-- **Codex 完成**: 已新增首页聚合数据层 `lib/home.ts` 和接口 `GET /api/home`
-- **返回结构**: `HomePageSnapshot`，定义在 `types/home-api.ts`
-- **字段**: `{ moodCards, editorialFeature, editorialItems, darkroomItems }`
-- **缓存**: 公共缓存头 `s-maxage=300, stale-while-revalidate=86400`
-- **Claude 待做**: 首页 `EditorialSection`、`DarkroomSection` 接入 `/api/home` 返回的真实 props，逐步替换 `lib/data/home.ts` 中的静态内容
+- **状态**: ✅✅ done
+- **分支**: `claude/feat-home-real-data` → 待 PR 合入 develop
+- **完成内容**: `page.tsx` 改用 `getHomePageSnapshot()`；`EditorialSection`、`DarkroomSection` 改为 props 驱动；静态 import 全部移除
 
 ### TASK-003 · Playwright E2E 基准截图建立
 - **状态**: 🔜 codex pending
