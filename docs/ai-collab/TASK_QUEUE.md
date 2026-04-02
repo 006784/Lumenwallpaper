@@ -12,43 +12,18 @@ _（暂无）_
 
 ## 待处理
 
-### TASK-002 · 首页静态数据迁真实 API
-- **状态**: ✅ codex done → 🔜 claude pending
-- **Codex 完成**: 已新增首页聚合数据层 `lib/home.ts` 和接口 `GET /api/home`
-- **返回结构**: `HomePageSnapshot`，定义在 `types/home-api.ts`
-- **字段**: `{ moodCards, editorialFeature, editorialItems, darkroomItems }`
-- **缓存**: 公共缓存头 `s-maxage=300, stale-while-revalidate=86400`
-- **Claude 待做**: 首页 `EditorialSection`、`DarkroomSection` 接入 `/api/home` 返回的真实 props，逐步替换 `lib/data/home.ts` 中的静态内容
-
 ### TASK-003 · Playwright E2E 基准截图建立
-- **状态**: 🔜 codex pending
-- **内容**: 设计确认后执行 `pnpm test:visual:update`，生成并提交 VR-01~VR-15 基准截图
-- **前置**: 本地 `pnpm build && pnpm start` 正常
+- **状态**: ✅ claude done — ⚠️ Codex 需修 2 个 locator
+- **完成**: 36/40 基准截图已生成并提交至 `e2e/__snapshots__/`
+- **⚠️ Codex 待修**: VR-06（Editorial hover）和 VR-08（暗室大格 hover）的 locator 找不到元素，需修复 `e2e/visual/homepage.spec.ts` 中对应选择器
+  - VR-08: `page.locator('section.bg-ink').first().locator('a.group').first()` 等待超时
+  - VR-06: 同类 locator 问题
+- **注意**: `waitForLoadState("networkidle")` 在本地环境因 Sentry/Analytics 耗时 ~90s，建议 Codex 改为 `{ timeout: 10000 }` 加 `.catch(() => {})`
 
 ### TASK-004 · Storybook 接入
 - **状态**: 📋 backlog
 - **内容**: 按 `FRAME-视觉一致性保障方案.md` 第 2 节，为 10 个核心组件建 Story
 - **负责**: Claude Code（UI 组件） + Codex（接入 Chromatic CI）
-
-### TASK-005 · 创作者详情页 `/creator/[username]`
-- **状态**: ✅ codex done → ⚙️ claude wip
-- **内容**: 展示创作者信息、作品网格
-- **Codex 完成**: `app/api/creator/[username]/route.ts`、`lib/creators.ts`、`types/creator-api.ts`、`getCachedCreatorPageSnapshot()` 已补齐
-- **返回结构**: `{ creator, wallpapers, stats }`
-- **Claude 进行中**: `claude/feat-creator-page` 已完成创作者头部、统计横条、壁纸网格、空态和 `notFound()`；拿到缓存导出后切回 `getCachedCreatorPageSnapshot`
-- **分支**: `claude/feat-creator-page`
-
-### TASK-006 · 壁纸详情页动态壁纸支持
-- **状态**: ✅ codex done → 🔜 claude pending
-- **内容**: 详情页支持视频壁纸预览（`videoUrl` 字段已加入 `FilmCellData`，待推广到 `wallpapers` 表）
-- **Codex 完成**: 已新增迁移 `202604010008_video_wallpapers.sql`，并将 `videoUrl` 接入 `types/database.ts`、`types/wallpaper.ts`、创建/更新壁纸 schema 与 API 返回
-- **Claude 后**: 详情页视频播放器 UI
-
-### TASK-007 · AI 识图标签在卡片上展示
-- **状态**: ✅ codex done → 🔜 claude pending
-- **内容**: MoodCard / DarkroomCard 上展示 AI 生成的标签
-- **Codex 完成**: `wallpapers.ai_tags` 在数据库层是 `text[]`，在 API / 类型层映射为 `Wallpaper.aiTags: string[]`；公开接口 `/api/wallpapers` 已直接返回 `aiTags`；共享类型 `types/home.ts` 已补 `MoodCardData.aiTags?` / `DarkroomItem.aiTags?`，映射层会传 `wallpaper.aiTags.slice(0, 3)`
-- **Claude 后**: 卡片 UI 加标签展示
 
 ---
 
@@ -127,3 +102,23 @@ _（暂无）_
 - Playwright 配置（双项目：桌面 1440 + iPhone 14）
 - 5 个核心 E2E 流程测试
 - VR-01~VR-15 视觉回归测试（待生成基准）
+
+### ✅ TASK-002 · 首页静态数据迁真实 API
+- `page.tsx` 改用 `getHomePageSnapshot()`
+- `EditorialSection` / `DarkroomSection` 改为 props 驱动
+- 分支: `claude/feat-home-real-data`
+
+### ✅ TASK-005 · 创作者详情页 `/creator/[username]`
+- 头像 + 统计横条 + 作品网格 + 空态 + notFound()
+- 使用 `getCachedCreatorPageSnapshot()`
+- 分支: `claude/feat-creator-page`
+
+### ✅ TASK-006 · 壁纸详情页动态壁纸支持
+- 新增 `WallpaperVideoPlayer` 组件
+- 详情页有 `videoUrl` 时渲染视频播放器
+- 分支: `claude/feat-video-and-ai-tags`
+
+### ✅ TASK-007 · AI 识图标签在卡片上展示
+- MoodCard 展示最多 3 个标签（hover 滑出）
+- DarkroomCard hover 时展示最多 2 个标签
+- 分支: `claude/feat-video-and-ai-tags`
