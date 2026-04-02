@@ -88,6 +88,12 @@ export const createWallpaperSchema = z.object({
     .max(2000)
     .optional()
     .transform((value) => value || undefined),
+  videoUrl: z
+    .string()
+    .trim()
+    .url()
+    .optional()
+    .transform((value) => value || undefined),
   tags: z.array(z.string().trim().min(1).max(32)).max(12).default([]),
   colors: z
     .array(
@@ -177,6 +183,16 @@ export const updateWallpaperSchema = z
     title: z.string().trim().min(1).max(120).optional(),
     description: z
       .union([z.string().trim().max(2000), z.null()])
+      .optional()
+      .transform((value) => {
+        if (value === undefined) {
+          return undefined;
+        }
+
+        return value && value.length > 0 ? value : null;
+      }),
+    videoUrl: z
+      .union([z.string().trim().url(), z.null()])
       .optional()
       .transform((value) => {
         if (value === undefined) {
@@ -276,6 +292,7 @@ function mapWallpaper(
     title: row.title,
     slug: row.slug,
     description: row.description,
+    videoUrl: row.video_url ?? null,
     status: row.status,
     tags: row.tags,
     aiTags: row.ai_tags ?? [],
@@ -374,6 +391,7 @@ function createFallbackWallpaper(index: number): Wallpaper {
     title: card.name,
     slug: card.id,
     description: null,
+    videoUrl: null,
     status: "published",
     tags: [card.meta.split("·")[0]?.trim() ?? "精选"],
     aiTags: [],
@@ -1608,6 +1626,7 @@ export async function createWallpaperRecord(
           title: input.title,
           slug,
           description: input.description ?? null,
+          video_url: input.videoUrl ?? null,
           status: input.status,
           tags: normalizeTags(input.tags),
           colors: normalizeColors(input.colors),
@@ -1700,6 +1719,10 @@ export async function updateWallpaperRecord(
 
   if (input.description !== undefined) {
     payload.description = input.description;
+  }
+
+  if (input.videoUrl !== undefined) {
+    payload.video_url = input.videoUrl;
   }
 
   if (input.tags !== undefined) {

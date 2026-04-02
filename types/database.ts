@@ -73,6 +73,7 @@ export interface Database {
           title: string;
           slug: string;
           description: string | null;
+          video_url: string | null;
           status: Database["public"]["Enums"]["wallpaper_status"];
           tags: string[];
           ai_tags: string[];
@@ -102,6 +103,7 @@ export interface Database {
           title: string;
           slug: string;
           description?: string | null;
+          video_url?: string | null;
           status?: Database["public"]["Enums"]["wallpaper_status"];
           tags?: string[];
           ai_tags?: string[];
@@ -131,6 +133,7 @@ export interface Database {
           title?: string;
           slug?: string;
           description?: string | null;
+          video_url?: string | null;
           status?: Database["public"]["Enums"]["wallpaper_status"];
           tags?: string[];
           ai_tags?: string[];

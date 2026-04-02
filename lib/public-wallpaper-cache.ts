@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
+import { getCreatorPageSnapshot } from "@/lib/creators";
 import type { WallpaperListOptions } from "@/types/wallpaper";
 import {
   getCreatorByUsername,
@@ -67,6 +68,17 @@ export async function getCachedCreatorByUsername(username: string) {
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
       tags: ["creators", `creator:${username}`],
+    },
+  )();
+}
+
+export async function getCachedCreatorPageSnapshot(username: string) {
+  return unstable_cache(
+    async () => getCreatorPageSnapshot(username),
+    ["creator-page", username],
+    {
+      revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
+      tags: ["creators", "wallpapers", `creator:${username}`],
     },
   )();
 }

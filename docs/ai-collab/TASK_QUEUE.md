@@ -31,21 +31,23 @@ _（暂无）_
 - **负责**: Claude Code（UI 组件） + Codex（接入 Chromatic CI）
 
 ### TASK-005 · 创作者详情页 `/creator/[username]`
-- **状态**: 📋 backlog
+- **状态**: ✅ codex done → ⚙️ claude wip
 - **内容**: 展示创作者信息、作品网格
-- **Codex 先**: 确认数据接口 `/api/creator/:username`
-- **Claude 后**: UI 页面还原
+- **Codex 完成**: `app/api/creator/[username]/route.ts`、`lib/creators.ts`、`types/creator-api.ts`、`getCachedCreatorPageSnapshot()` 已补齐
+- **返回结构**: `{ creator, wallpapers, stats }`
+- **Claude 进行中**: `claude/feat-creator-page` 已完成创作者头部、统计横条、壁纸网格、空态和 `notFound()`；拿到缓存导出后切回 `getCachedCreatorPageSnapshot`
+- **分支**: `claude/feat-creator-page`
 
 ### TASK-006 · 壁纸详情页动态壁纸支持
-- **状态**: 📋 backlog
+- **状态**: ✅ codex done → 🔜 claude pending
 - **内容**: 详情页支持视频壁纸预览（`videoUrl` 字段已加入 `FilmCellData`，待推广到 `wallpapers` 表）
-- **Codex 先**: 在 `wallpapers` 表加 `video_url` 字段（新迁移文件），更新 `types/wallpaper.ts`
+- **Codex 完成**: 已新增迁移 `202604010008_video_wallpapers.sql`，并将 `videoUrl` 接入 `types/database.ts`、`types/wallpaper.ts`、创建/更新壁纸 schema 与 API 返回
 - **Claude 后**: 详情页视频播放器 UI
 
 ### TASK-007 · AI 识图标签在卡片上展示
-- **状态**: 📋 backlog
+- **状态**: ✅ codex done → 🔜 claude pending
 - **内容**: MoodCard / DarkroomCard 上展示 AI 生成的标签
-- **Codex 先**: 确认 `wallpapers.ai_tags` 字段的数据结构
+- **Codex 完成**: `wallpapers.ai_tags` 在数据库层是 `text[]`，在 API / 类型层映射为 `Wallpaper.aiTags: string[]`；公开接口 `/api/wallpapers` 已直接返回 `aiTags`
 - **Claude 后**: 卡片 UI 加标签展示
 
 ---

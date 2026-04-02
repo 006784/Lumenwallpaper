@@ -45,6 +45,7 @@ export interface Wallpaper {
   title: string;
   slug: string;
   description: string | null;
+  videoUrl: string | null;
   status: WallpaperStatus;
   tags: string[];
   aiTags: string[];
