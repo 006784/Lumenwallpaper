@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 
 import { cn } from "@/lib/utils";
-
 import type { WallpaperFavoriteSnapshot } from "@/types/wallpaper";
 import { WallpaperReportPanel } from "@/components/wallpaper/wallpaper-report-panel";
 
@@ -192,7 +191,7 @@ export function WallpaperDetailSidebar({
               创作者
             </span>
             <Link
-              className="underline decoration-ink/20 underline-offset-4 transition hover:text-ink"
+              className="underline decoration-ink/40 underline-offset-4 transition hover:text-ink hover:decoration-ink focus-visible:outline-none focus-visible:decoration-ink"
               href={`/creator/${creatorUsername}`}
             >
               @{creatorUsername}
@@ -201,16 +200,19 @@ export function WallpaperDetailSidebar({
         ) : null}
       </div>
 
-      <div className="mt-8 flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <span
-            key={tag}
-            className="border-frame border-ink/20 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-muted"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
+      {tags.length > 0 ? (
+        <div className="mt-8 flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <Link
+              key={tag}
+              className="border-frame border-ink/20 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:border-ink focus-visible:text-ink"
+              href={`/explore?tag=${encodeURIComponent(tag)}`}
+            >
+              {tag}
+            </Link>
+          ))}
+        </div>
+      ) : null}
 
       <div className="mt-10 flex flex-wrap gap-3">
         {canDownload ? (
@@ -255,7 +257,21 @@ export function WallpaperDetailSidebar({
           </div>
         ) : null}
         <button
-          className="inline-flex border-frame border-ink bg-transparent px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label={
+            isPending
+              ? "处理中"
+              : !isSignedIn
+                ? "登录后收藏"
+                : isFavorited
+                  ? "取消收藏"
+                  : "加入收藏"
+          }
+          className={cn(
+            "inline-flex border-frame px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] transition disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none",
+            isFavorited && !isPending
+              ? "border-gold bg-gold/10 text-ink hover:bg-gold/20"
+              : "border-ink bg-transparent text-ink hover:bg-ink hover:text-paper focus-visible:bg-ink focus-visible:text-paper",
+          )}
           disabled={isPending}
           onClick={handleFavoriteClick}
           type="button"
@@ -265,7 +281,7 @@ export function WallpaperDetailSidebar({
             : !isSignedIn
               ? "登录后收藏"
               : isFavorited
-                ? "取消收藏"
+                ? "♥ 已收藏"
                 : "加入收藏"}
         </button>
         <Link

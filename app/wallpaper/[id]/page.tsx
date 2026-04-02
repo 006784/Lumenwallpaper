@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getCurrentSession } from "@/lib/auth";
 import { GRADIENTS } from "@/lib/gradients";
 import {
+  getWallpaperDisplayTitle,
   getWallpaperDownloadFile,
   getPreferredWallpaperFile,
   getWallpaperGradientKey,
@@ -21,6 +22,25 @@ type WallpaperPageProps = {
   };
 };
 
+function getVisibleWallpaperDescription(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.trim();
+
+  if (
+    !normalized ||
+    (normalized.includes("Cloudflare R2") &&
+      normalized.includes("手动导入") &&
+      normalized.includes("原图"))
+  ) {
+    return null;
+  }
+
+  return normalized;
+}
+
 export async function generateMetadata({
   params,
 }: WallpaperPageProps): Promise<Metadata> {
@@ -34,16 +54,17 @@ export async function generateMetadata({
 
   const preferredFile = getPreferredWallpaperFile(wallpaper);
   const tagLine = wallpaper.tags[0] ?? wallpaper.aiCategory ?? "高质感壁纸";
+  const visibleDescription = getVisibleWallpaperDescription(wallpaper.description);
 
   return {
     title: wallpaper.title,
     description:
-      wallpaper.description ??
+      visibleDescription ??
       `${wallpaper.title} · ${tagLine} · 来自 Lumen 的高质感壁纸详情页。`,
     openGraph: {
       title: wallpaper.title,
       description:
-        wallpaper.description ??
+        visibleDescription ??
         `${wallpaper.title} · ${tagLine} · 来自 Lumen 的高质感壁纸详情页。`,
       images: preferredFile?.url ? [{ url: preferredFile.url }] : undefined,
     },
@@ -58,6 +79,8 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
   }
 
   const currentSession = getCurrentSession();
+  const displayTitle = getWallpaperDisplayTitle(wallpaper);
+  const visibleDescription = getVisibleWallpaperDescription(wallpaper.description);
   const preferredFile = getPreferredWallpaperFile(wallpaper);
   const downloadFile = getWallpaperDownloadFile(wallpaper);
   const favoriteState = await getWallpaperFavoriteState(
@@ -78,10 +101,12 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
     <section className="border-b-frame border-ink px-4 py-16 md:px-10 md:py-24">
       <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.1fr_0.9fr]">
         {wallpaper.videoUrl ? (
-          <WallpaperVideoPlayer title={wallpaper.title} videoUrl={wallpaper.videoUrl} />
+          <WallpaperVideoPlayer title={displayTitle} videoUrl={wallpaper.videoUrl} />
         ) : (
           <div
-            className="min-h-[420px] border-frame border-ink bg-paper"
+            aria-label={displayTitle}
+            className="aspect-[3/4] w-full border-frame border-ink bg-paper md:aspect-[4/5]"
+            role="img"
             style={artworkStyle}
           />
         )}
@@ -90,12 +115,12 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
             Wallpaper Detail
           </p>
           <h1 className="font-display text-[clamp(2.4rem,6vw,4.5rem)] leading-[0.94] tracking-[-0.05em]">
-            {wallpaper.title}
+            {displayTitle}
           </h1>
 
-          {wallpaper.description ? (
+          {visibleDescription ? (
             <p className="mt-6 max-w-xl text-sm leading-7 text-muted md:text-base">
-              {wallpaper.description}
+              {visibleDescription}
             </p>
           ) : null}
 

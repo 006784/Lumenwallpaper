@@ -35,7 +35,7 @@ export async function SiteHeader() {
           {navLinks.map((link) => (
             <Link
               key={link.label}
-              className="relative text-[11px] uppercase tracking-[0.22em] text-muted transition after:absolute after:-bottom-2 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-red after:transition-transform after:duration-200 hover:text-ink hover:after:scale-x-100"
+              className="relative text-[11px] uppercase tracking-[0.22em] text-muted transition after:absolute after:-bottom-2 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-red after:transition-transform after:duration-200 hover:text-ink hover:after:scale-x-100 focus-visible:outline-none focus-visible:text-ink focus-visible:after:scale-x-100"
               href={link.href}
             >
               {link.label}
@@ -47,7 +47,7 @@ export async function SiteHeader() {
           {currentUser ? (
             <>
               <Link
-                className="hidden items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-muted transition hover:text-ink lg:inline-flex"
+                className="hidden items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-muted transition hover:text-ink focus-visible:outline-none focus-visible:text-ink lg:inline-flex"
                 href="/library"
               >
                 个人库
@@ -58,14 +58,14 @@ export async function SiteHeader() {
                 ) : null}
               </Link>
               <Link
-                className="hidden text-[11px] uppercase tracking-[0.22em] text-muted transition hover:text-ink xl:inline-flex"
+                className="hidden text-[11px] uppercase tracking-[0.22em] text-muted transition hover:text-ink focus-visible:outline-none focus-visible:text-ink xl:inline-flex"
                 href="/creator/studio/manage"
               >
                 管理台
               </Link>
               {isEditor ? (
                 <Link
-                  className="hidden text-[11px] uppercase tracking-[0.22em] text-muted transition hover:text-ink xl:inline-flex"
+                  className="hidden text-[11px] uppercase tracking-[0.22em] text-muted transition hover:text-ink focus-visible:outline-none focus-visible:text-ink xl:inline-flex"
                   href="/creator/studio/moderation"
                 >
                   审核台
@@ -79,7 +79,7 @@ export async function SiteHeader() {
               </Link>
               <form action="/api/auth/signout" method="post">
                 <button
-                  className="hidden border-[1.5px] border-ink bg-transparent px-4 py-2 text-[10px] uppercase tracking-[0.24em] text-ink transition duration-hover hover:bg-ink hover:text-paper sm:inline-flex"
+                  className="hidden border-[1.5px] border-ink bg-transparent px-4 py-2 text-[10px] uppercase tracking-[0.24em] text-ink transition duration-hover hover:bg-ink hover:text-paper focus-visible:outline-none focus-visible:bg-ink focus-visible:text-paper sm:inline-flex"
                   type="submit"
                 >
                   退出

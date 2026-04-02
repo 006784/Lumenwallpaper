@@ -110,22 +110,26 @@ export async function ExploreCatalog({
         <form
           action={category ? `/explore/${category.slug}` : "/explore"}
           className="bg-paper/78 mt-10 grid gap-4 border-frame border-ink p-4 md:grid-cols-[1.2fr_0.8fr_auto]"
+          method="get"
         >
           <input
-            className="min-w-0 border border-ink/10 bg-transparent px-5 py-4 font-display text-[22px] italic outline-none placeholder:text-muted"
+            className="min-w-0 border border-ink/10 bg-transparent px-5 py-4 font-display text-[22px] italic outline-none placeholder:text-muted transition focus:border-ink focus:bg-paper/60"
             defaultValue={query}
             name="q"
             placeholder="搜索标题、描述、AI 标签或创作者…"
             type="text"
           />
           <input
-            className="min-w-0 border border-ink/10 bg-transparent px-5 py-4 font-mono text-[11px] uppercase tracking-[0.2em] outline-none placeholder:text-muted"
+            className="min-w-0 border border-ink/10 bg-transparent px-5 py-4 font-mono text-[11px] uppercase tracking-[0.2em] outline-none placeholder:text-muted transition focus:border-ink focus:bg-paper/60"
             defaultValue={tag}
             name="tag"
             placeholder="标签，如 自然 / 赛博 / 晨雾"
             type="text"
           />
-          <button className="border border-ink bg-ink px-6 py-4 font-mono text-[12px] uppercase tracking-[0.22em] text-paper transition hover:bg-red">
+          <button
+            className="border border-ink bg-ink px-6 py-4 font-mono text-[12px] uppercase tracking-[0.22em] text-paper transition hover:bg-red focus-visible:outline-none focus-visible:bg-red"
+            type="submit"
+          >
             搜索目录
           </button>
           {featuredOnly ? (
@@ -217,12 +221,57 @@ export async function ExploreCatalog({
           </Link>
         </div>
 
-        {(query || tag || category || featuredOnly) && wallpapers.length > 0 ? (
-          <div className="mt-6 flex flex-wrap gap-3 text-[10px] uppercase tracking-[0.24em] text-muted">
-            {query ? <span>Query: {query}</span> : null}
-            {tag ? <span>Tag: {tag}</span> : null}
-            {category ? <span>Category: {category.label}</span> : null}
-            {featuredOnly ? <span>Curated only</span> : null}
+        {(query || tag || category || featuredOnly) ? (
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <span className="text-[9px] uppercase tracking-[0.3em] text-muted/60">当前筛选</span>
+            {query ? (
+              <Link
+                className="inline-flex items-center gap-2 border border-ink/20 bg-paper/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:border-red hover:text-red"
+                href={buildExploreHref(category?.slug, { tag, sort, featured: featuredOnly })}
+                title="清除关键词"
+              >
+                {query}
+                <span aria-hidden className="text-[8px] opacity-50">✕</span>
+              </Link>
+            ) : null}
+            {tag ? (
+              <Link
+                className="inline-flex items-center gap-2 border border-ink/20 bg-paper/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:border-red hover:text-red"
+                href={buildExploreHref(category?.slug, { q: query || undefined, sort, featured: featuredOnly })}
+                title="清除标签"
+              >
+                #{tag}
+                <span aria-hidden className="text-[8px] opacity-50">✕</span>
+              </Link>
+            ) : null}
+            {category ? (
+              <Link
+                className="inline-flex items-center gap-2 border border-ink/20 bg-paper/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:border-red hover:text-red"
+                href={buildExploreHref(undefined, { q: query || undefined, tag, sort, featured: featuredOnly })}
+                title="清除分类"
+              >
+                {category.label}
+                <span aria-hidden className="text-[8px] opacity-50">✕</span>
+              </Link>
+            ) : null}
+            {featuredOnly ? (
+              <Link
+                className="inline-flex items-center gap-2 border border-red/20 bg-red/5 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-red transition hover:bg-red/10"
+                href={buildExploreHref(category?.slug, { q: query || undefined, tag, sort, featured: false })}
+                title="取消精选过滤"
+              >
+                精选
+                <span aria-hidden className="text-[8px] opacity-50">✕</span>
+              </Link>
+            ) : null}
+            {(query || tag || category || featuredOnly) ? (
+              <Link
+                className="ml-1 text-[9px] uppercase tracking-[0.24em] text-muted/50 underline underline-offset-4 transition hover:text-red"
+                href={buildExploreHref(undefined, {})}
+              >
+                清空全部
+              </Link>
+            ) : null}
           </div>
         ) : null}
 
@@ -233,9 +282,20 @@ export async function ExploreCatalog({
             ))}
           </div>
         ) : (
-          <div className="mt-10 border-frame border-ink px-6 py-12 text-sm leading-7 text-muted">
-            没有命中当前条件。你可以换一个关键词、清空分类，或者先去 Creator
-            Studio 上传新作品再回来刷新这里。
+          <div className="mt-10 flex flex-col items-center gap-6 border-frame border-ink px-6 py-16 text-center">
+            <span className="font-mono text-[40px] leading-none text-ink/10 select-none">[ ]</span>
+            <div>
+              <p className="font-display text-[22px] italic text-ink/40">没有命中的作品</p>
+              <p className="mt-2 max-w-sm text-[11px] uppercase tracking-[0.18em] text-muted/60">
+                换一个关键词或清空筛选条件
+              </p>
+            </div>
+            <Link
+              className="border-frame border-ink px-5 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper"
+              href={buildExploreHref(undefined, {})}
+            >
+              清空筛选
+            </Link>
           </div>
         )}
       </div>
