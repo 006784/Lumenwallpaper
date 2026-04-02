@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FRAME — 每一帧都值得被看见</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Bebas+Neue&family=Instrument+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0a0804;
+  --paper: #f2ede4;
+  --paper2: #e8e0d2;
+  --red: #d42b2b;
+  --red2: #ff3b3b;
+  --yellow: #f5c842;
+  --muted: #8a8070;
+  --border: rgba(10,8,4,0.12);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Instrument Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+/* ─── GRAIN ─── */
+body::after {
+  content:'';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9000;
+  opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 180px;
+}
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index: 500;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  height: 56px;
+  background: var(--paper);
+  border-bottom: 1.5px solid var(--ink);
+  mix-blend-mode: normal;
+}
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 4px;
+  color: var(--ink);
+  line-height:1;
+}
+.nav-logo sup {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  vertical-align: super;
+  color: var(--red);
+}
+.nav-center {
+  display: flex; gap: 32px;
+}
+.nav-center a {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); text-decoration: none; transition: color .2s;
+}
+.nav-center a:hover { color: var(--ink); }
+
+.nav-right { display: flex; gap: 12px; align-items: center; }
+
+.pill-btn {
+  background: var(--ink); color: var(--paper);
+  border: none; padding: 7px 18px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  cursor: pointer; transition: background .2s;
+}
+.pill-btn:hover { background: var(--red); }
+
+.outline-btn {
+  background: transparent; color: var(--ink);
+  border: 1.5px solid var(--ink); padding: 6px 16px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  cursor: pointer; transition: all .2s;
+}
+.outline-btn:hover { background: var(--ink); color: var(--paper); }
+
+/* ─── HERO: SPLIT SCREEN ─── */
+.hero {
+  margin-top: 56px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: calc(100svh - 56px);
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.hero-left {
+  padding: 60px 48px;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  border-right: 1.5px solid var(--ink);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--red); font-weight: 400;
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--red);
+  animation: blink 1.4s ease infinite;
+}
+@keyframes blink {
+  0%,100%{opacity:1;} 50%{opacity:0.2;}
+}
+
+.hero-headline {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(52px, 7vw, 96px);
+  line-height: .92;
+  letter-spacing: -2px;
+  position: relative;
+  z-index: 1;
+}
+.hero-headline .line2 {
+  font-style: italic;
+  color: var(--red);
+  display: block;
+}
+.hero-headline .line3 {
+  display: block;
+  -webkit-text-stroke: 1.5px var(--ink);
+  color: transparent;
+}
+
+.hero-desc {
+  font-size: 14px; line-height: 1.7; color: var(--muted);
+  max-width: 360px; font-weight: 300;
+}
+
+.hero-cta-row {
+  display: flex; align-items: center; gap: 24px;
+}
+.hero-cta-row .arrow-btn {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+  letter-spacing: 3px; color: var(--ink);
+  cursor: pointer; transition: gap .3s;
+  background: none; border: none;
+}
+.hero-cta-row .arrow-btn:hover { gap: 18px; }
+.arrow-circle {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  transition: background .2s, color .2s;
+}
+.arrow-btn:hover .arrow-circle { background: var(--ink); color: var(--paper); }
+
+.hero-count {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 100px; line-height: 1;
+  color: var(--paper2);
+  position: absolute; bottom: -16px; right: -8px;
+  pointer-events: none; letter-spacing: -4px;
+  z-index: 0;
+}
+
+/* hero right: stacked film previews */
+.hero-right {
+  position: relative;
+  overflow: hidden;
+  background: var(--ink);
+  cursor: crosshair;
+}
+
+.film-stack {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+}
+
+.film-row {
+  flex: 1;
+  display: flex; gap: 0;
+  border-bottom: 1px solid rgba(242,237,228,0.1);
+  overflow: hidden;
+}
+.film-row:last-child { border-bottom: none; }
+
+.film-cell {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border-right: 1px solid rgba(242,237,228,0.08);
+  transition: flex .6s cubic-bezier(.4,0,.2,1);
+  cursor: pointer;
+}
+.film-cell:last-child { border-right: none; }
+.film-cell:hover { flex: 2.5; }
+
+.film-grad {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  transition: transform .6s ease;
+}
+.film-cell:hover .film-grad { transform: scale(1.06); }
+
+.film-label {
+  position: absolute; bottom: 10px; left: 12px;
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(242,237,228,.5);
+  opacity: 0; transition: opacity .3s;
+}
+.film-cell:hover .film-label { opacity: 1; }
+
+/* sprocket holes */
+.sprockets {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 20px;
+  display: flex; flex-direction: column;
+  justify-content: space-around; align-items: center;
+  pointer-events: none; z-index: 10;
+  padding: 10px 0;
+}
+.sprocket-hole {
+  width: 8px; height: 12px;
+  border-radius: 2px;
+  border: 1px solid rgba(242,237,228,.2);
+  background: transparent;
+}
+.sprockets-right { left: auto; right: 0; }
+
+.film-overlay-text {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 32px 28px 24px;
+  background: linear-gradient(to top, rgba(10,8,4,.9) 0%, transparent 100%);
+}
+.film-overlay-text h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px; font-style: italic; color: var(--paper);
+  margin-bottom: 6px;
+}
+.film-overlay-text span {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--yellow);
+}
+
+/* ─── TICKER TAPE ─── */
+.ticker {
+  height: 42px;
+  background: var(--ink);
+  display: flex; align-items: center;
+  overflow: hidden;
+  border-bottom: 1.5px solid var(--ink);
+}
+.ticker-track {
+  display: flex; gap: 0; white-space: nowrap;
+  animation: tick 28s linear infinite;
+}
+.ticker-item {
+  display: flex; align-items: center; gap: 20px;
+  padding: 0 24px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px; letter-spacing: 3px;
+  color: var(--paper);
+}
+.ticker-item.accent { color: var(--yellow); }
+.ticker-item.red { color: var(--red2); }
+.ticker-sep { color: rgba(242,237,228,.2); }
+@keyframes tick {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ─── MOOD BOARD: HORIZONTAL SCROLL ─── */
+.mood-section {
+  padding: 80px 0 0;
+  border-bottom: 1.5px solid var(--ink);
+}
+.mood-header {
+  padding: 0 40px 40px;
+  display: flex; align-items: flex-end; justify-content: space-between;
+}
+.section-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px; letter-spacing: 3px; color: var(--muted);
+}
+.section-title-big {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1; letter-spacing: -1px;
+}
+.section-title-big em { font-style: italic; color: var(--red); }
+
+.drag-hint {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted);
+}
+.drag-arrow { font-size: 20px; animation: nudge 2s ease infinite; }
+@keyframes nudge {
+  0%,100%{transform:translateX(0);}
+  50%{transform:translateX(6px);}
+}
+
+.h-scroll-wrap {
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 40px 48px;
+  cursor: grab;
+}
+.h-scroll-wrap:active { cursor: grabbing; }
+.h-scroll-wrap::-webkit-scrollbar { display: none; }
+
+.h-scroll-track {
+  display: flex; gap: 16px;
+  width: max-content;
+  padding-bottom: 2px;
+}
+
+.mood-card {
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1.5px solid var(--ink);
+}
+.mood-card.portrait { width: 220px; height: 340px; }
+.mood-card.landscape { width: 380px; height: 240px; }
+.mood-card.square { width: 280px; height: 280px; }
+.mood-card.tall { width: 180px; height: 380px; }
+
+.mood-bg {
+  width: 100%; height: 100%;
+  background-size: cover; background-position: center;
+  transition: transform .7s ease;
+}
+.mood-card:hover .mood-bg { transform: scale(1.05); }
+
+.mood-info {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 16px;
+}
+.mood-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px; letter-spacing: 2px;
+  color: rgba(242,237,228,.5);
+  mix-blend-mode: screen;
+}
+.mood-bottom {
+  transform: translateY(110%);
+  transition: transform .4s cubic-bezier(.4,0,.2,1);
+}
+.mood-card:hover .mood-bottom { transform: translateY(0); }
+.mood-name {
+  font-family: 'DM Serif Display', serif; font-style: italic;
+  font-size: 20px; color: var(--paper);
+  text-shadow: 0 2px 12px rgba(0,0,0,.5);
+}
+.mood-sub {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(242,237,228,.7); margin-top: 4px;
+}
+.mood-dl {
+  position: absolute; top: 12px; right: 12px;
+  width: 36px; height: 36px;
+  background: var(--paper); border: 1.5px solid var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; cursor: pointer;
+  opacity: 0; transition: opacity .3s, background .2s;
+}
+.mood-card:hover .mood-dl { opacity: 1; }
+.mood-dl:hover { background: var(--yellow); }
+
+/* gradients for cards */
+.g-forest  { background: linear-gradient(160deg,#0a2e1a,#1b5e34,#4caf74,#b7e4c7); }
+.g-lava    { background: radial-gradient(circle at 40% 60%,#7f1d1d,#dc2626,#f97316,#fbbf24); }
+.g-ocean   { background: linear-gradient(180deg,#03045e,#0077b6,#00b4d8,#caf0f8); }
+.g-void    { background: radial-gradient(ellipse at 20% 30%,#1e1b4b,#4c1d95,#6d28d9,#0a0a0a); }
+.g-dusk    { background: linear-gradient(135deg,#1c0533,#7c3aed,#db2777,#f59e0b); }
+.g-ice     { background: linear-gradient(160deg,#e0f7fa,#b2ebf2,#80deea,#4dd0e1); }
+.g-ember   { background: radial-gradient(circle,#431407,#9a3412,#ea580c,#fed7aa); }
+.g-night   { background: linear-gradient(160deg,#000000,#0f172a,#1e3a5f,#3b82f6); }
+.g-blush   { background: linear-gradient(135deg,#fff1f2,#fecdd3,#fb7185,#e11d48); }
+.g-moss    { background: linear-gradient(160deg,#14532d,#166534,#4ade80,#d9f99d); }
+
+/* ─── EDITORIAL ROW ─── */
+.editorial {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.ed-feature {
+  position: relative; overflow: hidden;
+  height: 540px;
+  border-right: 1.5px solid var(--ink);
+  cursor: pointer;
+}
+.ed-bg {
+  width:100%; height:100%;
+  background-size: cover; background-position: center;
+  transition: transform .8s ease;
+}
+.ed-feature:hover .ed-bg { transform: scale(1.04); }
+
+.ed-caption {
+  position: absolute; bottom:0; left:0; right:0;
+  padding: 60px 36px 32px;
+  background: linear-gradient(to top, rgba(10,8,4,.95) 0%, transparent 100%);
+  color: var(--paper);
+}
+.ed-caption-tag {
+  font-size: 9px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--yellow); margin-bottom: 12px;
+}
+.ed-caption h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px; line-height: 1.1; margin-bottom: 10px;
+}
+.ed-caption p {
+  font-size: 12px; line-height: 1.6; color: rgba(242,237,228,.6);
+  font-weight: 300; max-width: 380px;
+}
+
+.ed-list {
+  display: flex; flex-direction: column;
+}
+.ed-list-item {
+  display: grid; grid-template-columns: 100px 1fr;
+  border-bottom: 1.5px solid var(--ink); flex: 1;
+  cursor: pointer; overflow: hidden;
+  transition: background .2s;
+}
+.ed-list-item:last-child { border-bottom: none; }
+.ed-list-item:hover { background: var(--paper2); }
+
+.ed-thumb {
+  overflow: hidden;
+  border-right: 1.5px solid var(--ink);
+}
+.ed-thumb-bg {
+  width:100%; height:100%;
+  background-size: cover; background-position: center;
+  transition: transform .5s ease;
+}
+.ed-list-item:hover .ed-thumb-bg { transform: scale(1.08); }
+
+.ed-item-info {
+  padding: 18px 20px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.ed-item-num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 11px;
+  letter-spacing: 2px; color: var(--muted);
+}
+.ed-item-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px; line-height: 1.2;
+}
+.ed-item-meta {
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ─── CATEGORY STRIP: ROTATED LABELS ─── */
+.cat-strip {
+  display: flex;
+  border-bottom: 1.5px solid var(--ink);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.cat-strip::-webkit-scrollbar { display: none; }
+
+.cat-block {
+  flex: 1; min-width: 140px;
+  position: relative; overflow: hidden;
+  height: 280px;
+  border-right: 1.5px solid var(--ink);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.cat-block:last-child { border-right: none; }
+
+.cat-block-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  transition: transform .7s ease, filter .4s;
+  filter: saturate(0.7) brightness(0.65);
+}
+.cat-block:hover .cat-block-bg {
+  transform: scale(1.08);
+  filter: saturate(1) brightness(0.75);
+}
+
+.cat-block-label {
+  position: absolute; inset: 0;
+  display: flex; align-items: flex-end;
+  padding: 16px 14px;
+}
+.cat-rotate-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px; letter-spacing: 4px;
+  text-transform: uppercase; color: var(--paper);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  transition: letter-spacing .3s;
+}
+.cat-block:hover .cat-rotate-text { letter-spacing: 6px; }
+
+.cat-block-count {
+  position: absolute; top: 14px; left: 0; right: 0;
+  text-align: center;
+  font-family: 'Bebas Neue', sans-serif; font-size: 28px;
+  color: rgba(242,237,228,.25);
+  transition: color .3s;
+}
+.cat-block:hover .cat-block-count { color: rgba(242,237,228,.6); }
+
+.cat-arrow {
+  position: absolute; bottom: 14px; right: 14px;
+  width: 28px; height: 28px;
+  border: 1px solid rgba(242,237,228,.4);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--paper);
+  opacity: 0; transition: opacity .3s, background .2s;
+}
+.cat-block:hover .cat-arrow { opacity: 1; }
+.cat-arrow:hover { background: var(--paper); color: var(--ink); }
+
+/* ─── SEARCH: FULL WIDTH EXPERIMENTAL ─── */
+.search-section {
+  padding: 80px 40px;
+  border-bottom: 1.5px solid var(--ink);
+  display: flex; gap: 60px; align-items: flex-start;
+}
+
+.search-left { flex: 0 0 280px; }
+.search-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px; letter-spacing: 4px; color: var(--muted);
+  margin-bottom: 12px; display: block;
+}
+.search-bigtext {
+  font-family: 'DM Serif Display', serif;
+  font-size: 44px; line-height: 1; letter-spacing: -1px;
+}
+.search-bigtext em { color: var(--red); font-style: italic; }
+
+.search-right { flex: 1; }
+.search-input-wrap {
+  display: flex; align-items: stretch;
+  border: 1.5px solid var(--ink);
+  overflow: hidden; margin-bottom: 24px;
+}
+.search-input {
+  flex: 1; border: none; outline: none;
+  padding: 18px 24px;
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px; font-style: italic;
+  background: transparent; color: var(--ink);
+}
+.search-input::placeholder { color: var(--muted); }
+.search-btn {
+  background: var(--ink); color: var(--paper);
+  border: none; padding: 0 28px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px; letter-spacing: 3px;
+  cursor: pointer; white-space: nowrap;
+  transition: background .2s;
+}
+.search-btn:hover { background: var(--red); }
+
+.search-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.stag {
+  background: transparent;
+  border: 1.5px solid var(--ink);
+  padding: 6px 14px;
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  cursor: pointer; color: var(--ink);
+  transition: all .2s;
+}
+.stag:hover, .stag.on { background: var(--ink); color: var(--paper); }
+
+/* ─── DARKROOM: LIGHTBOX-STYLE FEATURED ─── */
+.darkroom {
+  background: var(--ink);
+  padding: 80px 40px;
+  border-bottom: 1.5px solid rgba(242,237,228,.1);
+}
+.darkroom-header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 48px;
+}
+.darkroom-header h2 {
+  font-family: 'DM Serif Display', serif; font-style: italic;
+  font-size: 52px; color: var(--paper);
+}
+.darkroom-header p {
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(242,237,228,.3); text-align: right;
+}
+
+.darkroom-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 260px 260px;
+  gap: 3px;
+}
+.dr-cell {
+  position: relative; overflow: hidden; cursor: pointer;
+}
+.dr-cell.span2 { grid-row: 1 / 3; }
+
+.dr-bg {
+  width:100%; height:100%;
+  background-size: cover; background-position: center;
+  transition: transform .7s ease, filter .4s;
+  filter: brightness(.75) saturate(.8);
+}
+.dr-cell:hover .dr-bg {
+  transform: scale(1.05);
+  filter: brightness(.9) saturate(1);
+}
+
+.dr-overlay {
+  position: absolute; inset:0;
+  background: linear-gradient(to top, rgba(10,8,4,.8) 0%, transparent 60%);
+  opacity:0; transition: opacity .3s;
+  display: flex; flex-direction: column;
+  justify-content: flex-end; padding: 20px;
+}
+.dr-cell:hover .dr-overlay { opacity: 1; }
+.dr-overlay h4 {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic; font-size: 20px; color: var(--paper);
+}
+.dr-overlay span {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(242,237,228,.5);
+}
+.dr-badge {
+  position: absolute; top: 12px; left: 12px;
+  background: var(--yellow); color: var(--ink);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 10px; letter-spacing: 2px;
+  padding: 3px 8px;
+}
+
+/* ─── UPLOAD / JOIN ─── */
+.join-section {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-bottom: 1.5px solid var(--ink);
+  min-height: 400px;
+}
+.join-left {
+  padding: 72px 48px;
+  border-right: 1.5px solid var(--ink);
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.join-eyebrow {
+  font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--red); display: flex; align-items: center; gap: 8px;
+}
+.join-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(36px, 4vw, 56px);
+  line-height: 1.05; letter-spacing: -1px;
+}
+.join-title em { font-style: italic; color: var(--red); }
+.join-body { font-size: 14px; color: var(--muted); line-height: 1.7; font-weight: 300; max-width: 360px; }
+.join-stats { display: flex; gap: 48px; }
+.jstat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40px; line-height: 1; letter-spacing: -1px;
+}
+.jstat-num span { font-size: 20px; color: var(--red); }
+.jstat-label {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--muted); margin-top: 4px;
+}
+
+.join-right {
+  background: var(--ink);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 24px; padding: 48px;
+  cursor: pointer;
+  transition: background .3s;
+  position: relative; overflow: hidden;
+}
+.join-right:hover { background: #1a1612; }
+
+.upload-cross {
+  width: 80px; height: 80px;
+  border: 2px solid rgba(242,237,228,.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; color: rgba(242,237,228,.3);
+  transition: all .3s;
+}
+.join-right:hover .upload-cross {
+  border-color: var(--yellow);
+  color: var(--yellow);
+  transform: rotate(45deg);
+}
+.upload-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: 5px;
+  color: rgba(242,237,228,.4); text-align: center;
+  transition: color .3s;
+}
+.join-right:hover .upload-label { color: var(--paper); }
+.upload-sub {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: rgba(242,237,228,.2); text-align: center;
+}
+.join-right-bg {
+  position: absolute; font-family: 'Bebas Neue', sans-serif;
+  font-size: 180px; letter-spacing: -5px;
+  color: rgba(242,237,228,.02); pointer-events: none;
+  white-space: nowrap; bottom: -20px;
+}
+
+/* ─── FOOTER ─── */
+footer {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 0;
+  padding: 56px 40px 40px;
+  border-bottom: 1.5px solid var(--ink);
+}
+footer > div { padding-right: 40px; }
+
+.f-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px; letter-spacing: 4px; line-height: 1;
+  margin-bottom: 16px;
+}
+.f-tagline { font-size: 13px; color: var(--muted); line-height: 1.6; font-weight: 300; }
+
+.f-col h5 {
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--red); margin-bottom: 20px;
+}
+.f-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.f-col a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color .2s; }
+.f-col a:hover { color: var(--ink); }
+
+.foot-bottom {
+  padding: 20px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+}
+
+/* ─── MOBILE ─── */
+@media (max-width: 768px) {
+  nav { padding: 0 16px; }
+  .nav-center { display: none; }
+  .outline-btn { display: none; }
+  .nav-logo { font-size: 22px; }
+
+  .hero { grid-template-columns: 1fr; min-height: auto; }
+  .hero-left {
+    padding: 40px 20px 48px;
+    border-right: none;
+    border-bottom: 1.5px solid var(--ink);
+    gap: 32px;
+  }
+  .hero-headline { font-size: clamp(44px, 12vw, 64px); }
+  .hero-right { height: 55vw; min-height: 260px; }
+  .hero-count { font-size: 60px; }
+
+  .ticker-item { font-size: 13px; padding: 0 14px; gap: 14px; }
+
+  .mood-header { padding: 0 16px 28px; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .h-scroll-wrap { padding: 0 16px 36px; }
+  .mood-card.portrait { width: 160px; height: 240px; }
+  .mood-card.landscape { width: 280px; height: 180px; }
+  .mood-card.square { width: 200px; height: 200px; }
+  .mood-card.tall { width: 140px; height: 280px; }
+  .mood-bottom { transform: translateY(0) !important; }
+  .mood-dl { opacity: 1; }
+
+  .editorial { grid-template-columns: 1fr; }
+  .ed-feature { height: 320px; border-right: none; border-bottom: 1.5px solid var(--ink); }
+  .ed-caption h2 { font-size: 24px; }
+  .ed-list-item { grid-template-columns: 80px 1fr; }
+
+  .cat-strip { }
+  .cat-block { min-width: 100px; height: 200px; }
+
+  .search-section { padding: 48px 16px; flex-direction: column; gap: 32px; }
+  .search-left { flex: 0 0 auto; }
+  .search-bigtext { font-size: 32px; }
+
+  .darkroom { padding: 48px 16px; }
+  .darkroom-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .darkroom-header h2 { font-size: 36px; }
+  .darkroom-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 200px 160px 160px;
+  }
+  .dr-cell.span2 { grid-column: 1 / 3; grid-row: 1; }
+
+  .join-section { grid-template-columns: 1fr; }
+  .join-left { padding: 48px 20px; border-right: none; border-bottom: 1.5px solid var(--ink); }
+  .join-right { min-height: 240px; }
+  .join-stats { gap: 32px; }
+
+  footer { grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px 20px 28px; }
+  footer > div:first-child { grid-column: 1 / -1; }
+  .f-logo { font-size: 32px; }
+  .foot-bottom { flex-direction: column; gap: 8px; text-align: center; padding: 16px 20px; }
+}
+
+@media (max-width: 420px) {
+  .hero-headline { font-size: 40px; }
+  footer { grid-template-columns: 1fr; }
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.hero-left > * {
+  animation: fadeUp .7s ease both;
+}
+.hero-left > *:nth-child(1){animation-delay:.05s}
+.hero-left > *:nth-child(2){animation-delay:.18s}
+.hero-left > *:nth-child(3){animation-delay:.3s}
+.hero-left > *:nth-child(4){animation-delay:.42s}
+.hero-left > *:nth-child(5){animation-delay:.54s}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">FRAME<sup>™</sup></div>
+  <div class="nav-center">
+    <a href="#">探索</a>
+    <a href="#">暗室精选</a>
+    <a href="#">创作者</a>
+    <a href="#">4K库</a>
+  </div>
+  <div class="nav-right">
+    <button class="outline-btn">登录</button>
+    <button class="pill-btn">上传作品</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag"><span class="live-dot"></span>每日更新中</div>
+    <h1 class="hero-headline">
+      每一帧<br>
+      <span class="line2">都值得</span>
+      <span class="line3">被看见</span>
+    </h1>
+    <p class="hero-desc">不只是壁纸——是你与世界相处的方式。收录来自全球摄影师与数字艺术家的 48,000+ 作品，4K 画质，免费下载。</p>
+    <div class="hero-cta-row">
+      <button class="arrow-btn">
+        <div class="arrow-circle">→</div>
+        进入画廊
+      </button>
+    </div>
+    <div class="hero-count">48K</div>
+  </div>
+
+  <!-- film strip right -->
+  <div class="hero-right">
+    <div class="sprockets">
+      <div class="sprocket-hole"></div><div class="sprocket-hole"></div>
+      <div class="sprocket-hole"></div><div class="sprocket-hole"></div>
+      <div class="sprocket-hole"></div><div class="sprocket-hole"></div>
+      <div class="sprocket-hole"></div><div class="sprocket-hole"></div>
+    </div>
+    <div class="sprockets sprockets-right">
+      <div class="sprocket-hole"></div><div class="sprocket-hole"></div>
+      <div class="sprocket-hole"></div><div class="sprocket-hole"></div>
+      <div class="sprocket-hole"></div><div class="sprocket-hole"></div>
+      <div class="sprocket-hole"></div><div class="sprocket-hole"></div>
+    </div>
+
+    <div class="film-stack">
+      <div class="film-row">
+        <div class="film-cell">
+          <div class="film-grad g-forest"></div>
+          <div class="film-label">自然 · 013</div>
+        </div>
+        <div class="film-cell">
+          <div class="film-grad g-void"></div>
+          <div class="film-label">宇宙 · 027</div>
+        </div>
+        <div class="film-cell">
+          <div class="film-grad g-dusk"></div>
+          <div class="film-label">黄昏 · 041</div>
+        </div>
+      </div>
+      <div class="film-row">
+        <div class="film-cell">
+          <div class="film-grad g-ocean"></div>
+          <div class="film-label">深海 · 058</div>
+        </div>
+        <div class="film-cell">
+          <div class="film-grad g-lava"></div>
+          <div class="film-label">熔岩 · 072</div>
+        </div>
+        <div class="film-cell">
+          <div class="film-grad g-night"></div>
+          <div class="film-label">暗夜 · 089</div>
+        </div>
+      </div>
+      <div class="film-row">
+        <div class="film-cell">
+          <div class="film-grad g-blush"></div>
+          <div class="film-label">腮红 · 104</div>
+        </div>
+        <div class="film-cell">
+          <div class="film-grad g-ice"></div>
+          <div class="film-label">冰川 · 117</div>
+        </div>
+        <div class="film-cell">
+          <div class="film-grad g-ember"></div>
+          <div class="film-label">余烬 · 132</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="film-overlay-text">
+      <h3>本周最受欢迎</h3>
+      <span>共 2,847 次下载</span>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">最新上传 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item accent">4K 超清 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item">自然风光 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item red">本周热榜 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item">极简主义 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item accent">AI 生成艺术 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item">宇宙星系 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item red">赛博朋克 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item">摄影师作品 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item accent">暗色系 <span class="ticker-sep">／</span></span>
+    <!-- repeat -->
+    <span class="ticker-item">最新上传 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item accent">4K 超清 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item">自然风光 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item red">本周热榜 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item">极简主义 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item accent">AI 生成艺术 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item">宇宙星系 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item red">赛博朋克 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item">摄影师作品 <span class="ticker-sep">／</span></span>
+    <span class="ticker-item accent">暗色系 <span class="ticker-sep">／</span></span>
+  </div>
+</div>
+
+<!-- HORIZONTAL MOOD BOARD -->
+<section class="mood-section">
+  <div class="mood-header">
+    <div>
+      <div class="section-num">01 — 情绪版</div>
+      <h2 class="section-title-big">按<em>心情</em>找壁纸</h2>
+    </div>
+    <div class="drag-hint"><span class="drag-arrow">→</span> 左右滑动</div>
+  </div>
+  <div class="h-scroll-wrap" id="moodScroll">
+    <div class="h-scroll-track">
+
+      <div class="mood-card portrait">
+        <div class="mood-bg g-void"></div>
+        <div class="mood-info">
+          <div class="mood-num">001</div>
+          <div class="mood-bottom">
+            <div class="mood-name">深夜独处</div>
+            <div class="mood-sub">宇宙 · 4K</div>
+          </div>
+        </div>
+        <div class="mood-dl">↓</div>
+      </div>
+
+      <div class="mood-card landscape">
+        <div class="mood-bg g-forest"></div>
+        <div class="mood-info">
+          <div class="mood-num">002</div>
+          <div class="mood-bottom">
+            <div class="mood-name">清晨翠谷</div>
+            <div class="mood-sub">自然 · 5K</div>
+          </div>
+        </div>
+        <div class="mood-dl">↓</div>
+      </div>
+
+      <div class="mood-card tall">
+        <div class="mood-bg g-dusk"></div>
+        <div class="mood-info">
+          <div class="mood-num">003</div>
+          <div class="mood-bottom">
+            <div class="mood-name">黄昏将至</div>
+            <div class="mood-sub">渐变 · 4K</div>
+          </div>
+        </div>
+        <div class="mood-dl">↓</div>
+      </div>
+
+      <div class="mood-card square">
+        <div class="mood-bg g-lava"></div>
+        <div class="mood-info">
+          <div class="mood-num">004</div>
+          <div class="mood-bottom">
+            <div class="mood-name">烈焰熔岩</div>
+            <div class="mood-sub">抽象 · 4K</div>
+          </div>
+        </div>
+        <div class="mood-dl">↓</div>
+      </div>
+
+      <div class="mood-card portrait">
+        <div class="mood-bg g-ice"></div>
+        <div class="mood-info">
+          <div class="mood-num">005</div>
+          <div class="mood-bottom">
+            <div class="mood-name">极地寒流</div>
+            <div class="mood-sub">自然 · 4K</div>
+          </div>
+        </div>
+        <div class="mood-dl">↓</div>
+      </div>
+
+      <div class="mood-card landscape">
+        <div class="mood-bg g-ocean"></div>
+        <div class="mood-info">
+          <div class="mood-num">006</div>
+          <div class="mood-bottom">
+            <div class="mood-name">深海蔚蓝</div>
+            <div class="mood-sub">自然 · 5K</div>
+          </div>
+        </div>
+        <div class="mood-dl">↓</div>
+      </div>
+
+      <div class="mood-card square">
+        <div class="mood-bg g-blush"></div>
+        <div class="mood-info">
+          <div class="mood-num">007</div>
+          <div class="mood-bottom">
+            <div class="mood-name">粉色心境</div>
+            <div class="mood-sub">极简 · 2K</div>
+          </div>
+        </div>
+        <div class="mood-dl">↓</div>
+      </div>
+
+      <div class="mood-card tall">
+        <div class="mood-bg g-night"></div>
+        <div class="mood-info">
+          <div class="mood-num">008</div>
+          <div class="mood-bottom">
+            <div class="mood-name">午夜城市</div>
+            <div class="mood-sub">城市 · 4K</div>
+          </div>
+        </div>
+        <div class="mood-dl">↓</div>
+      </div>
+
+      <div class="mood-card portrait">
+        <div class="mood-bg g-ember"></div>
+        <div class="mood-info">
+          <div class="mood-num">009</div>
+          <div class="mood-bottom">
+            <div class="mood-name">炭火余烬</div>
+            <div class="mood-sub">暗色 · 4K</div>
+          </div>
+        </div>
+        <div class="mood-dl">↓</div>
+      </div>
+
+      <div class="mood-card landscape">
+        <div class="mood-bg g-moss"></div>
+        <div class="mood-info">
+          <div class="mood-num">010</div>
+          <div class="mood-bottom">
+            <div class="mood-name">苔藓之境</div>
+            <div class="mood-sub">自然 · 4K</div>
+          </div>
+        </div>
+        <div class="mood-dl">↓</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- EDITORIAL -->
+<section class="editorial">
+  <div class="ed-feature">
+    <div class="ed-bg g-forest" style="height:100%"></div>
+    <div class="ed-caption">
+      <div class="ed-caption-tag">✦ 编辑推荐 · 本周</div>
+      <h2>消失于翡翠<br>山谷的晨雾</h2>
+      <p>摄影师 Lin Yue 在四川盆地花了三天守候这一帧——光、雾与绿的短暂和解。</p>
+    </div>
+  </div>
+  <div class="ed-list">
+    <div class="ed-list-item">
+      <div class="ed-thumb"><div class="ed-thumb-bg g-void" style="height:100%"></div></div>
+      <div class="ed-item-info">
+        <div class="ed-item-num">NO.02</div>
+        <div class="ed-item-name">星云漂移</div>
+        <div class="ed-item-meta">宇宙 · 5K · 1,240 次下载</div>
+      </div>
+    </div>
+    <div class="ed-list-item">
+      <div class="ed-thumb"><div class="ed-thumb-bg g-lava" style="height:100%"></div></div>
+      <div class="ed-item-info">
+        <div class="ed-item-num">NO.03</div>
+        <div class="ed-item-name">地核之火</div>
+        <div class="ed-item-meta">抽象 · 4K · 987 次下载</div>
+      </div>
+    </div>
+    <div class="ed-list-item">
+      <div class="ed-thumb"><div class="ed-thumb-bg g-night" style="height:100%"></div></div>
+      <div class="ed-item-info">
+        <div class="ed-item-num">NO.04</div>
+        <div class="ed-item-name">深夜漫游者</div>
+        <div class="ed-item-meta">城市 · 4K · 876 次下载</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORY STRIP WITH ROTATED LABELS -->
+<div class="cat-strip">
+  <div class="cat-block"><div class="cat-block-bg g-forest"></div><div class="cat-block-count">8.4K</div><div class="cat-block-label"><span class="cat-rotate-text">自然风光</span></div><div class="cat-arrow">↗</div></div>
+  <div class="cat-block"><div class="cat-block-bg g-void"></div><div class="cat-block-count">5.1K</div><div class="cat-block-label"><span class="cat-rotate-text">宇宙星系</span></div><div class="cat-arrow">↗</div></div>
+  <div class="cat-block"><div class="cat-block-bg g-dusk"></div><div class="cat-block-count">12K</div><div class="cat-block-label"><span class="cat-rotate-text">抽象艺术</span></div><div class="cat-arrow">↗</div></div>
+  <div class="cat-block"><div class="cat-block-bg g-ice"></div><div class="cat-block-count">6.2K</div><div class="cat-block-label"><span class="cat-rotate-text">极简主义</span></div><div class="cat-arrow">↗</div></div>
+  <div class="cat-block"><div class="cat-block-bg g-night"></div><div class="cat-block-count">9.6K</div><div class="cat-block-label"><span class="cat-rotate-text">城市夜景</span></div><div class="cat-arrow">↗</div></div>
+  <div class="cat-block"><div class="cat-block-bg g-blush"></div><div class="cat-block-count">7.3K</div><div class="cat-block-label"><span class="cat-rotate-text">插画二次元</span></div><div class="cat-arrow">↗</div></div>
+  <div class="cat-block"><div class="cat-block-bg g-ember"></div><div class="cat-block-count">4.8K</div><div class="cat-block-label"><span class="cat-rotate-text">暗色系</span></div><div class="cat-arrow">↗</div></div>
+</div>
+
+<!-- SEARCH SECTION -->
+<section class="search-section">
+  <div class="search-left">
+    <span class="search-label">02 — 发现</span>
+    <h2 class="search-bigtext">找到你的<em>那一帧</em></h2>
+  </div>
+  <div class="search-right">
+    <div class="search-input-wrap">
+      <input class="search-input" type="text" placeholder="描述你想要的画面…">
+      <button class="search-btn">搜索</button>
+    </div>
+    <div class="search-tags">
+      <button class="stag on">全部</button>
+      <button class="stag">暗夜</button>
+      <button class="stag">极简</button>
+      <button class="stag">渐变</button>
+      <button class="stag">自然</button>
+      <button class="stag">宇宙</button>
+      <button class="stag">城市</button>
+      <button class="stag">抽象</button>
+      <button class="stag">日系</button>
+      <button class="stag">赛博</button>
+      <button class="stag">AI生成</button>
+    </div>
+  </div>
+</section>
+
+<!-- DARKROOM -->
+<div class="darkroom">
+  <div class="darkroom-header">
+    <h2>暗室精选</h2>
+    <p>每周策展<br>编辑团队推荐</p>
+  </div>
+  <div class="darkroom-grid">
+    <div class="dr-cell span2">
+      <div class="dr-bg g-dusk"></div>
+      <div class="dr-badge">本周最佳</div>
+      <div class="dr-overlay"><h4>暮色将临，万物静默</h4><span>渐变 · 5K · 2,341 下载</span></div>
+    </div>
+    <div class="dr-cell"><div class="dr-bg g-ocean"></div><div class="dr-overlay"><h4>冰川之蓝</h4><span>自然 · 4K</span></div></div>
+    <div class="dr-cell"><div class="dr-bg g-ember"></div><div class="dr-overlay"><h4>炭火夜语</h4><span>暗色 · 4K</span></div></div>
+    <div class="dr-cell"><div class="dr-bg g-moss"></div><div class="dr-overlay"><h4>苔藓与光</h4><span>自然 · 4K</span></div></div>
+    <div class="dr-cell"><div class="dr-bg g-blush"></div><div class="dr-overlay"><h4>粉樱之间</h4><span>极简 · 2K</span></div></div>
+  </div>
+</div>
+
+<!-- JOIN -->
+<section class="join-section">
+  <div class="join-left">
+    <div>
+      <div class="join-eyebrow"><span class="live-dot"></span>创作者计划</div>
+      <h2 class="join-title">分享你<br>镜头里的<em>世界</em></h2>
+    </div>
+    <p class="join-body">上传你的摄影、插画或 AI 生成作品。每一次下载，你都获得收益分成。加入 3,200 位来自全球的创作者。</p>
+    <div class="join-stats">
+      <div><div class="jstat-num">3.2<span>K</span></div><div class="jstat-label">活跃创作者</div></div>
+      <div><div class="jstat-num">48<span>K</span></div><div class="jstat-label">收录作品</div></div>
+      <div><div class="jstat-num">70<span>%</span></div><div class="jstat-label">收益分成</div></div>
+    </div>
+  </div>
+  <div class="join-right">
+    <div class="join-right-bg">UPLOAD</div>
+    <div class="upload-cross">+</div>
+    <div class="upload-label">拖拽上传你的作品</div>
+    <div class="upload-sub">JPG · PNG · WEBP · 最大 50MB</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="f-logo">FRAME</div>
+    <p class="f-tagline">每一帧都值得被看见。<br>壁纸不是装饰，是态度。</p>
+  </div>
+  <div class="f-col">
+    <h5>探索</h5>
+    <ul>
+      <li><a href="#">情绪版</a></li>
+      <li><a href="#">暗室精选</a></li>
+      <li><a href="#">热门排行</a></li>
+      <li><a href="#">随机发现</a></li>
+    </ul>
+  </div>
+  <div class="f-col">
+    <h5>创作者</h5>
+    <ul>
+      <li><a href="#">上传作品</a></li>
+      <li><a href="#">收益计划</a></li>
+      <li><a href="#">版权保护</a></li>
+      <li><a href="#">创作者指南</a></li>
+    </ul>
+  </div>
+  <div class="f-col">
+    <h5>关于</h5>
+    <ul>
+      <li><a href="#">关于 FRAME</a></li>
+      <li><a href="#">隐私政策</a></li>
+      <li><a href="#">使用条款</a></li>
+      <li><a href="#">联系我们</a></li>
+    </ul>
+  </div>
+</footer>
+<div class="foot-bottom">
+  <span>© 2026 FRAME™ — 每一帧都值得被看见</span>
+  <span>Made with obsession</span>
+</div>
+
+<script>
+// Tag filter
+document.querySelectorAll('.stag').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.stag').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+  });
+});
+
+// Drag to scroll (mood board + cat strip)
+[document.getElementById('moodScroll'), document.querySelector('.cat-strip')].forEach(el => {
+  if (!el) return;
+  let isDown = false, startX, scrollLeft;
+  el.addEventListener('mousedown', e => {
+    isDown = true;
+    startX = e.pageX - el.offsetLeft;
+    scrollLeft = el.scrollLeft;
+    el.style.cursor = 'grabbing';
+  });
+  el.addEventListener('mouseleave', () => { isDown = false; el.style.cursor = 'grab'; });
+  el.addEventListener('mouseup',    () => { isDown = false; el.style.cursor = 'grab'; });
+  el.addEventListener('mousemove',  e => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - el.offsetLeft;
+    const walk = (x - startX) * 1.4;
+    el.scrollLeft = scrollLeft - walk;
+  });
+});
+
+// Cat block hover expand
+document.querySelectorAll('.cat-block').forEach(b => {
+  b.addEventListener('mouseenter', () => {
+    document.querySelectorAll('.cat-block').forEach(x => x.style.flex = '1');
+    b.style.flex = '2';
+  });
+  b.addEventListener('mouseleave', () => {
+    document.querySelectorAll('.cat-block').forEach(x => x.style.flex = '1');
+  });
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.mood-card, .ed-list-item, .dr-cell').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity .5s ease, transform .5s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>

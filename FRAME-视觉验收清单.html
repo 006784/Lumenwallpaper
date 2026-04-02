@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FRAME™ 视觉验收清单</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#f2ede4;color:#0a0804;font-family:'Instrument Sans',sans-serif;min-height:100vh;padding:0 0 80px}
+
+header{background:#0a0804;color:#f2ede4;padding:28px 40px 24px;border-bottom:3px solid #d42b2b;position:sticky;top:0;z-index:100}
+.header-top{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:5px}
+.logo sup{font-size:11px;color:#d42b2b;vertical-align:super;font-family:'Instrument Sans',sans-serif;letter-spacing:2px}
+.header-meta{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(242,237,228,.45);text-align:right;line-height:1.8}
+.progress-bar-wrap{margin-top:16px;height:3px;background:rgba(242,237,228,.15);border-radius:0}
+.progress-bar{height:100%;background:#d42b2b;transition:width .4s ease;border-radius:0}
+.progress-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(242,237,228,.4);margin-top:8px}
+
+.main{max-width:900px;margin:0 auto;padding:48px 24px 0}
+
+.section{margin-bottom:48px}
+.section-header{display:flex;align-items:flex-end;justify-content:space-between;padding-bottom:12px;border-bottom:1.5px solid #0a0804;margin-bottom:20px;flex-wrap:wrap;gap:8px}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:#0a0804}
+.section-badge{font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border:1px solid #d0c8b8;color:#8a8070}
+.section-count{font-size:10px;letter-spacing:2px;color:#8a8070;text-transform:uppercase}
+
+.check-item{display:grid;grid-template-columns:44px 1fr auto;align-items:start;gap:0;border-bottom:1px solid rgba(10,8,4,.08);transition:background .15s;cursor:pointer}
+.check-item:last-child{border-bottom:none}
+.check-item:hover{background:rgba(10,8,4,.03)}
+.check-item.done{background:rgba(26,107,58,.04)}
+.check-item.done .item-text{color:#8a8070;text-decoration:line-through;text-decoration-color:rgba(10,8,4,.25)}
+.check-item.fail{background:rgba(192,57,43,.04)}
+
+.check-box{padding:14px 0 14px 0;display:flex;align-items:flex-start;justify-content:center;padding-top:15px}
+.box{width:20px;height:20px;border:1.5px solid #d0c8b8;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;font-size:13px;background:#fff}
+.check-item.done .box{background:#1a6b3a;border-color:#1a6b3a;color:#fff}
+.check-item.fail .box{background:#c0392b;border-color:#c0392b;color:#fff}
+
+.item-body{padding:13px 16px 13px 0}
+.item-text{font-size:14px;line-height:1.5;color:#0a0804}
+.item-sub{font-size:11px;color:#8a8070;margin-top:4px;line-height:1.4}
+.item-tag{display:inline-flex;align-items:center;gap:4px;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:2px 7px;border:1px solid;margin-right:5px;margin-top:6px}
+.tag-desktop{color:#1a3a6b;border-color:#1a3a6b}
+.tag-mobile{color:#4b1a6b;border-color:#4b1a6b}
+.tag-anim{color:#7a4a00;border-color:#7a4a00}
+.tag-perf{color:#1a6b3a;border-color:#1a6b3a}
+.tag-critical{color:#c0392b;border-color:#c0392b}
+
+.item-actions{padding:12px 16px 12px 0;display:flex;gap:6px;align-items:flex-start;padding-top:14px}
+.btn-pass{background:#1a6b3a;color:#fff;border:none;padding:5px 12px;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background .2s;white-space:nowrap}
+.btn-pass:hover{background:#145530}
+.btn-fail{background:transparent;color:#c0392b;border:1.5px solid #c0392b;padding:4px 10px;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-fail:hover{background:#c0392b;color:#fff}
+.btn-reset{background:transparent;color:#8a8070;border:1px solid #d0c8b8;padding:4px 8px;font-size:10px;cursor:pointer;letter-spacing:1px}
+
+/* summary */
+.summary{background:#0a0804;color:#f2ede4;padding:32px 40px;margin:48px 0 0;display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.sum-item{padding:0 24px;border-right:1px solid rgba(242,237,228,.1);text-align:center}
+.sum-item:first-child{padding-left:0;text-align:left}
+.sum-item:last-child{border-right:none;text-align:right}
+.sum-num{font-family:'Bebas Neue',sans-serif;font-size:48px;line-height:1;letter-spacing:-1px}
+.sum-num.green{color:#4ade80}
+.sum-num.red{color:#f87171}
+.sum-num.yellow{color:#f5c842}
+.sum-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(242,237,228,.4);margin-top:6px}
+
+.verdict{margin-top:24px;text-align:center;padding:20px;border-top:1px solid rgba(242,237,228,.1)}
+.verdict-text{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:4px}
+
+/* filter bar */
+.filter-bar{display:flex;gap:8px;margin-bottom:32px;flex-wrap:wrap}
+.filter-btn{background:transparent;border:1.5px solid #0a0804;padding:6px 16px;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;color:#0a0804;transition:all .2s}
+.filter-btn.active,.filter-btn:hover{background:#0a0804;color:#f2ede4}
+
+.reset-all{margin-top:24px;display:flex;justify-content:center}
+.reset-all button{background:transparent;border:1.5px solid #d0c8b8;color:#8a8070;padding:10px 28px;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.reset-all button:hover{border-color:#0a0804;color:#0a0804}
+
+@media(max-width:640px){
+  header{padding:20px}
+  .main{padding:32px 14px 0}
+  .check-item{grid-template-columns:36px 1fr}
+  .item-actions{display:none}
+  .check-item{cursor:pointer}
+  .summary{grid-template-columns:1fr 1fr;gap:20px}
+  .sum-item{border-right:none;text-align:center!important;padding:0}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo">FRAME<sup>™</sup> 视觉验收清单</div>
+    <div class="header-meta">
+      版本 1.0  ·  每次发布前执行<br>
+      参照基准：frame-react-preview.html
+    </div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar" style="width:0%"></div>
+  </div>
+  <div class="progress-label" id="progressLabel">0 / 0 项已完成</div>
+</header>
+
+<div class="main">
+
+  <!-- filter -->
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterItems('all')">全部</button>
+    <button class="filter-btn" onclick="filterItems('desktop')">桌面端</button>
+    <button class="filter-btn" onclick="filterItems('mobile')">移动端</button>
+    <button class="filter-btn" onclick="filterItems('anim')">动画</button>
+    <button class="filter-btn" onclick="filterItems('perf')">性能</button>
+    <button class="filter-btn" onclick="filterItems('critical')">🔴 关键</button>
+    <button class="filter-btn" onclick="filterItems('fail')" id="failFilterBtn" style="display:none">⚠ 只看失败</button>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" data-section="typography">
+    <div class="section-header">
+      <div>
+        <div class="section-title">01  字体 &amp; 排版</div>
+      </div>
+      <div class="section-count" id="count-typography"></div>
+    </div>
+    <div class="check-list" id="list-typography">
+      <div class="check-item" data-tags="desktop critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">Bebas Neue 字体正确加载（Nav LOGO、数字统计、Ticker 滚动条）</div>
+          <div class="item-sub">检查方式：打开 DevTools → Network → 过滤 font，确认 BebàsNeue 字体文件已加载</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">DM Serif Display 斜体正确显示（Hero 标题「都值得」、情绪版卡片名称）</div>
+          <div class="item-sub">字体风格应为优雅衬线斜体，不是浏览器默认斜体</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">Hero 标题第三行「被看见」镂空效果（webkit-text-stroke）正常显示</div>
+          <div class="item-sub">应呈现只有描边、内部透明的中空文字效果</div>
+          <div><span class="item-tag tag-desktop">桌面</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop mobile" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">分类栏竖向文字（writing-mode: vertical-rl）方向正确，从下到上阅读</div>
+          <div class="item-sub">不应横向显示，也不应倒置</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-mobile">移动</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" data-section="color">
+    <div class="section-header">
+      <div class="section-title">02  颜色 &amp; 质感</div>
+      <div class="section-count" id="count-color"></div>
+    </div>
+    <div class="check-list" id="list-color">
+      <div class="check-item" data-tags="desktop critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">整体背景色为米黄纸色 #f2ede4，不是纯白</div>
+          <div class="item-sub">用取色器验证：Nav、页面背景、搜索区均应为 #f2ede4</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">噪点纹理（Grain 滤镜）可见，覆盖全屏，增加胶片质感</div>
+          <div class="item-sub">在光线充足的屏幕上应隐约可见细腻颗粒感，opacity 约 0.04</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">边框为 1.5px solid #0a0804（不是 1px，不是灰色），全页面统一</div>
+          <div class="item-sub">放大检查 Hero 分割线、Nav 底部线、卡片边框粗细一致</div>
+          <div><span class="item-tag tag-desktop">桌面</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">红色 #d42b2b 用于：Nav 下红线、Hero 斜体文字、Live 红点、Red Rule 分割线</div>
+          <div class="item-sub">不应出现其他红色变体（如 #ff0000 或 #e74c3c）</div>
+          <div><span class="item-tag tag-desktop">桌面</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">暗室区背景为深墨色 #0a0804，与页面背景形成强烈对比</div>
+          <div class="item-sub">不应是普通黑 #000000，应有微暖调</div>
+          <div><span class="item-tag tag-desktop">桌面</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" data-section="layout">
+    <div class="section-header">
+      <div class="section-title">03  布局 &amp; 结构</div>
+      <div class="section-count" id="count-layout"></div>
+    </div>
+    <div class="check-list" id="list-layout">
+      <div class="check-item" data-tags="desktop critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">Hero 区：左右各占 50%，左侧文字 / 右侧胶卷，高度铺满视口（100svh - 56px）</div>
+          <div class="item-sub">参照基准图：两列等宽，无错位，胶卷区完全黑色背景</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">胶卷区：左右两侧各 8 个齿孔（sprocket holes），宽 8px 高 12px，border-radius 2px</div>
+          <div class="item-sub">齿孔应均匀分布，边框颜色 rgba(242,237,228,.16)，背景透明</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">情绪版：卡片高度混排（portrait 330 / landscape 230 / tall 370 / square 270），不等高</div>
+          <div class="item-sub">不应全部等高，差异化高度是核心设计语言</div>
+          <div><span class="item-tag tag-desktop">桌面</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">暗室网格：左侧大格占 2 列 2 行（span2），右侧 4 个小格均等</div>
+          <div class="item-sub">参照基准图的 2fr 1fr 1fr 三列网格结构</div>
+          <div><span class="item-tag tag-desktop">桌面</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">Ticker 栏：金黄色和红色交替出现（每 3 个循环一次），不全白</div>
+          <div class="item-sub">对照原版：.accent → #f5c842，.red → #ff3b3b</div>
+          <div><span class="item-tag tag-desktop">桌面</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" data-section="anim">
+    <div class="section-header">
+      <div class="section-title">04  动画 &amp; 交互</div>
+      <div class="section-count" id="count-anim"></div>
+    </div>
+    <div class="check-list" id="list-anim">
+      <div class="check-item" data-tags="desktop anim critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">胶卷格子 hover：被悬停格子扩展到 flex: 3，相邻格子被压缩，过渡 0.55s cubic-bezier</div>
+          <div class="item-sub">动画应丝滑，不应有跳变或闪烁</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-anim">动画</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop anim critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">情绪版卡片 3D 倾斜：鼠标在卡片内移动，卡片跟随产生 rotateX / rotateY 透视旋转</div>
+          <div class="item-sub">最大倾斜角约 ±10°，离开后回弹到 0，transition 0.12s ease</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-anim">动画</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop anim" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">情绪版卡片 hover：底部信息面板从下方滑入（translateY 0），标题 + 分类显示</div>
+          <div class="item-sub">transition: transform 0.42s cubic-bezier(.4,0,.2,1)，不是 fade</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-anim">动画</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop anim" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">磁性按钮：鼠标靠近 Nav「上传作品」按钮时，按钮向鼠标方向轻微移动（≤ 8px）</div>
+          <div class="item-sub">离开后弹回原位，不应有过大位移或跳动感</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-anim">动画</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop anim" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">自定义光标：双环光标（小实心圆 + 大透明圆），大圆跟随有惯性延迟</div>
+          <div class="item-sub">悬停可点击元素时，小圆放大 2.8 倍，大圆变红色（#d42b2b）</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-anim">动画</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop anim" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">分类栏 hover 展开：悬停某列扩展到 flex: 2.4，其他列收缩，letter-spacing 从 4 → 7</div>
+          <div class="item-sub">展开时右上角出现 ↗ 箭头，离开后恢复</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-anim">动画</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop anim" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">上传区「+」图标：hover 时 rotate(45deg)，变为「×」，边框和颜色变金黄 #f5c842</div>
+          <div class="item-sub">transition: all 0.42s cubic-bezier(.4,0,.2,1)</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-anim">动画</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="desktop anim" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">页面滚动时各模块依次淡入上浮（IntersectionObserver），不是全部同时出现</div>
+          <div class="item-sub">opacity 0→1，translateY 30px→0，transition 0.65s</div>
+          <div><span class="item-tag tag-desktop">桌面</span><span class="item-tag tag-anim">动画</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" data-section="mobile">
+    <div class="section-header">
+      <div class="section-title">05  移动端适配</div>
+      <div class="section-count" id="count-mobile"></div>
+    </div>
+    <div class="check-list" id="list-mobile">
+      <div class="check-item" data-tags="mobile critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">Hero 区在 ≤768px 时变为单列：文字区在上，胶卷区在下（高度 52vw）</div>
+          <div class="item-sub">用 Chrome DevTools 切换到 iPhone 15 Pro 验证</div>
+          <div><span class="item-tag tag-mobile">移动</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="mobile critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">Nav 链接在移动端隐藏（.nav-desktop display:none），只保留 Logo 和「上传作品」按钮</div>
+          <div class="item-sub">不应出现文字被压缩换行的导航栏</div>
+          <div><span class="item-tag tag-mobile">移动</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="mobile" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">情绪版可以手指横向滑动，触感流畅（-webkit-overflow-scrolling: touch）</div>
+          <div class="item-sub">卡片不应被截断，最后一张卡片右侧应有留白</div>
+          <div><span class="item-tag tag-mobile">移动</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="mobile" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">移动端卡片 hover 效果转为「常驻显示」（底部信息不隐藏），无需悬停触发</div>
+          <div class="item-sub">移动端无鼠标，信息应直接可见</div>
+          <div><span class="item-tag tag-mobile">移动</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="mobile" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">暗室网格在移动端变为 2 列：span2 格占满第一行，其余 4 格 2×2 排列</div>
+          <div class="item-sub">不应出现横向溢出或格子重叠</div>
+          <div><span class="item-tag tag-mobile">移动</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="mobile" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">页面无横向滚动条（overflow-x: hidden），任何元素不超出屏幕宽度</div>
+          <div class="item-sub">在 320px（iPhone SE）宽度下也不应出现横向溢出</div>
+          <div><span class="item-tag tag-mobile">移动</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section" data-section="perf">
+    <div class="section-header">
+      <div class="section-title">06  性能 &amp; 加载</div>
+      <div class="section-count" id="count-perf"></div>
+    </div>
+    <div class="check-list" id="list-perf">
+      <div class="check-item" data-tags="perf critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">Lighthouse Performance 分数 ≥ 85（桌面）/ ≥ 75（移动端）</div>
+          <div class="item-sub">DevTools → Lighthouse → 运行分析，截图留档</div>
+          <div><span class="item-tag tag-perf">性能</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="perf critical" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">LCP（最大内容绘制）&lt; 2.5s（在 4G 模拟网络下）</div>
+          <div class="item-sub">DevTools → Performance → 录制，查看 LCP 标记时间</div>
+          <div><span class="item-tag tag-perf">性能</span><span class="item-tag tag-critical">关键</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="perf" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">图片全部使用 WebP 格式，Network 面板无 jpeg/png 图片请求（除 favicon）</div>
+          <div class="item-sub">Next.js Image 组件自动转换，确认 Accept 头和响应 Content-Type</div>
+          <div><span class="item-tag tag-perf">性能</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+      <div class="check-item" data-tags="perf" onclick="toggleItem(this)">
+        <div class="check-box"><div class="box">✓</div></div>
+        <div class="item-body">
+          <div class="item-text">无 console.error / console.warn（字体加载失败、CORS 错误等）</div>
+          <div class="item-sub">打开 Console 面板，过滤 Error 和 Warning，应为空</div>
+          <div><span class="item-tag tag-perf">性能</span></div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-pass" onclick="setStatus(event,this,'done')">✓ 通过</button>
+          <button class="btn-fail" onclick="setStatus(event,this,'fail')">✕ 失败</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary" id="summary">
+    <div class="sum-item">
+      <div class="sum-num" id="sumTotal">0</div>
+      <div class="sum-label">总检查项</div>
+    </div>
+    <div class="sum-item">
+      <div class="sum-num green" id="sumPass">0</div>
+      <div class="sum-label">通过</div>
+    </div>
+    <div class="sum-item">
+      <div class="sum-num red" id="sumFail">0</div>
+      <div class="sum-label">失败</div>
+    </div>
+    <div class="sum-item">
+      <div class="sum-num yellow" id="sumPending">0</div>
+      <div class="sum-label">待检查</div>
+    </div>
+    <div class="verdict" style="grid-column:1/-1">
+      <div class="verdict-text" id="verdictText">— 尚未开始验收 —</div>
+    </div>
+  </div>
+
+  <div class="reset-all">
+    <button onclick="resetAll()">↺ 重置全部检查项</button>
+  </div>
+
+</div>
+
+<script>
+// State
+const state = {};
+
+function getItems() {
+  return document.querySelectorAll('.check-item');
+}
+
+function updateProgress() {
+  const items = getItems();
+  const total = items.length;
+  let pass = 0, fail = 0;
+  items.forEach(item => {
+    if (item.classList.contains('done')) pass++;
+    if (item.classList.contains('fail')) fail++;
+  });
+  const pending = total - pass - fail;
+  const pct = total > 0 ? Math.round((pass + fail) / total * 100) : 0;
+
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${pass + fail} / ${total} 项已检查  ·  ${pass} 通过  ·  ${fail} 失败`;
+
+  document.getElementById('sumTotal').textContent = total;
+  document.getElementById('sumPass').textContent = pass;
+  document.getElementById('sumFail').textContent = fail;
+  document.getElementById('sumPending').textContent = pending;
+
+  const vt = document.getElementById('verdictText');
+  if (fail > 0) {
+    vt.textContent = `⚠  有 ${fail} 项未通过，不可发布`;
+    vt.style.color = '#f87171';
+  } else if (pending > 0) {
+    vt.textContent = `${pending} 项待检查`;
+    vt.style.color = '#f5c842';
+  } else if (pass === total && total > 0) {
+    vt.textContent = '✓  全部通过，可以发布 🎉';
+    vt.style.color = '#4ade80';
+  } else {
+    vt.textContent = '— 尚未开始验收 —';
+    vt.style.color = 'rgba(242,237,228,.4)';
+  }
+
+  // section counts
+  document.querySelectorAll('.section').forEach(sec => {
+    const id = sec.dataset.section;
+    const secItems = sec.querySelectorAll('.check-item');
+    const secPass = sec.querySelectorAll('.check-item.done').length;
+    const secFail = sec.querySelectorAll('.check-item.fail').length;
+    const el = document.getElementById('count-' + id);
+    if (el) el.textContent = `${secPass}/${secItems.length} 通过${secFail > 0 ? '  ·  ' + secFail + ' 失败' : ''}`;
+  });
+
+  // show fail filter if there are failures
+  document.getElementById('failFilterBtn').style.display = fail > 0 ? '' : 'none';
+}
+
+function setStatus(e, btn, status) {
+  e.stopPropagation();
+  const item = btn.closest('.check-item');
+  item.classList.remove('done', 'fail');
+  if (status === 'done') item.classList.add('done');
+  if (status === 'fail') item.classList.add('fail');
+  item.querySelector('.box').textContent = status === 'done' ? '✓' : status === 'fail' ? '✕' : '○';
+  updateProgress();
+}
+
+function toggleItem(item) {
+  // tap to toggle on mobile
+  if (window.innerWidth <= 640) {
+    if (item.classList.contains('done')) {
+      item.classList.remove('done');
+      item.classList.add('fail');
+      item.querySelector('.box').textContent = '✕';
+    } else if (item.classList.contains('fail')) {
+      item.classList.remove('fail');
+      item.querySelector('.box').textContent = '○';
+    } else {
+      item.classList.add('done');
+      item.querySelector('.box').textContent = '✓';
+    }
+    updateProgress();
+  }
+}
+
+function filterItems(type) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  document.querySelectorAll('.check-item').forEach(item => {
+    if (type === 'all') {
+      item.style.display = '';
+    } else if (type === 'fail') {
+      item.style.display = item.classList.contains('fail') ? '' : 'none';
+    } else {
+      const tags = item.dataset.tags || '';
+      item.style.display = tags.includes(type) ? '' : 'none';
+    }
+  });
+
+  document.querySelectorAll('.section').forEach(sec => {
+    const visible = [...sec.querySelectorAll('.check-item')].some(i => i.style.display !== 'none');
+    sec.style.display = visible ? '' : 'none';
+  });
+}
+
+function resetAll() {
+  if (!confirm('确定重置所有检查项？')) return;
+  document.querySelectorAll('.check-item').forEach(item => {
+    item.classList.remove('done', 'fail');
+    item.querySelector('.box').textContent = '✓';
+    item.style.display = '';
+  });
+  document.querySelectorAll('.section').forEach(s => s.style.display = '');
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.filter-btn').classList.add('active');
+  updateProgress();
+}
+
+// Init
+updateProgress();
+</script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-body: var(--font-geist-sans), "PingFang SC", "Hiragino Sans GB",
+    "Noto Sans CJK SC", "Microsoft YaHei UI", sans-serif;
+  --font-display: "Source Han Serif SC", "Noto Serif SC", "Songti SC",
+    "STSong", "Iowan Old Style", "Baskerville", Georgia, serif;
+  --font-mono: var(--font-geist-mono), "SFMono-Regular", "JetBrains Mono",
+    monospace;
+  --color-ink: #0a0804;
+  --color-paper: #f2ede4;
+  --color-paper-2: #e8e0d2;
+  --color-red: #d42b2b;
+  --color-gold: #f5c842;
+  --color-muted: #8a8070;
+  --border-frame: 1.5px solid #0a0804;
+  --dur-film: 550ms;
+  --dur-card: 700ms;
+  --dur-info: 420ms;
+  --dur-hover: 200ms;
+  --ease-film: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-paper);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 14%, rgba(245, 200, 66, 0.12), transparent 22%),
+    radial-gradient(circle at 88% 16%, rgba(212, 43, 43, 0.06), transparent 24%),
+    linear-gradient(180deg, #f7f3eb 0%, #f2ede4 38%, #ece3d7 100%);
+  color: var(--color-ink);
+  font-feature-settings: "kern" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.038;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 180px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(212, 43, 43, 0.72);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--color-red);
+  color: var(--color-paper);
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .text-outline {
+    -webkit-text-stroke: 1.5px var(--color-ink);
+    color: transparent;
+  }
+
+  .ticker-track {
+    animation: ticker 28s linear infinite;
+  }
+
+  .ticker-track:hover,
+  .group:hover .ticker-track {
+    animation-play-state: paused;
+  }
+
+  .live-dot {
+    animation: blink 1.4s ease infinite;
+  }
+
+  .drag-arrow {
+    animation: nudge 2s ease infinite;
+  }
+
+  .fade-up {
+    animation: fade-up 0.7s ease both;
+  }
+}
+
+.is-dragging {
+  cursor: grabbing !important;
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.2;
+    transform: scale(0.82);
+  }
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 胶卷格子呼吸动画 */
+@keyframes cell-breathe {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(0.62) saturate(0.75);
+  }
+  50% {
+    transform: scale(1.1);
+    filter: brightness(0.84) saturate(1.05) hue-rotate(8deg);
+  }
+}
+
+/* 播放模式的主角动画 */
+@keyframes featured-breathe {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(0.72) saturate(0.88);
+  }
+  50% {
+    transform: scale(1.14);
+    filter: brightness(0.92) saturate(1.12) hue-rotate(14deg);
+  }
+}
+
+.cell-breathe {
+  animation: cell-breathe 7s ease-in-out infinite;
+}
+
+.cell-breathe-paused {
+  animation: cell-breathe 7s ease-in-out infinite;
+  animation-play-state: paused;
+}
+
+.featured-breathe {
+  animation: featured-breathe 5s ease-in-out infinite;
+}
+
+.featured-breathe-paused {
+  animation: featured-breathe 5s ease-in-out infinite;
+  animation-play-state: paused;
+}
+
+/* CRT 扫描线 */
+.scanlines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
