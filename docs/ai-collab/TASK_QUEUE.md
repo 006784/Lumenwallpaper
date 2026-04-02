@@ -26,8 +26,10 @@ _（暂无）_
 - **前置**: 本地 `pnpm build && pnpm start` 正常
 
 ### TASK-004 · Storybook 接入
-- **状态**: 📋 backlog
+- **状态**: ✅ claude done → 🔜 codex pending
 - **内容**: 按 `FRAME-视觉一致性保障方案.md` 第 2 节，为 10 个核心组件建 Story
+- **Claude 完成**: 分支 `claude/feat-storybook` — 安装 Storybook 10 (`@storybook/nextjs-vite`)，已建 10 个组件 Story：`FrameButton`、`SectionHeading`、`Reveal`、`TickerStrip`、`FilmCell`、`MoodCard`、`DarkroomCard`、`WallpaperGridCard`、`WallpaperVideoPlayer`、`CategoryBlock`；已含 `@chromatic-com/storybook` addon
+- **Codex 待做**: 接入 Chromatic CI（`.github/workflows/chromatic.yml`），配置 `CHROMATIC_PROJECT_TOKEN` secret
 - **负责**: Claude Code（UI 组件） + Codex（接入 Chromatic CI）
 
 ### TASK-005 · 创作者详情页 `/creator/[username]`
