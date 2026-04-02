@@ -1,10 +1,17 @@
 import Link from "next/link";
 
 import { Reveal } from "@/components/ui/reveal";
-import { editorialFeature, editorialItems } from "@/lib/data/home";
 import { GRADIENTS } from "@/lib/gradients";
+import type { EditorialFeature, EditorialItem } from "@/types/home";
 
-export function EditorialSection() {
+type EditorialSectionProps = {
+  feature: EditorialFeature;
+  items: EditorialItem[];
+};
+
+export function EditorialSection({ feature, items }: EditorialSectionProps) {
+  const editorialFeature = feature;
+  const editorialItems = items;
   return (
     <section className="border-b-frame border-ink">
       <Reveal className="md:grid md:grid-cols-[1.2fr_1fr]" y={30} duration={0.7}>

@@ -1,9 +1,14 @@
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { DarkroomCard } from "@/components/wallpaper/darkroom-card";
-import { darkroomItems } from "@/lib/data/home";
+import type { DarkroomItem } from "@/types/home";
 
-export function DarkroomSection() {
+type DarkroomSectionProps = {
+  items: DarkroomItem[];
+};
+
+export function DarkroomSection({ items }: DarkroomSectionProps) {
+  const darkroomItems = items;
   return (
     <section className="border-b border-paper/10 bg-ink px-4 py-14 md:px-10 md:py-section">
       <Reveal className="mb-10 text-paper">
