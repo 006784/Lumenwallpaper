@@ -160,6 +160,7 @@ export function wallpaperToMoodCard(
     name: wallpaper.title,
     meta: getWallpaperMeta(wallpaper),
     href: `/wallpaper/${wallpaper.slug}`,
+    aiTags: wallpaper.aiTags.slice(0, 3),
   };
 }
 
@@ -201,5 +202,6 @@ export function wallpaperToDarkroomItem(
     href: `/wallpaper/${wallpaper.slug}`,
     badge: options?.featured ? "本周最佳" : undefined,
     featured: options?.featured ?? false,
+    aiTags: wallpaper.aiTags.slice(0, 3),
   };
 }

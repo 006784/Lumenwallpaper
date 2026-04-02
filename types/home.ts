@@ -48,6 +48,7 @@ export interface MoodCardData {
   name: string;
   meta: string;
   href: string;
+  aiTags?: string[];
 }
 
 export interface EditorialFeature {
@@ -80,4 +81,5 @@ export interface DarkroomItem {
   href: string;
   badge?: string;
   featured?: boolean;
+  aiTags?: string[];
 }

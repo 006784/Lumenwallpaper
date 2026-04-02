@@ -47,7 +47,7 @@ _（暂无）_
 ### TASK-007 · AI 识图标签在卡片上展示
 - **状态**: ✅ codex done → 🔜 claude pending
 - **内容**: MoodCard / DarkroomCard 上展示 AI 生成的标签
-- **Codex 完成**: `wallpapers.ai_tags` 在数据库层是 `text[]`，在 API / 类型层映射为 `Wallpaper.aiTags: string[]`；公开接口 `/api/wallpapers` 已直接返回 `aiTags`
+- **Codex 完成**: `wallpapers.ai_tags` 在数据库层是 `text[]`，在 API / 类型层映射为 `Wallpaper.aiTags: string[]`；公开接口 `/api/wallpapers` 已直接返回 `aiTags`；共享类型 `types/home.ts` 已补 `MoodCardData.aiTags?` / `DarkroomItem.aiTags?`，映射层会传 `wallpaper.aiTags.slice(0, 3)`
 - **Claude 后**: 卡片 UI 加标签展示
 
 ---
