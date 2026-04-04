@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { DownloadHistoryList } from "@/components/library/download-history-list";
 import { NotificationList } from "@/components/library/notification-list";
 import { PagePlaceholder } from "@/components/ui/page-placeholder";
+import { Reveal } from "@/components/ui/reveal";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
 import { getCurrentUser, isAuthConfigured } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase";
@@ -63,33 +64,35 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(245,200,66,0.16),transparent_18%),radial-gradient(circle_at_84%_20%,rgba(212,43,43,0.06),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.16),transparent_42%)]" />
 
       <div className="relative mx-auto max-w-7xl">
-        <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
-          Library
-        </p>
-        <h1 className="max-w-4xl font-display text-[clamp(2.5rem,7vw,5rem)] leading-[0.94] tracking-[-0.05em]">
-          你的收藏与下载记录
-        </h1>
-        <p className="mt-6 max-w-3xl text-sm leading-7 text-muted md:text-base">
-          这里汇总了当前账户收藏过的壁纸和最近的下载轨迹。后续推荐、继续浏览和跨设备同步，都会从这里长出来。
-        </p>
+        <Reveal y={18} duration={0.55}>
+          <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
+            Library
+          </p>
+          <h1 className="max-w-4xl font-display text-[clamp(2.5rem,7vw,5rem)] leading-[0.94] tracking-[-0.05em]">
+            你的收藏与下载记录
+          </h1>
+          <p className="mt-6 max-w-3xl text-sm leading-7 text-muted md:text-base">
+            这里汇总了当前账户收藏过的壁纸和最近的下载轨迹。后续推荐、继续浏览和跨设备同步，都会从这里长出来。
+          </p>
 
-        <div className="mt-8 flex flex-wrap gap-3 text-[10px] uppercase tracking-[0.24em] text-muted">
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
-            @{currentUser.username}
-          </span>
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
-            收藏 {library.favorites.length}
-          </span>
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
-            下载记录 {library.downloadHistory.length}
-          </span>
-          <span className="border border-gold/20 bg-gold/5 px-3 py-2 text-gold">
-            未读通知 {library.unreadNotificationsCount}
-          </span>
-          <span className="border border-red/20 bg-red/5 px-3 py-2 text-red">
-            {library.collection?.name ?? "个人库"}
-          </span>
-        </div>
+          <div className="mt-8 flex flex-wrap gap-3 text-[10px] uppercase tracking-[0.24em] text-muted">
+            <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+              @{currentUser.username}
+            </span>
+            <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+              收藏 {library.favorites.length}
+            </span>
+            <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+              下载记录 {library.downloadHistory.length}
+            </span>
+            <span className="border border-gold/20 bg-gold/5 px-3 py-2 text-gold">
+              未读通知 {library.unreadNotificationsCount}
+            </span>
+            <span className="border border-red/20 bg-red/5 px-3 py-2 text-red">
+              {library.collection?.name ?? "个人库"}
+            </span>
+          </div>
+        </Reveal>
 
         <div className="mt-14 grid gap-14">
           <section>
@@ -167,7 +170,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
               </div>
             ) : (
               <div className="mt-8 border-frame border-ink bg-paper/65 px-6 py-12 text-sm leading-7 text-muted">
-                你还没有收藏任何壁纸。去任意详情页点一下“加入收藏”，这里就会立刻出现。
+                你还没有收藏任何壁纸。去任意详情页点一下&ldquo;加入收藏&rdquo;，这里就会立刻出现。
               </div>
             )}
           </section>

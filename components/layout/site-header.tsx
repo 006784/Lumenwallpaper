@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ScrollAwareHeader } from "@/components/layout/scroll-aware-header";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { FrameButton } from "@/components/ui/frame-button";
 import { getCurrentUser, isEditorUser } from "@/lib/auth";
 import { navLinks } from "@/lib/data/home";
@@ -20,7 +21,7 @@ export async function SiteHeader() {
           className="group inline-flex items-end gap-3 leading-none"
           href="/"
         >
-          <span className="font-body text-[28px] font-semibold uppercase tracking-[0.24em] md:text-[30px]">
+          <span className="font-body text-[28px] font-semibold tracking-[0.08em] md:text-[30px]">
             Lumen
           </span>
           <span className="mb-[5px] hidden font-mono text-[9px] uppercase tracking-[0.28em] text-muted/80 transition group-hover:text-ink lg:inline-flex">
@@ -98,6 +99,12 @@ export async function SiteHeader() {
           <FrameButton className="px-3 sm:px-4" href="/creator/studio">
             上传作品
           </FrameButton>
+          <MobileNav
+            currentUsername={currentUser?.username ?? null}
+            isEditor={isEditor}
+            navLinks={navLinks}
+            unreadCount={unreadNotificationsCount}
+          />
         </div>
       </div>
     </ScrollAwareHeader>

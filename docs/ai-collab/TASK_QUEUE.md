@@ -6,14 +6,52 @@
 
 ## 进行中
 
-_（暂无）_
+### TASK-011 · OpenClaw 管理 API 扩展
+- **状态**: ✅ codex done
+- **内容**: 为 OpenClaw 补齐可导入的工具清单，以及重复检测、批量重命名、批量审核、下载接口
+- **Codex 完成**:
+  - 新增 `GET /api/openclaw/tools`，返回 function-tools 风格工具清单
+  - 新增 `GET /api/openclaw/tools/agents`，返回 OpenAI Agents 风格 HTTP 工具清单
+  - 新增 `GET /api/openclaw/tools/mcp`，返回 MCP 风格 HTTP 工具目录
+  - 新增 `GET /api/openclaw/wallpapers/duplicates`
+  - 新增 `POST /api/openclaw/wallpapers/duplicates/cleanup`，支持默认保留最新一张的重复清理与 dry-run
+  - 新增 `POST /api/openclaw/wallpapers/rename`
+  - 新增 `PATCH /api/openclaw/wallpapers/batch`
+  - 新增 `GET /api/openclaw/wallpapers/[id]/download`
+  - 现有 `GET/POST /api/openclaw/wallpapers/import-r2` 已支持 `objects[]` 直导
+  - OpenClaw 壁纸返回补充 `displayTitle`
+  - 文档已同步到 `docs/openclaw-admin-api.md`
+
+### TASK-010 · `byteify.icu` / Cloudflare 资源域准备
+- **状态**: ✅ codex done
+- **内容**: 为 `next.config.mjs`、中间件和部署文档补齐 `byteify.icu` 主站 + `img.byteify.icu` 资源域的准备工作
+- **Codex 完成**:
+  - `next.config.mjs` 不再硬编码旧图片域名，改为根据 `CLOUDFLARE_R2_PUBLIC_URL` 自动放行远程图片域名
+  - `middleware.ts` 已补 `www.byteify.icu -> byteify.icu` 的 308 规范化跳转
+  - `.env.example`、`README.md`、`docs/production-runbook.md` 已切到 `byteify.icu / img.byteify.icu`
+  - 已新增 `docs/cloudflare-byteify-setup.md`
+- **剩余人工步骤**:
+  - 在 Cloudflare 里给 R2 bucket 绑定 `img.byteify.icu`
+  - 把生产环境 `CLOUDFLARE_R2_PUBLIC_URL` 更新为 `https://img.byteify.icu`
+  - 视实测情况决定是否打开 `NEXT_DISABLE_IMAGE_OPTIMIZATION=true`
 
 ---
 
 ## 待处理
 
+### TASK-012 · Explore 分页支持
+- **状态**: 🔜 codex pending
+- **背景**: 当前 explore 页固定拉 72 条，DB 已有 321 条已发布壁纸，用户无法浏览全部内容
+- **Codex 待做**:
+  - 在 `WallpaperListOptions`（`types/wallpaper.ts`）加 `offset?: number` 字段
+  - `listPublishedWallpapers`（`lib/wallpapers.ts`）支持 `OFFSET $offset`
+  - `getCachedPublishedWallpapers`（`lib/public-wallpaper-cache.ts`）把 `offset` 纳入 cache key
+  - 同步更新 `GET /api/wallpapers` 接口支持 `?offset=N` 查询参数（可选，Claude 端用 Server Component 直调 lib）
+- **期望返回**: 同现有结构，额外附带 `{ total: number }` 供 Claude 渲染"共 N 件"和分页控件
+- **Claude 后**: 在 `components/wallpaper/explore-catalog.tsx` 加 URL param `page` 驱动的分页控件（上一页/下一页 + 当前页码），每页 24 条
+
 ### TASK-002 · 首页静态数据迁真实 API
-- **状态**: ✅ codex done → 🔜 claude pending
+- **状态**: ✅ claude done
 - **Codex 完成**: 已新增首页聚合数据层 `lib/home.ts` 和接口 `GET /api/home`
 - **返回结构**: `HomePageSnapshot`，定义在 `types/home-api.ts`
 - **字段**: `{ moodCards, editorialFeature, editorialItems, darkroomItems }`
@@ -33,7 +71,7 @@ _（暂无）_
 - **负责**: Claude Code（UI 组件） + Codex（接入 Chromatic CI）
 
 ### TASK-005 · 创作者详情页 `/creator/[username]`
-- **状态**: ✅ codex done → ⚙️ claude wip
+- **状态**: ✅ claude done
 - **内容**: 展示创作者信息、作品网格
 - **Codex 完成**: `app/api/creator/[username]/route.ts`、`lib/creators.ts`、`types/creator-api.ts`、`getCachedCreatorPageSnapshot()` 已补齐
 - **返回结构**: `{ creator, wallpapers, stats }`
@@ -41,16 +79,51 @@ _（暂无）_
 - **分支**: `claude/feat-creator-page`
 
 ### TASK-006 · 壁纸详情页动态壁纸支持
-- **状态**: ✅ codex done → 🔜 claude pending
+- **状态**: ✅ claude done
 - **内容**: 详情页支持视频壁纸预览（`videoUrl` 字段已加入 `FilmCellData`，待推广到 `wallpapers` 表）
 - **Codex 完成**: 已新增迁移 `202604010008_video_wallpapers.sql`，并将 `videoUrl` 接入 `types/database.ts`、`types/wallpaper.ts`、创建/更新壁纸 schema 与 API 返回
 - **Claude 后**: 详情页视频播放器 UI
 
 ### TASK-007 · AI 识图标签在卡片上展示
-- **状态**: ✅ codex done → 🔜 claude pending
+- **状态**: ✅ claude done
 - **内容**: MoodCard / DarkroomCard 上展示 AI 生成的标签
 - **Codex 完成**: `wallpapers.ai_tags` 在数据库层是 `text[]`，在 API / 类型层映射为 `Wallpaper.aiTags: string[]`；公开接口 `/api/wallpapers` 已直接返回 `aiTags`；共享类型 `types/home.ts` 已补 `MoodCardData.aiTags?` / `DarkroomItem.aiTags?`，映射层会传 `wallpaper.aiTags.slice(0, 3)`
 - **Claude 后**: 卡片 UI 加标签展示
+
+### TASK-008 · 详情页下载体验修复
+- **状态**: ✅ claude done
+- **内容**: 下载按钮不再跳到图片页，并在按钮附近显示下载进度
+- **Codex 完成**:
+  - `GET /api/wallpapers/[id]/download` 已改成同域附件流，不再 307 跳到 R2 公网 URL
+  - 响应头会返回 `Content-Disposition`、`Content-Length`、`X-Wallpaper-Downloads-Count`、`X-Wallpaper-Download-Variant`
+  - 已新增共享 hook `hooks/use-wallpaper-download.ts`
+  - 已新增共享类型 `WallpaperDownloadProgressSnapshot` / `WallpaperDownloadStatus`
+- **Claude 待做**:
+  - 在 `components/wallpaper/wallpaper-detail-sidebar.tsx` 用 `useWallpaperDownload({ identifier })` 替换当前 `<a target=\"_blank\">`
+  - 点击下载后调用 `download()`
+  - 用 `progress.percent`、`progress.bytesReceived`、`progress.totalBytes` 渲染下载中状态
+  - 完成后用 hook 返回的 `downloadsCount` 同步 UI 数字
+
+### TASK-009 · 上传页改成专门上传界面
+- **状态**: ✅ claude done
+- **内容**: 现在上传页虽然支持点击选择文件，但视觉上仍像“拖拽区优先”，用户反馈“只有拖拽太不好了”。需要改成明确的专门上传界面，让“选择文件”成为主操作，拖拽只是辅助能力。
+- **现状**:
+  - 页面入口: `app/creator/studio/page.tsx`
+  - 表单组件: `components/creator/upload-studio-form.tsx`
+  - 后端接口已可用: `POST /api/upload/presign`、`POST /api/wallpapers`
+  - 当前后端链路已支持: presign、R2 直传、元数据写入、授权确认、AI 标签补全
+- **Claude 待做**:
+  - 把上传页改成“上传工作台”式布局，而不是大块拖拽框
+  - 增加明确可见的主按钮文案，例如 `选择图片` / `上传作品`
+  - 文件选择后显示更明显的预览区，至少包含缩略图、文件名、尺寸/体积、替换按钮
+  - 保留拖拽上传能力，但降级成辅助提示，不要再作为主入口文案
+  - 把元数据表单和上传状态区做成更清晰的两栏或分步结构，避免用户觉得“只是在拖一个文件”
+  - 如果合适，可加入上传队列感或步骤感：`选择文件 → 填写信息 → 确认授权 → 发布`
+  - 保持现有接口契约不变，直接复用当前提交逻辑
+- **Codex 备注**:
+  - 当前后端不需要新增 API
+  - 如果 UI 侧需要展示上传阶段文案，可直接复用已有状态：`idle | submitting | success | error`
+  - 如果需要更细的进度百分比，Codex 后续可以补共享 hook / 请求进度契约
 
 ---
 

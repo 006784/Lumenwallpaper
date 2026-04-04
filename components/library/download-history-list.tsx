@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import {
+  getWallpaperDisplayTitle,
   getWallpaperGradientKey,
   getWallpaperMeta,
   getWallpaperPreviewUrl,
@@ -24,6 +25,7 @@ export function DownloadHistoryList({ items }: DownloadHistoryListProps) {
     <div className="grid gap-4">
       {items.map((item) => {
         const previewUrl = getWallpaperPreviewUrl(item.wallpaper);
+        const displayTitle = getWallpaperDisplayTitle(item.wallpaper);
         const artworkStyle = previewUrl
           ? {
               backgroundImage: `linear-gradient(to top, rgba(10,8,4,0.08), rgba(10,8,4,0.08)), url("${previewUrl}")`,
@@ -37,11 +39,11 @@ export function DownloadHistoryList({ items }: DownloadHistoryListProps) {
         return (
           <Link
             key={item.id}
-            className="group grid gap-4 border-frame border-ink bg-paper/75 p-4 transition duration-card hover:-translate-y-0.5 hover:shadow-paper md:grid-cols-[150px_1fr]"
+            className="group grid gap-4 border-frame border-ink bg-paper/75 p-4 transition duration-card hover:-translate-y-0.5 hover:shadow-paper md:grid-cols-[120px_1fr]"
             href={`/wallpaper/${item.wallpaper.slug}`}
           >
             <div
-              className="aspect-[4/3] border-frame border-ink"
+              className="aspect-[3/4] border-frame border-ink"
               style={artworkStyle}
             />
 
@@ -49,7 +51,7 @@ export function DownloadHistoryList({ items }: DownloadHistoryListProps) {
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="font-display text-[28px] leading-none italic text-ink">
-                    {item.wallpaper.title}
+                    {displayTitle}
                   </p>
                   <span className="border border-ink/10 bg-paper px-3 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
                     {item.variant ?? "original"}

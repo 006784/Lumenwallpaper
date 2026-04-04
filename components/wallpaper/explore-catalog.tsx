@@ -7,6 +7,7 @@ import {
   getExploreCategory,
   getExploreSort,
   isFeaturedFilterEnabled,
+  isMotionFilterEnabled,
 } from "@/lib/explore";
 import { getCachedPublishedWallpapers } from "@/lib/public-wallpaper-cache";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
@@ -15,6 +16,7 @@ type ExploreCatalogProps = {
   categorySlug?: string;
   searchParams?: {
     featured?: string;
+    motion?: string;
     q?: string;
     sort?: string;
     tag?: string;
@@ -25,6 +27,7 @@ function buildExploreHref(
   categorySlug: string | undefined,
   nextValues: {
     featured?: boolean;
+    motion?: boolean;
     q?: string;
     sort?: string;
     tag?: string;
@@ -48,6 +51,10 @@ function buildExploreHref(
     params.set("featured", "true");
   }
 
+  if (nextValues.motion) {
+    params.set("motion", "true");
+  }
+
   const pathname = categorySlug ? `/explore/${categorySlug}` : "/explore";
   const queryString = params.toString();
 
@@ -66,29 +73,31 @@ export async function ExploreCatalog({
       : undefined;
   const sort = getExploreSort(searchParams?.sort);
   const featuredOnly = isFeaturedFilterEnabled(searchParams?.featured);
+  const motionOnly = isMotionFilterEnabled(searchParams?.motion);
   const wallpapers = await getCachedPublishedWallpapers({
     limit: 72,
     search: query || undefined,
     tag,
     category: category?.slug,
     featured: featuredOnly ? true : undefined,
+    motion: motionOnly ? true : undefined,
     sort,
   });
 
   const heading = category ? category.label : "探索整本目录";
   const description = category
     ? category.description
-    : "按关键词、标签、分类和热度筛选壁纸目录。结果优先读取真实数据，并兼容 AI 标签与人工标签。";
+    : "按关键词、标签、分类、动态壁纸和热度筛选壁纸目录。结果优先读取真实数据，并兼容 AI 标签与人工标签。";
 
   return (
-    <section className="relative overflow-hidden border-b-frame border-ink px-4 py-16 md:px-10 md:py-24">
+    <section className="relative overflow-hidden border-b-frame border-ink px-5 py-14 sm:px-6 md:px-10 md:py-24">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_16%,rgba(245,200,66,0.12),transparent_18%),radial-gradient(circle_at_88%_14%,rgba(212,43,43,0.08),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.14),transparent_40%)]" />
 
       <div className="relative mx-auto max-w-7xl">
         <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
           Explore
         </p>
-        <div className="flex flex-col gap-6 border-b border-ink/10 pb-8 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-6 border-b border-ink/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-4xl">
             <h1 className="font-display text-[clamp(2.5rem,7vw,5rem)] leading-[0.94] tracking-[-0.05em]">
               {heading}
@@ -97,19 +106,20 @@ export async function ExploreCatalog({
               {description}
             </p>
           </div>
-          <div className="grid min-w-[220px] gap-2 border border-ink/10 bg-paper/70 px-4 py-4 text-[10px] uppercase tracking-[0.2em] text-muted">
+          <div className="grid gap-2 border border-ink/10 bg-paper/70 px-4 py-4 text-[10px] uppercase tracking-[0.2em] text-muted sm:max-w-[18rem]">
             <span>结果 {wallpapers.length}</span>
             <span>
               排序{" "}
               {EXPLORE_SORT_OPTIONS.find((item) => item.value === sort)?.label}
             </span>
             <span>{featuredOnly ? "仅看精选" : "全目录"}</span>
+            <span>{motionOnly ? "动态壁纸" : "静态与动态混合"}</span>
           </div>
         </div>
 
         <form
           action={category ? `/explore/${category.slug}` : "/explore"}
-          className="bg-paper/78 mt-10 grid gap-4 border-frame border-ink p-4 md:grid-cols-[1.2fr_0.8fr_auto]"
+          className="bg-paper/78 mt-8 grid gap-4 border-frame border-ink p-4 lg:grid-cols-[1.2fr_0.8fr_auto]"
           method="get"
         >
           <input
@@ -135,12 +145,42 @@ export async function ExploreCatalog({
           {featuredOnly ? (
             <input name="featured" type="hidden" value="true" />
           ) : null}
+          {motionOnly ? (
+            <input name="motion" type="hidden" value="true" />
+          ) : null}
           {sort !== DEFAULT_EXPLORE_SORT ? (
             <input name="sort" type="hidden" value={sort} />
           ) : null}
         </form>
 
-        <div className="mt-5 flex flex-wrap gap-2">
+        {/* 热门标签快选 */}
+        {!tag ? (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="shrink-0 text-[9px] uppercase tracking-[0.32em] text-muted/50">
+              热门标签
+            </span>
+            {[
+              "户外", "自然风景", "海边", "蓝天", "夏日",
+              "唯美", "清新", "人像", "城市", "极简",
+              "暗夜", "宇宙", "霓虹", "渐变", "像素",
+            ].map((t) => (
+              <Link
+                key={t}
+                className="border border-ink/10 bg-paper/50 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:border-ink hover:text-ink"
+                href={buildExploreHref(category?.slug, {
+                  tag: t,
+                  sort,
+                  featured: featuredOnly,
+                  motion: motionOnly,
+                })}
+              >
+                {t}
+              </Link>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="scrollbar-none mt-5 flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible">
           <Link
             className={
               category
@@ -152,6 +192,7 @@ export async function ExploreCatalog({
               tag,
               sort,
               featured: featuredOnly,
+              motion: motionOnly,
             })}
           >
             全部分类
@@ -172,6 +213,7 @@ export async function ExploreCatalog({
                   tag,
                   sort,
                   featured: featuredOnly,
+                  motion: motionOnly,
                 })}
               >
                 {item.label}
@@ -180,7 +222,7 @@ export async function ExploreCatalog({
           })}
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="scrollbar-none mt-4 flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible">
           {EXPLORE_SORT_OPTIONS.map((item) => {
             const isActive = item.value === sort;
 
@@ -197,6 +239,7 @@ export async function ExploreCatalog({
                   tag,
                   sort: item.value,
                   featured: featuredOnly,
+                  motion: motionOnly,
                 })}
                 title={item.description}
               >
@@ -204,6 +247,22 @@ export async function ExploreCatalog({
               </Link>
             );
           })}
+          <Link
+            className={
+              motionOnly
+                ? "border border-gold/20 bg-gold/10 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-gold"
+                : "border border-ink/10 bg-paper/60 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:border-ink hover:text-ink"
+            }
+            href={buildExploreHref(category?.slug, {
+              q: query || undefined,
+              tag,
+              sort,
+              featured: featuredOnly,
+              motion: !motionOnly,
+            })}
+          >
+            {motionOnly ? "Motion 开启" : "仅看 Motion"}
+          </Link>
           <Link
             className={
               featuredOnly
@@ -215,19 +274,25 @@ export async function ExploreCatalog({
               tag,
               sort,
               featured: !featuredOnly,
+              motion: motionOnly,
             })}
           >
             {featuredOnly ? "精选开启" : "仅看精选"}
           </Link>
         </div>
 
-        {(query || tag || category || featuredOnly) ? (
+        {(query || tag || category || featuredOnly || motionOnly) ? (
           <div className="mt-6 flex flex-wrap items-center gap-2">
             <span className="text-[9px] uppercase tracking-[0.3em] text-muted/60">当前筛选</span>
             {query ? (
               <Link
                 className="inline-flex items-center gap-2 border border-ink/20 bg-paper/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:border-red hover:text-red"
-                href={buildExploreHref(category?.slug, { tag, sort, featured: featuredOnly })}
+                href={buildExploreHref(category?.slug, {
+                  tag,
+                  sort,
+                  featured: featuredOnly,
+                  motion: motionOnly,
+                })}
                 title="清除关键词"
               >
                 {query}
@@ -237,7 +302,12 @@ export async function ExploreCatalog({
             {tag ? (
               <Link
                 className="inline-flex items-center gap-2 border border-ink/20 bg-paper/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:border-red hover:text-red"
-                href={buildExploreHref(category?.slug, { q: query || undefined, sort, featured: featuredOnly })}
+                href={buildExploreHref(category?.slug, {
+                  q: query || undefined,
+                  sort,
+                  featured: featuredOnly,
+                  motion: motionOnly,
+                })}
                 title="清除标签"
               >
                 #{tag}
@@ -247,7 +317,13 @@ export async function ExploreCatalog({
             {category ? (
               <Link
                 className="inline-flex items-center gap-2 border border-ink/20 bg-paper/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:border-red hover:text-red"
-                href={buildExploreHref(undefined, { q: query || undefined, tag, sort, featured: featuredOnly })}
+                href={buildExploreHref(undefined, {
+                  q: query || undefined,
+                  tag,
+                  sort,
+                  featured: featuredOnly,
+                  motion: motionOnly,
+                })}
                 title="清除分类"
               >
                 {category.label}
@@ -257,14 +333,36 @@ export async function ExploreCatalog({
             {featuredOnly ? (
               <Link
                 className="inline-flex items-center gap-2 border border-red/20 bg-red/5 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-red transition hover:bg-red/10"
-                href={buildExploreHref(category?.slug, { q: query || undefined, tag, sort, featured: false })}
+                href={buildExploreHref(category?.slug, {
+                  q: query || undefined,
+                  tag,
+                  sort,
+                  featured: false,
+                  motion: motionOnly,
+                })}
                 title="取消精选过滤"
               >
                 精选
                 <span aria-hidden className="text-[8px] opacity-50">✕</span>
               </Link>
             ) : null}
-            {(query || tag || category || featuredOnly) ? (
+            {motionOnly ? (
+              <Link
+                className="inline-flex items-center gap-2 border border-gold/20 bg-gold/5 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-gold transition hover:bg-gold/10"
+                href={buildExploreHref(category?.slug, {
+                  q: query || undefined,
+                  tag,
+                  sort,
+                  featured: featuredOnly,
+                  motion: false,
+                })}
+                title="取消动态壁纸过滤"
+              >
+                Motion
+                <span aria-hidden className="text-[8px] opacity-50">✕</span>
+              </Link>
+            ) : null}
+            {(query || tag || category || featuredOnly || motionOnly) ? (
               <Link
                 className="ml-1 text-[9px] uppercase tracking-[0.24em] text-muted/50 underline underline-offset-4 transition hover:text-red"
                 href={buildExploreHref(undefined, {})}
@@ -276,7 +374,7 @@ export async function ExploreCatalog({
         ) : null}
 
         {wallpapers.length > 0 ? (
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {wallpapers.map((wallpaper) => (
               <WallpaperGridCard key={wallpaper.id} wallpaper={wallpaper} />
             ))}
