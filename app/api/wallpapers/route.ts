@@ -19,6 +19,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get("limit");
+    const offset = searchParams.get("offset");
     const q = searchParams.get("q");
     const tag = searchParams.get("tag");
     const category = searchParams.get("category");
@@ -27,10 +28,15 @@ export async function GET(request: Request) {
     const motion = searchParams.get("motion");
 
     const parsedLimit = limit ? Number.parseInt(limit, 10) : undefined;
+    const parsedOffset = offset ? Number.parseInt(offset, 10) : undefined;
     const wallpapers = await getCachedPublishedWallpapers({
       limit:
         parsedLimit && Number.isFinite(parsedLimit) && parsedLimit > 0
           ? parsedLimit
+          : undefined,
+      offset:
+        parsedOffset && Number.isFinite(parsedOffset) && parsedOffset > 0
+          ? parsedOffset
           : undefined,
       search: q ?? undefined,
       tag: tag ?? undefined,

@@ -148,6 +148,7 @@ export interface WallpaperReport {
 
 export interface WallpaperListOptions {
   limit?: number;
+  offset?: number;
   search?: string;
   tag?: string;
   category?: string;

@@ -9,7 +9,10 @@ import {
   isFeaturedFilterEnabled,
   isMotionFilterEnabled,
 } from "@/lib/explore";
-import { getCachedPublishedWallpapers } from "@/lib/public-wallpaper-cache";
+import {
+  EXPLORE_PAGE_SIZE,
+  getCachedPublishedWallpapersPage,
+} from "@/lib/public-wallpaper-cache";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
 
 type ExploreCatalogProps = {
@@ -17,6 +20,7 @@ type ExploreCatalogProps = {
   searchParams?: {
     featured?: string;
     motion?: string;
+    page?: string;
     q?: string;
     sort?: string;
     tag?: string;
@@ -28,6 +32,7 @@ function buildExploreHref(
   nextValues: {
     featured?: boolean;
     motion?: boolean;
+    page?: number;
     q?: string;
     sort?: string;
     tag?: string;
@@ -55,6 +60,10 @@ function buildExploreHref(
     params.set("motion", "true");
   }
 
+  if (nextValues.page && nextValues.page > 1) {
+    params.set("page", String(nextValues.page));
+  }
+
   const pathname = categorySlug ? `/explore/${categorySlug}` : "/explore";
   const queryString = params.toString();
 
@@ -74,15 +83,19 @@ export async function ExploreCatalog({
   const sort = getExploreSort(searchParams?.sort);
   const featuredOnly = isFeaturedFilterEnabled(searchParams?.featured);
   const motionOnly = isMotionFilterEnabled(searchParams?.motion);
-  const wallpapers = await getCachedPublishedWallpapers({
-    limit: 72,
-    search: query || undefined,
-    tag,
-    category: category?.slug,
-    featured: featuredOnly ? true : undefined,
-    motion: motionOnly ? true : undefined,
-    sort,
-  });
+  const page = Math.max(1, Number.parseInt(searchParams?.page ?? "1", 10) || 1);
+
+  const { wallpapers, total, totalPages } = await getCachedPublishedWallpapersPage(
+    {
+      search: query || undefined,
+      tag,
+      category: category?.slug,
+      featured: featuredOnly ? true : undefined,
+      motion: motionOnly ? true : undefined,
+      sort,
+    },
+    page,
+  );
 
   const heading = category ? category.label : "探索整本目录";
   const description = category
@@ -107,7 +120,7 @@ export async function ExploreCatalog({
             </p>
           </div>
           <div className="grid gap-2 border border-ink/10 bg-paper/70 px-4 py-4 text-[10px] uppercase tracking-[0.2em] text-muted sm:max-w-[18rem]">
-            <span>结果 {wallpapers.length}</span>
+            <span>共 {total} 件 · 第 {page}/{totalPages} 页</span>
             <span>
               排序{" "}
               {EXPLORE_SORT_OPTIONS.find((item) => item.value === sort)?.label}
@@ -374,11 +387,79 @@ export async function ExploreCatalog({
         ) : null}
 
         {wallpapers.length > 0 ? (
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {wallpapers.map((wallpaper) => (
-              <WallpaperGridCard key={wallpaper.id} wallpaper={wallpaper} />
-            ))}
-          </div>
+          <>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {wallpapers.map((wallpaper) => (
+                <WallpaperGridCard key={wallpaper.id} wallpaper={wallpaper} />
+              ))}
+            </div>
+
+            {totalPages > 1 ? (
+              <div className="mt-12 flex items-center justify-between border-t border-ink/10 pt-8">
+                <Link
+                  aria-disabled={page <= 1}
+                  className={
+                    page <= 1
+                      ? "pointer-events-none border border-ink/10 px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/25"
+                      : "border-frame border-ink px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper"
+                  }
+                  href={buildExploreHref(category?.slug, {
+                    q: query || undefined, tag, sort,
+                    featured: featuredOnly, motion: motionOnly,
+                    page: page - 1,
+                  })}
+                >
+                  ← 上一页
+                </Link>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                    const pageNum = totalPages <= 7
+                      ? i + 1
+                      : page <= 4
+                        ? i + 1
+                        : page >= totalPages - 3
+                          ? totalPages - 6 + i
+                          : page - 3 + i;
+                    if (pageNum < 1 || pageNum > totalPages) return null;
+                    return (
+                      <Link
+                        key={pageNum}
+                        className={
+                          pageNum === page
+                            ? "flex h-9 w-9 items-center justify-center border-frame border-ink bg-ink font-mono text-[10px] text-paper"
+                            : "flex h-9 w-9 items-center justify-center border border-ink/10 font-mono text-[10px] text-muted transition hover:border-ink hover:text-ink"
+                        }
+                        href={buildExploreHref(category?.slug, {
+                          q: query || undefined, tag, sort,
+                          featured: featuredOnly, motion: motionOnly,
+                          page: pageNum,
+                        })}
+                      >
+                        {pageNum}
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                <Link
+                  aria-disabled={page >= totalPages}
+                  className={
+                    page >= totalPages
+                      ? "pointer-events-none border border-ink/10 px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/25"
+                      : "border-frame border-ink px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper"
+                  }
+                  href={buildExploreHref(category?.slug, {
+                    q: query || undefined, tag, sort,
+                    featured: featuredOnly, motion: motionOnly,
+                    page: page + 1,
+                  })}
+                >
+                  下一页 →
+                </Link>
+              </div>
+            ) : null}
+          </>
         ) : (
           <div className="mt-10 flex flex-col items-center gap-6 border-frame border-ink px-6 py-16 text-center">
             <span className="font-mono text-[40px] leading-none text-ink/10 select-none">[ ]</span>

@@ -1935,9 +1935,12 @@ export async function listWallpapers(options: WallpaperListOptions = {}) {
       },
     );
 
+    const fallbackOffset = options.offset ?? 0;
     return options.limit
-      ? filteredWallpapers.slice(0, options.limit)
-      : filteredWallpapers;
+      ? filteredWallpapers.slice(fallbackOffset, fallbackOffset + options.limit)
+      : fallbackOffset > 0
+        ? filteredWallpapers.slice(fallbackOffset)
+        : filteredWallpapers;
   }
 
   const client = createSupabaseAdminClient();
@@ -1984,7 +1987,11 @@ export async function listWallpapers(options: WallpaperListOptions = {}) {
     sort: options.sort,
   });
 
-  return options.limit ? wallpapers.slice(0, options.limit) : wallpapers;
+  const offset = options.offset ?? 0;
+  if (options.limit) {
+    return wallpapers.slice(offset, offset + options.limit);
+  }
+  return offset > 0 ? wallpapers.slice(offset) : wallpapers;
 }
 
 export async function listPublishedWallpapers(

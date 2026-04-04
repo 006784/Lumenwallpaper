@@ -19,6 +19,7 @@ type ExploreCategoryPageProps = {
   searchParams?: {
     featured?: string;
     motion?: string;
+    page?: string;
     q?: string;
     sort?: string;
     tag?: string;
