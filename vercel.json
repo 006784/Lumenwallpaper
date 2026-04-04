@@ -1,6 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
+  "functions": {
+    "app/api/wallpapers/backfill/route.ts": { "maxDuration": 300 },
+    "app/api/openclaw/wallpapers/backfill/route.ts": { "maxDuration": 300 },
+    "app/api/openclaw/wallpapers/import-r2/route.ts": { "maxDuration": 300 },
+    "app/api/wallpapers/import-r2/route.ts": { "maxDuration": 300 },
+    "app/api/cron/import-r2/route.ts": { "maxDuration": 300 }
+  },
   "crons": [
     {
       "path": "/api/cron/import-r2",

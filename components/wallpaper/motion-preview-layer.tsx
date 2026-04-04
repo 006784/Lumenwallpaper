@@ -81,7 +81,7 @@ export function MotionPreviewLayer({
         loop
         muted
         playsInline
-        preload="metadata"
+        preload="none"
         src={videoUrl}
         onCanPlay={() => {
           setIsReady(true);
