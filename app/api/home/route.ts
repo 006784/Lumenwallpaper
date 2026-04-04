@@ -16,7 +16,9 @@ export async function GET(request: Request) {
     logger.done("home.snapshot.loaded", {
       darkroomCount: snapshot.darkroomItems.length,
       editorialCount: snapshot.editorialItems.length,
+      iosCount: snapshot.iosWallpapers.length,
       moodCardCount: snapshot.moodCards.length,
+      motionRows: snapshot.heroFilmRows.length,
     });
 
     return jsonSuccess(snapshot, {

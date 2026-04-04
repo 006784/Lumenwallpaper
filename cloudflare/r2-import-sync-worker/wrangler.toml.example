@@ -1,0 +1,13 @@
+name = "lumen-r2-import-sync"
+main = "src/index.js"
+compatibility_date = "2026-04-03"
+
+[[queues.consumers]]
+queue = "lumen-r2-import-events"
+max_batch_size = 50
+max_batch_timeout = 5
+
+[vars]
+LUMEN_IMPORT_WEBHOOK_URL = "https://lumen-wallpaper.vercel.app/api/webhooks/r2-import"
+LUMEN_IMPORT_SYNC_CREATOR_USERNAME = "Lumen"
+LUMEN_IMPORT_WEBHOOK_BATCH_SIZE = "24"

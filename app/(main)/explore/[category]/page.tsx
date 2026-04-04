@@ -7,6 +7,7 @@ import {
   getExploreCategory,
   getExploreSort,
   isFeaturedFilterEnabled,
+  isMotionFilterEnabled,
 } from "@/lib/explore";
 
 export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
@@ -17,6 +18,7 @@ type ExploreCategoryPageProps = {
   };
   searchParams?: {
     featured?: string;
+    motion?: string;
     q?: string;
     sort?: string;
     tag?: string;
@@ -34,10 +36,12 @@ export function generateMetadata({
   }
 
   const featuredOnly = isFeaturedFilterEnabled(searchParams?.featured);
+  const motionOnly = isMotionFilterEnabled(searchParams?.motion);
   const sort = getExploreSort(searchParams?.sort);
   const titleParts = [
     category.label,
     featuredOnly ? "精选" : null,
+    motionOnly ? "动态壁纸" : null,
     sort === "popular" ? "下载热度" : null,
     sort === "likes" ? "收藏热度" : null,
   ].filter(Boolean);

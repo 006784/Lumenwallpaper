@@ -1,7 +1,12 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import { UploadStudioForm } from "@/components/creator/upload-studio-form";
-import { getCurrentUser, isAuthConfigured } from "@/lib/auth";
+import {
+  getCurrentUser,
+  isAuthConfigured,
+  isEditorUser,
+} from "@/lib/auth";
 import { PagePlaceholder } from "@/components/ui/page-placeholder";
 
 export default function CreatorStudioPage() {
@@ -21,8 +26,10 @@ export default function CreatorStudioPage() {
     redirect("/login?next=/creator/studio");
   }
 
+  const isEditor = isEditorUser(currentUser);
+
   return (
-    <section className="relative overflow-hidden border-b-frame border-ink px-4 py-16 md:px-10 md:py-24">
+    <section className="relative overflow-hidden border-b-frame border-ink px-5 py-14 sm:px-6 md:px-10 md:py-24">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(245,200,66,0.18),transparent_18%),radial-gradient(circle_at_84%_20%,rgba(212,43,43,0.08),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.18),transparent_42%)]" />
       <div className="relative mx-auto max-w-7xl">
         <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
@@ -48,9 +55,17 @@ export default function CreatorStudioPage() {
           <span className="border border-red/20 bg-red/5 px-3 py-2 text-red">
             @{currentUser.username}
           </span>
+          {isEditor ? (
+            <Link
+              className="border border-ink/10 bg-paper/70 px-3 py-2 transition hover:border-ink hover:text-ink"
+              href="/creator/studio/import"
+            >
+              R2 一键导入
+            </Link>
+          ) : null}
         </div>
 
-        <div className="mt-12">
+        <div className="mt-10 md:mt-12">
           <UploadStudioForm
             creatorEmail={currentUser.email}
             creatorUsername={currentUser.username}

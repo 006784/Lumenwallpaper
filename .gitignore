@@ -21,3 +21,7 @@ tsconfig.tsbuildinfo
 
 *storybook.log
 storybook-static
+.vercel
+
+# MCP config (contains secrets)
+.mcp.json

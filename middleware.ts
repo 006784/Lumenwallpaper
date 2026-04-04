@@ -59,6 +59,16 @@ function shouldDisableCaching(request: NextRequest) {
 }
 
 export function middleware(request: NextRequest) {
+  const host = request.headers.get("host")?.toLowerCase() ?? "";
+
+  if (host === "www.byteify.icu") {
+    const redirectUrl = new URL(request.url);
+    redirectUrl.host = "byteify.icu";
+    redirectUrl.protocol = "https:";
+
+    return NextResponse.redirect(redirectUrl, 308);
+  }
+
   const response = NextResponse.next();
 
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {

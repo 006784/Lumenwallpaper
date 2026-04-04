@@ -45,13 +45,13 @@ const VARIANT_SPECS: VariantSpec[] = [
   },
   {
     variant: "thumb",
-    maxDimension: 800,
-    quality: 82,
+    maxDimension: 1440,
+    quality: 86,
   },
   {
     variant: "preview",
-    maxDimension: 400,
-    quality: 76,
+    maxDimension: 720,
+    quality: 80,
   },
 ];
 
@@ -108,6 +108,10 @@ async function createVariantBuffer(originalBuffer: Buffer, spec: VariantSpec) {
   };
 }
 
+function encodeMetadataValue(value: string) {
+  return encodeURIComponent(value).slice(0, 200);
+}
+
 export async function generateWallpaperVariantFiles(
   original: OriginalUploadInput,
 ) {
@@ -150,8 +154,8 @@ export async function generateWallpaperVariantFiles(
         variant: spec.variant,
         metadata: {
           source: "lumen-variant-generator",
-          derived_from: normalizedOriginalPath,
-          asset_id: assetId,
+          derived_from: encodeMetadataValue(normalizedOriginalPath),
+          asset_id: encodeMetadataValue(assetId),
         },
       });
 

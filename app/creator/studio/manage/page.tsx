@@ -75,12 +75,20 @@ export default async function CreatorStudioManagePage() {
             Delete Protected
           </span>
           {isEditor ? (
-            <Link
-              className="border border-gold/20 bg-gold/5 px-3 py-2 text-gold transition hover:bg-gold hover:text-ink"
-              href="/creator/studio/moderation"
-            >
-              打开审核台
-            </Link>
+            <>
+              <Link
+                className="border border-gold/20 bg-gold/5 px-3 py-2 text-gold transition hover:bg-gold hover:text-ink"
+                href="/creator/studio/moderation"
+              >
+                打开审核台
+              </Link>
+              <Link
+                className="border border-ink/10 bg-paper/70 px-3 py-2 transition hover:border-ink hover:text-ink"
+                href="/creator/studio/import"
+              >
+                打开 R2 导入台
+              </Link>
+            </>
           ) : null}
         </div>
 

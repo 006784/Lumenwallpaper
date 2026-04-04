@@ -3,11 +3,13 @@
 import { useRef, useState } from "react";
 
 type WallpaperVideoPlayerProps = {
+  posterUrl?: string | null;
   videoUrl: string;
   title: string;
 };
 
 export function WallpaperVideoPlayer({
+  posterUrl,
   videoUrl,
   title,
 }: WallpaperVideoPlayerProps) {
@@ -43,6 +45,7 @@ export function WallpaperVideoPlayer({
         muted
         playsInline
         className="aspect-[4/5] w-full object-cover"
+        poster={posterUrl ?? undefined}
         src={videoUrl}
       />
 

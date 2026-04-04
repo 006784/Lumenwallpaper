@@ -32,6 +32,7 @@ export interface FilmCellData {
   label: string;
   /** 动态壁纸视频 URL（可选，留空时显示动态渐变） */
   videoUrl?: string;
+  previewUrl?: string;
 }
 
 export interface TickerItem {
@@ -43,6 +44,7 @@ export interface MoodCardData {
   id: string;
   gradient: GradientKey;
   previewUrl?: string;
+  videoUrl?: string | null;
   shape: MoodShape;
   number: string;
   name: string;
@@ -57,6 +59,8 @@ export interface EditorialFeature {
   description: string;
   eyebrow: string;
   href: string;
+  previewUrl?: string;
+  videoUrl?: string | null;
 }
 
 export interface EditorialItem {
@@ -65,6 +69,8 @@ export interface EditorialItem {
   title: string;
   meta: string;
   href: string;
+  previewUrl?: string;
+  videoUrl?: string | null;
 }
 
 export interface CategoryData {
@@ -79,6 +85,8 @@ export interface DarkroomItem {
   title: string;
   meta: string;
   href: string;
+  previewUrl?: string;
+  videoUrl?: string | null;
   badge?: string;
   featured?: boolean;
   aiTags?: string[];

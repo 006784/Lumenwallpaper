@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 import { GRADIENTS } from "@/lib/gradients";
 import { heroFilmRows } from "@/lib/data/home";
@@ -11,12 +12,12 @@ import type { FilmCellData } from "@/types/home";
 function SprocketColumn({ side }: { side: "left" | "right" }) {
   return (
     <div
-      className={`pointer-events-none absolute inset-y-0 ${side}-0 z-10 flex w-5 flex-col justify-around px-[6px] py-3`}
+      className={`pointer-events-none absolute inset-y-0 ${side}-0 z-10 flex w-4 flex-col justify-around px-[5px] py-3 sm:w-5 sm:px-[6px]`}
     >
       {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
-          className="h-3 w-2 rounded-[2px] border border-paper/20"
+          className="h-2.5 w-2 rounded-[2px] border border-paper/20 sm:h-3"
         />
       ))}
     </div>
@@ -28,14 +29,40 @@ function SprocketColumn({ side }: { side: "left" | "right" }) {
 function AnimatedCell({
   cell,
   animIndex,
-  paused,
+  shouldPlay,
   onPlay,
 }: {
   cell: FilmCellData;
   animIndex: number;
-  paused: boolean;
+  shouldPlay: boolean;
   onPlay: () => void;
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video || !cell.videoUrl || videoFailed) {
+      return;
+    }
+
+    if (!shouldPlay) {
+      video.pause();
+      return;
+    }
+
+    video
+      .play()
+      .then(() => {
+        setVideoReady(true);
+      })
+      .catch(() => {
+        setVideoReady(false);
+      });
+  }, [cell.videoUrl, shouldPlay, videoFailed]);
+
   return (
     <button
       aria-label={`播放动态壁纸：${cell.label}`}
@@ -43,14 +70,44 @@ function AnimatedCell({
       type="button"
       onClick={onPlay}
     >
-      {/* 渐变背景 + 呼吸动画 */}
-      <div
-        className={paused ? "cell-breathe-paused absolute inset-0" : "cell-breathe absolute inset-0"}
-        style={{
-          backgroundImage: GRADIENTS[cell.gradient],
-          animationDelay: `${animIndex * 0.72}s`,
-        }}
-      />
+      {cell.previewUrl ? (
+        <>
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.05]"
+            style={{
+              backgroundImage: `linear-gradient(to top, rgba(10,8,4,0.18), rgba(10,8,4,0.08)), url("${cell.previewUrl}")`,
+            }}
+          />
+          {cell.videoUrl && !videoFailed ? (
+            <video
+              ref={videoRef}
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster={cell.previewUrl}
+              preload="metadata"
+              className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-500 group-hover:scale-[1.05] ${
+                videoReady ? "opacity-100" : "opacity-0"
+              }`}
+              src={cell.videoUrl}
+              onCanPlay={() => setVideoReady(true)}
+              onError={() => {
+                setVideoFailed(true);
+                setVideoReady(false);
+              }}
+            />
+          ) : null}
+        </>
+      ) : (
+        <div
+          className={shouldPlay ? "cell-breathe absolute inset-0" : "cell-breathe-paused absolute inset-0"}
+          style={{
+            backgroundImage: GRADIENTS[cell.gradient],
+            animationDelay: `${animIndex * 0.72}s`,
+          }}
+        />
+      )}
 
       {/* hover 亮色遮罩 */}
       <div className="absolute inset-0 bg-paper/0 transition-colors duration-200 group-hover:bg-paper/8" />
@@ -103,6 +160,7 @@ function FeaturedView({
           loop
           muted
           playsInline
+          poster={cell.previewUrl}
           className="h-full w-full object-cover"
           src={cell.videoUrl}
         />
@@ -127,7 +185,7 @@ function FeaturedView({
         </p>
         <p className="font-display text-[26px] italic text-paper">{cell.label}</p>
 
-        <div className="mt-4 flex items-center gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           {/* 播放/暂停 */}
           <button
             aria-label={paused ? "继续播放" : "暂停"}
@@ -139,12 +197,12 @@ function FeaturedView({
           </button>
 
           {/* 下载按钮 */}
-          <button
-            className="flex h-9 items-center gap-2 border border-paper/20 bg-paper/10 px-4 text-[9px] uppercase tracking-[0.22em] text-paper/70 backdrop-blur-sm transition hover:bg-paper/20 hover:text-paper"
-            type="button"
+          <Link
+            className="section-entry-link section-entry-link--dark"
+            href="/explore?motion=true"
           >
-            ↓ 下载 4K
-          </button>
+            ↗ 进入动态专区
+          </Link>
 
           {/* 返回胶卷 */}
           <button
@@ -163,12 +221,16 @@ function FeaturedView({
 
 // ─── 主组件 ───────────────────────────────────────────────────────────────────
 
-export function HeroFilmPanel() {
+type HeroFilmPanelProps = {
+  rows?: FilmCellData[][];
+};
+
+export function HeroFilmPanel({ rows = heroFilmRows }: HeroFilmPanelProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [paused, setPaused] = useState(false);
 
   // 把二维 rows 压平成一维，保留对 cell 数据的访问
-  const allCells = heroFilmRows.flatMap((row) => row);
+  const allCells = rows.flatMap((row) => row);
   const activeCell: FilmCellData | null =
     activeIndex !== null ? allCells[activeIndex] : null;
 
@@ -187,15 +249,15 @@ export function HeroFilmPanel() {
   }, []);
 
   return (
-    <div className="relative min-h-[300px] overflow-hidden bg-ink md:min-h-full">
+    <div className="relative min-h-[360px] overflow-hidden bg-[linear-gradient(180deg,#080704,#0b0906_42%,#11100b_100%)] sm:min-h-[460px] lg:min-h-full">
       {/* 胶卷齿孔 */}
       <SprocketColumn side="left" />
       <SprocketColumn side="right" />
 
       {/* 顶部元信息 */}
-      <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-7 pt-5">
+      <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 pt-4 sm:px-7 sm:pt-5">
         <p className="text-[9px] uppercase tracking-[0.35em] text-paper/45">
-          {activeCell ? "正在播放" : "Contact Sheet"}
+          {activeCell ? "动态专区 · 正在播放" : "动态专区"}
         </p>
         <div className="flex items-center gap-2">
           {activeCell ? (
@@ -218,7 +280,7 @@ export function HeroFilmPanel() {
                 {paused ? "▶" : "⏸"}
               </button>
               <p className="font-mono text-[11px] tracking-[0.24em] text-paper/30">
-                09 Frames
+                {String(allCells.length).padStart(2, "0")} Motion
               </p>
             </>
           )}
@@ -232,7 +294,7 @@ export function HeroFilmPanel() {
       >
         {/* 3×3 动画格子网格 */}
         <div className="absolute inset-0 flex flex-col">
-          {heroFilmRows.map((row, rowIndex) => (
+          {rows.map((row, rowIndex) => (
             <div
               key={rowIndex}
               className="flex flex-1 overflow-hidden border-b border-paper/10 last:border-b-0"
@@ -242,7 +304,7 @@ export function HeroFilmPanel() {
                   key={cell.label}
                   animIndex={rowIndex * 3 + cellIndex}
                   cell={cell}
-                  paused={paused}
+                  shouldPlay={!paused && !activeCell}
                   onPlay={() => handlePlay(rowIndex * 3 + cellIndex)}
                 />
               ))}
@@ -268,12 +330,15 @@ export function HeroFilmPanel() {
 
       {/* 格子模式底部信息 */}
       <div
-        className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-black/80 to-transparent px-7 pb-7 pt-16 transition-opacity duration-500"
+        className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-black/80 to-transparent px-4 pb-5 pt-14 transition-opacity duration-500 sm:px-7 sm:pb-7 sm:pt-16"
         style={{ opacity: activeCell ? 0 : 1 }}
       >
-        <p className="font-display text-[28px] italic text-paper">本周最受欢迎</p>
-        <p className="mt-2 text-[9px] uppercase tracking-[0.35em] text-gold">
-          共 2,847 次下载
+        <p className="font-display text-[22px] italic text-paper sm:text-[28px]">动态专区</p>
+        <p className="mt-2 max-w-sm text-sm leading-6 text-paper/48">
+          把会呼吸、会闪动、会慢慢推进情绪的画面单独放进这条胶卷里。
+        </p>
+        <p className="mt-3 text-[9px] uppercase tracking-[0.35em] text-gold">
+          点击任意一格，进入实时预览
         </p>
       </div>
     </div>

@@ -49,6 +49,7 @@ pnpm lighthouse
 - Supabase seed 已放在 `supabase/seed.sql`
 - 上传工作台入口为 `/creator/studio`
 - 上传管理后台入口为 `/creator/studio/manage`
+- R2 一键导入后台入口为 `/creator/studio/import`
 - 个人库入口为 `/library`
 - 上传链路为：申请 presign → 直传 R2 → 写入 `wallpapers` 和 `wallpaper_files`
 - 上传创建成功后会在服务端自动生成 `4k / thumb / preview` 三个 WebP 变体
@@ -75,6 +76,7 @@ pnpm lighthouse
 - 登录链路已切到 Magic Link：`/login` → `/api/email/send` → `/verify` → 会话 Cookie
 - R2 现在会按文档使用结构化目录：`originals/`、`compressed/`、`thumbnails/`、`previews/`
 - 删除作品时会同步清理对应的 R2 对象，避免桶里残留孤儿文件
+- 已补 R2 自动同步入口：`/api/cron/import-r2` 用于 Vercel 定时扫描，`/api/webhooks/r2-import` 用于外部 webhook 立即同步
 
 ### 初始化顺序
 
@@ -92,7 +94,7 @@ pnpm lighthouse
 
 ## Cloudflare R2 配置
 
-1. 在 Cloudflare 创建一个私有 R2 bucket，例如 `frame-wallpapers`
+1. 在 Cloudflare 创建一个私有 R2 bucket，例如 `lument`
 2. 为这个 bucket 生成 S3 API Token，填入 `.env.local` 中的：
    - `CLOUDFLARE_R2_ACCOUNT_ID`
    - `CLOUDFLARE_R2_ACCESS_KEY_ID`
@@ -101,6 +103,30 @@ pnpm lighthouse
 3. 给 R2 绑定一个可公开访问的自定义域或 R2 公网域，并填到：
    - `CLOUDFLARE_R2_PUBLIC_URL`
 4. 给 bucket 配置浏览器直传所需的 CORS，至少允许你的站点域名和本地开发域名访问 `PUT / GET / HEAD`
+
+如果你准备把生产站放在 `byteify.icu`，推荐把图片和视频资源单独放到：
+
+- `https://img.byteify.icu`
+
+这样做的好处是：
+
+- 站点域名 `byteify.icu` 继续由 Vercel 直接服务应用
+- 资源域名 `img.byteify.icu` 由 Cloudflare + R2 负责缓存、图片优化和长缓存
+- 不需要把整个 Next.js 站点都放到 Cloudflare 反代之后
+
+对应环境变量建议：
+
+```env
+NEXTAUTH_URL=https://byteify.icu
+CLOUDFLARE_R2_PUBLIC_URL=https://img.byteify.icu
+NEXT_DISABLE_IMAGE_OPTIMIZATION=false
+```
+
+说明：
+
+- 当前仓库已经支持根据 `CLOUDFLARE_R2_PUBLIC_URL` 自动放行 Next.js 远程图片域名
+- 如果后面你确认所有重图都改由 Cloudflare 资源域处理，再把 `NEXT_DISABLE_IMAGE_OPTIMIZATION=true` 打开，避免 Vercel 和 Cloudflare 双重处理
+- 具体操作见 [docs/cloudflare-byteify-setup.md](/Users/lishiya/Lumen/docs/cloudflare-byteify-setup.md)
 
 当前代码中的对象目录约定：
 
@@ -112,6 +138,84 @@ previews/{uuid}_400.webp
 ```
 
 当前上传链路会先把原图直传到 `originals/`，再由服务端读取原图并生成 `compressed/`、`thumbnails/`、`previews/` 三类衍生资源。
+
+### R2 自动同步
+
+如果你会直接把文件手动传进 R2，而不是走站内上传链路，现在有两种自动同步方式：
+
+- `Vercel Cron`：生产环境默认每天自动调用一次 `/api/cron/import-r2`
+- `Webhook`：外部服务可以调用 `/api/webhooks/r2-import` 立刻触发导入
+- `Cloudflare 实时同步`：可使用 R2 Event Notifications + Queue Consumer Worker，在对象上传后几乎实时触发 `/api/webhooks/r2-import`
+
+需要补的环境变量：
+
+```env
+CRON_SECRET=
+R2_IMPORT_WEBHOOK_SECRET=
+R2_IMPORT_SYNC_CREATOR_USERNAME=Lumen
+R2_IMPORT_SYNC_LIMIT=100
+R2_IMPORT_SYNC_PREFIX=
+```
+
+说明：
+
+- `CRON_SECRET`：Vercel Cron 会携带 `Authorization: Bearer <CRON_SECRET>` 调用同步接口
+- `R2_IMPORT_WEBHOOK_SECRET`：给外部 webhook 用的 Bearer Secret
+- `R2_IMPORT_SYNC_CREATOR_USERNAME`：自动导入时默认绑定的创作者用户名
+- `R2_IMPORT_SYNC_LIMIT`：单次扫描最多处理多少个对象
+- `R2_IMPORT_SYNC_PREFIX`：如果只想扫某个目录，可填写前缀，例如 `imports/`
+- `Vercel Hobby` 计划只支持每天一次 Cron；如果要做到每小时同步，推荐继续走 Cloudflare 实时同步这条链路
+
+Webhook 示例：
+
+```bash
+curl -X POST https://lumen-wallpaper.vercel.app/api/webhooks/r2-import \
+  -H "Authorization: Bearer $R2_IMPORT_WEBHOOK_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"prefix":"imports/","limit":24}'
+```
+
+如果你要把 Cloudflare 这一侧也接完，仓库里已经附带了可直接部署的 Worker 模板和完整步骤：
+
+- [docs/cloudflare-r2-realtime-sync.md](/Users/lishiya/Lumen/docs/cloudflare-r2-realtime-sync.md)
+- `cloudflare/r2-import-sync-worker/`
+
+## OpenClaw 管理 API
+
+如果你想让 OpenClaw 这类外部 agent 直接管理站点，现在可以使用独立的服务端接口：
+
+- 根入口：`/api/openclaw`
+- 文档：[/Users/lishiya/Lumen/docs/openclaw-admin-api.md](/Users/lishiya/Lumen/docs/openclaw-admin-api.md)
+
+需要先补环境变量：
+
+```env
+OPENCLAW_API_KEY=
+```
+
+调用时推荐：
+
+```bash
+curl https://byteify.icu/api/openclaw/health \
+  -H "Authorization: Bearer $OPENCLAW_API_KEY"
+```
+
+这套接口独立于站内登录态，适合做：
+
+- 健康检查
+- 上传签名 / 下载接口
+- 创建 / 更新 / 删除壁纸
+- 重复壁纸检测
+- 重复壁纸自动清理（默认保留最新一张）
+- 批量重命名
+- 批量审核 / 状态更新
+- AI 重分析
+- R2 扫描导入
+- 资产回填
+- 举报审核
+- 工具清单导出（`GET /api/openclaw/tools`）
+- OpenAI Agents 风格导入清单（`GET /api/openclaw/tools/agents`）
+- MCP 风格导入清单（`GET /api/openclaw/tools/mcp`）
 
 ## AI 识图兜底配置
 
@@ -157,7 +261,7 @@ AI_VISION_OPENAI_MODEL=gpt-5-mini
 如果你要开启内容审核台，在 `.env.local` 中补一个或两个白名单变量：
 
 ```env
-LUMEN_EDITOR_EMAILS=editor@cloudify.icu,another@cloudify.icu
+LUMEN_EDITOR_EMAILS=editor@byteify.icu,another@byteify.icu
 LUMEN_EDITOR_USERNAMES=lumen-editor,chief-curator
 ```
 

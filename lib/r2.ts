@@ -1,6 +1,7 @@
 import {
   DeleteObjectsCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
@@ -15,9 +16,14 @@ export const ALLOWED_UPLOAD_MIME_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
 ] as const;
 
-export const MAX_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024;
+export const MAX_IMAGE_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024;
+export const MAX_VIDEO_UPLOAD_SIZE_BYTES = 200 * 1024 * 1024;
+export const MAX_UPLOAD_SIZE_BYTES = MAX_VIDEO_UPLOAD_SIZE_BYTES;
 export const PRESIGNED_UPLOAD_EXPIRY_SECONDS = 60 * 5;
 export const R2_STORAGE_PREFIXES: Record<WallpaperVariant, string> = {
   original: "originals",
@@ -43,8 +49,8 @@ export function getR2Config() {
     accountId: process.env.CLOUDFLARE_R2_ACCOUNT_ID ?? "",
     accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID ?? "",
     secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY ?? "",
-    bucket: process.env.CLOUDFLARE_R2_BUCKET ?? "frame-wallpapers",
-    publicUrl: process.env.CLOUDFLARE_R2_PUBLIC_URL ?? "https://img.frame.app",
+    bucket: process.env.CLOUDFLARE_R2_BUCKET ?? "lument",
+    publicUrl: process.env.CLOUDFLARE_R2_PUBLIC_URL ?? "https://img.byteify.icu",
   };
 }
 
@@ -101,6 +107,35 @@ export function getR2AssetId(path: string) {
     .replace(/_4k$/i, "")
     .replace(/_800$/i, "")
     .replace(/_400$/i, "");
+}
+
+export async function listR2Objects(options?: {
+  continuationToken?: string;
+  limit?: number;
+  prefix?: string;
+}) {
+  const client = createR2Client();
+  const config = getR2Config();
+  const response = await client.send(
+    new ListObjectsV2Command({
+      Bucket: config.bucket,
+      ContinuationToken: options?.continuationToken,
+      MaxKeys: options?.limit,
+      Prefix: options?.prefix,
+    }),
+  );
+
+  return {
+    continuationToken: response.NextContinuationToken ?? null,
+    isTruncated: response.IsTruncated ?? false,
+    objects: (response.Contents ?? [])
+      .filter((object) => Boolean(object.Key))
+      .map((object) => ({
+        key: object.Key as string,
+        lastModified: object.LastModified?.toISOString() ?? null,
+        size: object.Size ?? 0,
+      })),
+  };
 }
 
 export function createR2Client() {
@@ -204,6 +239,40 @@ async function readR2BodyAsBuffer(body: unknown) {
   throw new Error("R2 response body could not be converted to a buffer.");
 }
 
+function createReadableStreamFromAsyncIterable(
+  body: AsyncIterable<Uint8Array | Buffer | string | ArrayBuffer>,
+) {
+  const iterator = body[Symbol.asyncIterator]();
+
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      const { done, value } = await iterator.next();
+
+      if (done) {
+        controller.close();
+        return;
+      }
+
+      if (typeof value === "string") {
+        controller.enqueue(new TextEncoder().encode(value));
+        return;
+      }
+
+      if (value instanceof ArrayBuffer) {
+        controller.enqueue(new Uint8Array(value));
+        return;
+      }
+
+      controller.enqueue(value instanceof Uint8Array ? value : new Uint8Array(value));
+    },
+    async cancel() {
+      if (typeof iterator.return === "function") {
+        await iterator.return();
+      }
+    },
+  });
+}
+
 export function buildR2StoragePath(options: {
   assetId?: string;
   filename?: string;
@@ -238,6 +307,16 @@ function getVariantCacheControl(variant: WallpaperVariant) {
   return "public, max-age=604800, s-maxage=31536000, stale-while-revalidate=86400";
 }
 
+export function isVideoUploadMimeType(contentType: string) {
+  return contentType.startsWith("video/");
+}
+
+export function getUploadMaxSizeBytes(contentType: string) {
+  return isVideoUploadMimeType(contentType)
+    ? MAX_VIDEO_UPLOAD_SIZE_BYTES
+    : MAX_IMAGE_UPLOAD_SIZE_BYTES;
+}
+
 export async function createPresignedUpload(
   filename: string,
   contentType: (typeof ALLOWED_UPLOAD_MIME_TYPES)[number],
@@ -254,7 +333,6 @@ export async function createPresignedUpload(
     Key: key,
     ContentType: contentType,
     CacheControl: getVariantCacheControl("original"),
-    ContentDisposition: `inline; filename*=UTF-8''${encodeContentDispositionFilename(filename)}`,
     Metadata: {
       source: "lumen-web-upload",
       variant: "original",
@@ -294,6 +372,55 @@ export async function getR2ObjectBuffer(path: string) {
   );
 
   return readR2BodyAsBuffer(response.Body);
+}
+
+export async function getR2ObjectStream(path: string) {
+  const normalizedPath = normalizeR2StoragePath(path);
+
+  if (!normalizedPath) {
+    throw new Error("R2 object path is required.");
+  }
+
+  const client = createR2Client();
+  const config = getR2Config();
+  const response = await client.send(
+    new GetObjectCommand({
+      Bucket: config.bucket,
+      Key: normalizedPath,
+    }),
+  );
+
+  if (!response.Body) {
+    throw new Error("R2 object body is missing.");
+  }
+
+  const body = response.Body as unknown;
+  const stream =
+    typeof body === "object" &&
+    body !== null &&
+    "transformToWebStream" in body &&
+    typeof body.transformToWebStream === "function"
+      ? body.transformToWebStream()
+      : typeof body === "object" &&
+          body !== null &&
+          Symbol.asyncIterator in body
+        ? createReadableStreamFromAsyncIterable(
+            body as AsyncIterable<Uint8Array | Buffer | string | ArrayBuffer>,
+          )
+        : null;
+
+  if (!stream) {
+    throw new Error("R2 object body could not be converted to a stream.");
+  }
+
+  return {
+    contentLength:
+      typeof response.ContentLength === "number" ? response.ContentLength : null,
+    contentType: response.ContentType ?? "application/octet-stream",
+    etag: response.ETag ?? null,
+    lastModified: response.LastModified?.toUTCString() ?? null,
+    stream,
+  };
 }
 
 export async function putR2Object(options: R2UploadOptions) {

@@ -116,6 +116,10 @@ export function isFeaturedFilterEnabled(value: string | undefined) {
   return value === "true" || value === "1";
 }
 
+export function isMotionFilterEnabled(value: string | undefined) {
+  return value === "true" || value === "1";
+}
+
 function normalizeValue(value: string | null | undefined) {
   return value?.trim().toLowerCase() ?? "";
 }

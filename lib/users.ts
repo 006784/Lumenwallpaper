@@ -6,6 +6,14 @@ const usersTable = "users" satisfies keyof Database["public"]["Tables"];
 
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
 
+function getDefaultLoginUsername() {
+  const configuredUsername =
+    process.env.LUMEN_DEFAULT_LOGIN_USERNAME?.trim() ||
+    process.env.LUMEN_DEFAULT_IMPORT_CREATOR_USERNAME?.trim();
+
+  return configuredUsername ? configuredUsername : null;
+}
+
 function slugifyUsername(input: string) {
   const sanitized = input
     .toLowerCase()
@@ -51,6 +59,64 @@ async function ensureUniqueUsername(baseUsername: string) {
   }
 
   return `${baseUsername}-${suffix}`;
+}
+
+async function findUserRowByUsername(username: string) {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  const client = createSupabaseAdminClient();
+  const { data, error } = await client
+    .from(usersTable)
+    .select("*")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load user by username: ${error.message}`);
+  }
+
+  return data ?? null;
+}
+
+async function claimDefaultLoginUser(email: string) {
+  const defaultUsername = getDefaultLoginUsername();
+
+  if (!defaultUsername) {
+    return null;
+  }
+
+  const existingDefaultUser = await findUserRowByUsername(defaultUsername);
+
+  if (!existingDefaultUser) {
+    return null;
+  }
+
+  if (existingDefaultUser.email?.trim().toLowerCase() === email) {
+    return mapSessionUser(existingDefaultUser);
+  }
+
+  if (existingDefaultUser.email) {
+    return null;
+  }
+
+  const client = createSupabaseAdminClient();
+  const { data, error } = await client
+    .from(usersTable)
+    .update({
+      email,
+    })
+    .eq("id", existingDefaultUser.id)
+    .is("email", null)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to bind default login user: ${error.message}`);
+  }
+
+  return mapSessionUser(data);
 }
 
 export async function findUserByEmail(email: string) {
@@ -103,6 +169,12 @@ export async function findOrCreateUserByEmail(email: string) {
 
   if (existing) {
     return existing;
+  }
+
+  const claimedDefaultUser = await claimDefaultLoginUser(normalizedEmail);
+
+  if (claimedDefaultUser) {
+    return claimedDefaultUser;
   }
 
   const client = createSupabaseAdminClient();

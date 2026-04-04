@@ -7,7 +7,7 @@
 最少需要配置这些变量：
 
 ```env
-NEXTAUTH_URL=https://cloudify.icu
+NEXTAUTH_URL=https://byteify.icu
 NEXTAUTH_SECRET=
 
 NEXT_PUBLIC_SUPABASE_URL=
@@ -17,8 +17,9 @@ SUPABASE_SERVICE_ROLE_KEY=
 CLOUDFLARE_R2_ACCOUNT_ID=
 CLOUDFLARE_R2_ACCESS_KEY_ID=
 CLOUDFLARE_R2_SECRET_ACCESS_KEY=
-CLOUDFLARE_R2_BUCKET=
-CLOUDFLARE_R2_PUBLIC_URL=
+CLOUDFLARE_R2_BUCKET=lument
+CLOUDFLARE_R2_PUBLIC_URL=https://img.byteify.icu
+NEXT_DISABLE_IMAGE_OPTIMIZATION=false
 
 RESEND_API_KEY=
 RESEND_FROM_EMAIL=noreply@artchain.icu
@@ -110,15 +111,23 @@ LUMEN_EDITOR_USERNAMES=
 
 当前建议：
 
-- 网站域名：`cloudify.icu`
+- 网站域名：`byteify.icu`
+- 资源域名：`img.byteify.icu`
 - 发信域名：`artchain.icu`
 
 上线时确认：
 
-1. `cloudify.icu` 已正确接入 Vercel
+1. `byteify.icu` 已正确接入 Vercel
 2. `www` 是否需要重定向到主域
-3. HTTPS 已签发成功
-4. `NEXTAUTH_URL` 与实际访问域名完全一致
+3. `img.byteify.icu` 已正确绑定到 Cloudflare R2 自定义域
+4. HTTPS 已签发成功
+5. `NEXTAUTH_URL` 与实际访问域名完全一致
+
+说明：
+
+- 不建议默认把整个 Vercel 站点放到 Cloudflare 反代之后
+- 更推荐 `byteify.icu -> Vercel`，`img.byteify.icu -> R2 + Cloudflare` 的拆分结构
+- 具体步骤见 [cloudflare-byteify-setup.md](/Users/lishiya/Lumen/docs/cloudflare-byteify-setup.md)
 
 ## 7. 验收清单
 

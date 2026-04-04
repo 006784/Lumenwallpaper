@@ -6,6 +6,7 @@ import { useRef } from "react";
 import { GRADIENTS } from "@/lib/gradients";
 import { cn } from "@/lib/utils";
 import type { MoodCardData, MoodShape } from "@/types/home";
+import { MotionPreviewLayer } from "@/components/wallpaper/motion-preview-layer";
 
 const SHAPE_CLASSES: Record<MoodShape, string> = {
   portrait: "h-[240px] w-[160px] md:h-[340px] md:w-[220px]",
@@ -65,9 +66,22 @@ export function MoodCard({ card }: MoodCardProps) {
         style={artworkStyle}
       />
 
+      {card.videoUrl ? (
+        <MotionPreviewLayer
+          className="transition-transform duration-card ease-out group-hover:scale-[1.06]"
+          videoUrl={card.videoUrl}
+        />
+      ) : null}
+
       <div className="absolute left-3 top-3 font-mono text-xs tracking-[0.2em] text-paper/55">
         {card.number}
       </div>
+
+      {card.videoUrl ? (
+        <div className="absolute left-3 top-10 border border-paper/20 bg-black/35 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.22em] text-paper/70 backdrop-blur-sm">
+          Motion
+        </div>
+      ) : null}
 
       <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center border-frame border-ink bg-paper text-sm opacity-100 transition-[background-color,opacity] duration-hover hover:bg-gold md:opacity-0 md:group-hover:opacity-100">
         ↓

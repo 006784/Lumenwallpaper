@@ -24,6 +24,7 @@ export async function GET(request: Request) {
     const category = searchParams.get("category");
     const sort = searchParams.get("sort");
     const featured = searchParams.get("featured");
+    const motion = searchParams.get("motion");
 
     const parsedLimit = limit ? Number.parseInt(limit, 10) : undefined;
     const wallpapers = await getCachedPublishedWallpapers({
@@ -40,6 +41,7 @@ export async function GET(request: Request) {
           : undefined,
       featured:
         featured === null ? undefined : featured === "true" || featured === "1",
+      motion: motion === null ? undefined : motion === "true" || motion === "1",
     });
 
     return jsonSuccess(wallpapers, {

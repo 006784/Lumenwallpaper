@@ -1,15 +1,29 @@
 import { withSentryConfig } from "@sentry/nextjs";
 
+function getRemoteImagePatterns() {
+  const hostnames = new Set(["img.byteify.icu", "img.frame.app"]);
+  const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL;
+
+  if (publicUrl) {
+    try {
+      hostnames.add(new URL(publicUrl).hostname);
+    } catch {
+      // Ignore invalid env values and keep the stable fallbacks.
+    }
+  }
+
+  return Array.from(hostnames).map((hostname) => ({
+    protocol: "https",
+    hostname,
+  }));
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "img.frame.app",
-      },
-    ],
+    remotePatterns: getRemoteImagePatterns(),
     formats: ["image/avif", "image/webp"],
+    unoptimized: process.env.NEXT_DISABLE_IMAGE_OPTIMIZATION === "true",
   },
   experimental: process.env.NEXT_ENABLE_PPR === "true" ? { ppr: true } : {},
 };

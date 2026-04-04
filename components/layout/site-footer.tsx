@@ -7,7 +7,7 @@ export function SiteFooter() {
     <footer className="border-t-frame border-ink bg-paper">
       <div className="grid gap-10 px-4 py-12 md:grid-cols-[2fr_1fr_1fr_1fr] md:px-10">
         <div className="md:pr-10">
-          <p className="font-body text-[36px] font-semibold uppercase leading-none tracking-[0.24em] md:text-[40px]">
+          <p className="font-body text-[36px] font-semibold leading-none tracking-[0.08em] md:text-[40px]">
             Lumen
           </p>
           <p className="mt-4 max-w-sm text-sm leading-7 text-muted">

@@ -77,6 +77,50 @@ export interface WallpaperFavoriteSnapshot {
   isFavorited: boolean;
 }
 
+export interface WallpaperDownloadOption {
+  variant: WallpaperVariant;
+  label: string;
+  width: number | null;
+  height: number | null;
+  sizeBytes: number | null;
+  format: string | null;
+  isDefault: boolean;
+}
+
+export interface WallpaperAssetBackfillResult {
+  id: string;
+  slug: string;
+  title: string;
+  generatedVariants: WallpaperVariant[];
+  extractedColors: string[];
+  aiAnalysisStatus: WallpaperAiAnalysisStatus;
+  aiTags: string[];
+  aiCategory: string | null;
+  aiCaption: string | null;
+  width: number | null;
+  height: number | null;
+}
+
+export interface WallpaperAssetBackfillSummary {
+  creatorUsername: string | null;
+  processedCount: number;
+  results: WallpaperAssetBackfillResult[];
+}
+
+export type WallpaperDownloadStatus =
+  | "idle"
+  | "preparing"
+  | "downloading"
+  | "success"
+  | "error";
+
+export interface WallpaperDownloadProgressSnapshot {
+  bytesReceived: number;
+  percent: number | null;
+  status: WallpaperDownloadStatus;
+  totalBytes: number | null;
+}
+
 export interface WallpaperReportReceipt {
   id: string;
   wallpaperId: string;
@@ -108,6 +152,7 @@ export interface WallpaperListOptions {
   tag?: string;
   category?: string;
   featured?: boolean;
+  motion?: boolean;
   sort?: WallpaperSort;
   status?: WallpaperStatus;
 }

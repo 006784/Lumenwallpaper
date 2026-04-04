@@ -2,35 +2,32 @@ import { CategoryStrip } from "@/components/sections/category-strip";
 import { DarkroomSection } from "@/components/sections/darkroom-section";
 import { EditorialSection } from "@/components/sections/editorial-section";
 import { HeroSection } from "@/components/sections/hero-section";
+import { IosSpotlightSection } from "@/components/sections/ios-spotlight-section";
 import { JoinSection } from "@/components/sections/join-section";
 import { MoodBoardSection } from "@/components/sections/mood-board-section";
 import { SearchSection } from "@/components/sections/search-section";
 import { TickerStrip } from "@/components/sections/ticker-strip";
-import { moodCards } from "@/lib/data/home";
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
-import { getCachedPublishedWallpapers } from "@/lib/public-wallpaper-cache";
-import { wallpaperToMoodCard } from "@/lib/wallpaper-presenters";
+import { getHomePageSnapshot } from "@/lib/home";
 
 export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 
 export default async function HomePage() {
-  const wallpapers = await getCachedPublishedWallpapers({
-    limit: 10,
-  });
-  const cards =
-    wallpapers.length > 0
-      ? wallpapers.map((wallpaper, index) => wallpaperToMoodCard(wallpaper, index))
-      : moodCards;
+  const snapshot = await getHomePageSnapshot();
 
   return (
     <>
-      <HeroSection />
+      <HeroSection filmRows={snapshot.heroFilmRows} />
       <TickerStrip />
-      <MoodBoardSection cards={cards} />
-      <EditorialSection />
+      <MoodBoardSection cards={snapshot.moodCards} />
+      <IosSpotlightSection wallpapers={snapshot.iosWallpapers} />
+      <EditorialSection
+        feature={snapshot.editorialFeature}
+        items={snapshot.editorialItems}
+      />
       <CategoryStrip />
       <SearchSection />
-      <DarkroomSection />
+      <DarkroomSection items={snapshot.darkroomItems} />
       <JoinSection />
     </>
   );

@@ -1,13 +1,43 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 
+function tryRevalidateTag(tag: string) {
+  try {
+    revalidateTag(tag);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes("static generation store missing")
+    ) {
+      return;
+    }
+
+    throw error;
+  }
+}
+
+function tryRevalidatePath(path: string) {
+  try {
+    revalidatePath(path);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes("static generation store missing")
+    ) {
+      return;
+    }
+
+    throw error;
+  }
+}
+
 export function revalidateWallpaperPublicData(options?: {
   creatorUsernames?: Array<string | null | undefined>;
   identifiers?: Array<string | number | null | undefined>;
 }) {
-  revalidateTag("wallpapers");
-  revalidateTag("wallpapers:featured");
-  revalidateTag("wallpapers:explore");
-  revalidateTag("creators");
+  tryRevalidateTag("wallpapers");
+  tryRevalidateTag("wallpapers:featured");
+  tryRevalidateTag("wallpapers:explore");
+  tryRevalidateTag("creators");
 
   for (const identifier of options?.identifiers ?? []) {
     if (identifier === null || identifier === undefined) {
@@ -20,8 +50,8 @@ export function revalidateWallpaperPublicData(options?: {
       continue;
     }
 
-    revalidateTag(`wallpaper:${normalized}`);
-    revalidatePath(`/wallpaper/${normalized}`);
+    tryRevalidateTag(`wallpaper:${normalized}`);
+    tryRevalidatePath(`/wallpaper/${normalized}`);
   }
 
   for (const username of options?.creatorUsernames ?? []) {
@@ -31,11 +61,11 @@ export function revalidateWallpaperPublicData(options?: {
       continue;
     }
 
-    revalidateTag(`creator:${normalized}`);
-    revalidatePath(`/creator/${normalized}`);
+    tryRevalidateTag(`creator:${normalized}`);
+    tryRevalidatePath(`/creator/${normalized}`);
   }
 
-  revalidatePath("/");
-  revalidatePath("/explore");
-  revalidatePath("/darkroom");
+  tryRevalidatePath("/");
+  tryRevalidatePath("/explore");
+  tryRevalidatePath("/darkroom");
 }

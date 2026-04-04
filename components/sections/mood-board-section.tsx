@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { DraggableStrip } from "@/components/ui/draggable-strip";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -12,8 +14,8 @@ type MoodBoardSectionProps = {
 
 export function MoodBoardSection({ cards }: MoodBoardSectionProps) {
   return (
-    <section className="border-b-frame border-ink pt-section">
-      <Reveal className="px-4 pb-10 md:px-10">
+    <section className="border-b-frame border-ink bg-[linear-gradient(180deg,rgba(255,255,255,0.42),rgba(232,224,210,0.22))] pt-14 sm:pt-16 md:pt-section">
+      <Reveal className="px-5 pb-7 sm:px-6 md:px-10">
         <SectionHeading
           eyebrow="01 — 情绪版"
           hint={
@@ -28,12 +30,21 @@ export function MoodBoardSection({ cards }: MoodBoardSectionProps) {
             </>
           }
         />
+        <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">
+          专门保留静态壁纸。这里更适合按氛围、角色和颜色慢慢挑，不混入动态内容。
+        </p>
+        <div className="mt-5 sm:mt-6">
+          <Link className="section-entry-link" href="/explore">
+            进入情绪版
+            <span aria-hidden>↗</span>
+          </Link>
+        </div>
       </Reveal>
 
       <Reveal y={20} duration={0.8}>
         <DraggableStrip
-          className="px-4 pb-12 md:px-10 md:pb-14"
-          trackClassName="flex w-max gap-4 pb-1"
+          className="px-5 pb-12 sm:px-6 md:px-10 md:pb-14"
+          trackClassName="flex w-max gap-4 pb-2 sm:gap-5"
         >
           {cards.map((card) => (
             <MoodCard key={card.id} card={card} />
