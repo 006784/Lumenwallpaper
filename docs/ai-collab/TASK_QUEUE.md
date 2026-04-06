@@ -40,15 +40,13 @@
 ## 待处理
 
 ### TASK-012 · Explore 分页支持
-- **状态**: 🔜 codex pending
-- **背景**: 当前 explore 页固定拉 72 条，DB 已有 321 条已发布壁纸，用户无法浏览全部内容
-- **Codex 待做**:
-  - 在 `WallpaperListOptions`（`types/wallpaper.ts`）加 `offset?: number` 字段
-  - `listPublishedWallpapers`（`lib/wallpapers.ts`）支持 `OFFSET $offset`
-  - `getCachedPublishedWallpapers`（`lib/public-wallpaper-cache.ts`）把 `offset` 纳入 cache key
-  - 同步更新 `GET /api/wallpapers` 接口支持 `?offset=N` 查询参数（可选，Claude 端用 Server Component 直调 lib）
-- **期望返回**: 同现有结构，额外附带 `{ total: number }` 供 Claude 渲染"共 N 件"和分页控件
-- **Claude 后**: 在 `components/wallpaper/explore-catalog.tsx` 加 URL param `page` 驱动的分页控件（上一页/下一页 + 当前页码），每页 24 条
+- **状态**: ✅ claude done（Codex 额度不足，由 Claude 全程完成）
+- **完成内容**:
+  - `types/wallpaper.ts` 新增 `offset?: number`
+  - `lib/wallpapers.ts` offset slice 支持
+  - `lib/public-wallpaper-cache.ts` offset 纳入 cache key，新增 `getCachedPublishedWallpapersPage` + `EXPLORE_PAGE_SIZE=24`
+  - `GET /api/wallpapers` 支持 `?offset=N`
+  - `explore-catalog.tsx` 分页 UI：URL param `page`，上一页/下一页，页码数字，共 N 件显示
 
 ### TASK-002 · 首页静态数据迁真实 API
 - **状态**: ✅ claude done
@@ -59,16 +57,14 @@
 - **Claude 待做**: 首页 `EditorialSection`、`DarkroomSection` 接入 `/api/home` 返回的真实 props，逐步替换 `lib/data/home.ts` 中的静态内容
 
 ### TASK-003 · Playwright E2E 基准截图建立
-- **状态**: 🔜 codex pending
-- **内容**: 设计确认后执行 `pnpm test:visual:update`，生成并提交 VR-01~VR-15 基准截图
-- **前置**: 本地 `pnpm build && pnpm start` 正常
+- **状态**: ✅ claude done（Codex 额度不足，由 Claude 完成）
+- **完成**: 19 张 PNG 基准已生成并提交，VR-01~VR-14 桌面端 + 部分移动端，18 通过 2 fixme（VR-08/VR-15 因 GSAP rAF 动画截图不稳定）
 
 ### TASK-004 · Storybook 接入
-- **状态**: ✅ claude done → 🔜 codex pending
-- **内容**: 按 `FRAME-视觉一致性保障方案.md` 第 2 节，为 10 个核心组件建 Story
-- **Claude 完成**: 分支 `claude/feat-storybook` — 安装 Storybook 10 (`@storybook/nextjs-vite`)，已建 10 个组件 Story：`FrameButton`、`SectionHeading`、`Reveal`、`TickerStrip`、`FilmCell`、`MoodCard`、`DarkroomCard`、`WallpaperGridCard`、`WallpaperVideoPlayer`、`CategoryBlock`；已含 `@chromatic-com/storybook` addon
-- **Codex 待做**: 接入 Chromatic CI（`.github/workflows/chromatic.yml`），配置 `CHROMATIC_PROJECT_TOKEN` secret
-- **负责**: Claude Code（UI 组件） + Codex（接入 Chromatic CI）
+- **状态**: ✅ claude done（全程 Claude 完成）
+- **Claude 完成**: Storybook 10 + 10 个核心组件 Story
+- **Chromatic CI**: `.github/workflows/chromatic.yml` 已创建
+- **剩余人工步骤**: 在 GitHub repo Settings → Secrets 添加 `CHROMATIC_PROJECT_TOKEN`（从 chromatic.com 项目设置获取）
 
 ### TASK-005 · 创作者详情页 `/creator/[username]`
 - **状态**: ✅ claude done
