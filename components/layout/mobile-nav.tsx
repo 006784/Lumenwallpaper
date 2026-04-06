@@ -72,7 +72,7 @@ export function MobileNav({
           onClick={() => setIsOpen(false)}
         >
           {/* 半透明遮罩 */}
-          <div className="absolute inset-0 bg-ink/30 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-ink/30 dark:bg-black/55 backdrop-blur-sm" />
 
           {/* 菜单主体 */}
           <nav

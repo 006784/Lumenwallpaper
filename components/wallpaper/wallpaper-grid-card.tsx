@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { GRADIENTS } from "@/lib/gradients";
@@ -31,15 +32,6 @@ export function WallpaperGridCard({
   const visibleTags = (
     wallpaper.tags.length > 0 ? wallpaper.tags : wallpaper.aiTags
   ).slice(0, 3);
-  const artworkStyle = previewUrl
-    ? {
-        backgroundImage: `linear-gradient(to top, rgba(10,8,4,0.15), rgba(10,8,4,0.15)), url("${previewUrl}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
-    : {
-        backgroundImage: gradient,
-      };
 
   return (
     <Link
@@ -55,10 +47,21 @@ export function WallpaperGridCard({
         </div>
       ) : null}
 
-      <div
-        className={cn(aspectRatio, "border-b-frame border-ink")}
-        style={artworkStyle}
-      >
+      <div className={cn(aspectRatio, "relative border-b-frame border-ink")}>
+        {previewUrl ? (
+          <>
+            <Image
+              fill
+              alt={displayTitle}
+              className="object-cover object-center"
+              sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              src={previewUrl}
+            />
+            <div className="absolute inset-0 bg-[rgba(10,8,4,0.15)]" />
+          </>
+        ) : (
+          <div className="absolute inset-0" style={{ backgroundImage: gradient }} />
+        )}
         {wallpaper.videoUrl ? (
           <MotionPreviewLayer videoUrl={wallpaper.videoUrl} />
         ) : null}

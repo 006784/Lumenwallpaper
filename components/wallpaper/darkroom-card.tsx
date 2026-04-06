@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { GRADIENTS } from "@/lib/gradients";
@@ -10,27 +11,27 @@ type DarkroomCardProps = {
 };
 
 export function DarkroomCard({ item }: DarkroomCardProps) {
-  const artworkStyle = item.previewUrl
-    ? {
-        backgroundImage: `linear-gradient(to top, rgba(10,8,4,0.18), rgba(10,8,4,0.06)), url("${item.previewUrl}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        filter: "brightness(.72) saturate(.9)",
-      }
-    : {
-        backgroundImage: GRADIENTS[item.gradient],
-        filter: "brightness(.72) saturate(.82)",
-      };
-
   return (
     <Link
       className="group relative block h-full overflow-hidden bg-black"
       href={item.href}
     >
-      <div
-        className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.05]"
-        style={artworkStyle}
-      />
+      <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.05]">
+        {item.previewUrl ? (
+          <Image
+            fill
+            alt={item.title}
+            className="object-cover object-center brightness-[.72] saturate-[.9]"
+            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+            src={item.previewUrl}
+          />
+        ) : (
+          <div
+            className="absolute inset-0 brightness-[.72] saturate-[.82]"
+            style={{ backgroundImage: GRADIENTS[item.gradient] }}
+          />
+        )}
+      </div>
 
       {item.videoUrl ? (
         <MotionPreviewLayer

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ScrollAwareHeader } from "@/components/layout/scroll-aware-header";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { FrameButton } from "@/components/ui/frame-button";
 import { getCurrentUser, isEditorUser } from "@/lib/auth";
 import { navLinks } from "@/lib/data/home";
@@ -96,6 +97,7 @@ export async function SiteHeader() {
               登录
             </FrameButton>
           )}
+          <ThemeToggle />
           <FrameButton className="px-3 sm:px-4" href="/creator/studio">
             上传作品
           </FrameButton>

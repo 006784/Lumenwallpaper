@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 
@@ -39,16 +40,6 @@ export function MoodCard({ card }: MoodCardProps) {
     el.style.transform = "";
   }
 
-  const artworkStyle = card.previewUrl
-    ? {
-        backgroundImage: `linear-gradient(to top, rgba(10,8,4,0.12), rgba(10,8,4,0.12)), url("${card.previewUrl}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
-    : {
-        backgroundImage: GRADIENTS[card.gradient],
-      };
-
   return (
     <Link
       ref={ref}
@@ -61,10 +52,20 @@ export function MoodCard({ card }: MoodCardProps) {
       onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
     >
-      <div
-        className="absolute inset-0 transition-transform duration-card ease-out group-hover:scale-[1.06]"
-        style={artworkStyle}
-      />
+      <div className="absolute inset-0 transition-transform duration-card ease-out group-hover:scale-[1.06]">
+        {card.previewUrl ? (
+          <Image
+            fill
+            alt={card.name}
+            className="object-cover object-center"
+            sizes="(max-width: 640px) 50vw, 25vw"
+            src={card.previewUrl}
+          />
+        ) : (
+          <div className="absolute inset-0" style={{ backgroundImage: GRADIENTS[card.gradient] }} />
+        )}
+        <div className="absolute inset-0 bg-[rgba(10,8,4,0.12)]" />
+      </div>
 
       {card.videoUrl ? (
         <MotionPreviewLayer

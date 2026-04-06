@@ -27,8 +27,8 @@ export function ScrollAwareHeader({
         className,
         "transition-shadow duration-300",
         scrolled
-          ? "shadow-[0_2px_32px_rgba(10,8,4,0.13)] border-b-[1.5px] border-ink/20"
-          : "shadow-[0_14px_40px_rgba(10,8,4,0.04)]",
+          ? "shadow-[0_2px_32px_rgba(10,8,4,0.13)] dark:shadow-[0_2px_32px_rgba(0,0,0,0.45)] border-b-[1.5px] border-ink/20"
+          : "shadow-[0_14px_40px_rgba(10,8,4,0.04)] dark:shadow-none",
       )}
     >
       {children}

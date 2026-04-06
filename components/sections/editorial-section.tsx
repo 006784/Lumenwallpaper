@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { Reveal } from "@/components/ui/reveal";
@@ -15,16 +16,6 @@ export function EditorialSection({
   feature,
   items,
 }: EditorialSectionProps) {
-  const featureArtworkStyle = feature.previewUrl
-    ? {
-        backgroundImage: `linear-gradient(to top, rgba(10,8,4,0.22), rgba(10,8,4,0.12)), url("${feature.previewUrl}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
-    : {
-        backgroundImage: GRADIENTS[feature.gradient],
-      };
-
   return (
     <section className="border-b-frame border-ink bg-paper/45 px-4 py-14 md:px-10 md:py-section">
       <Reveal className="mb-10" y={18} duration={0.6}>
@@ -58,10 +49,20 @@ export function EditorialSection({
         className="group relative block min-h-[360px] overflow-hidden border-b-frame border-ink md:min-h-[540px] md:border-b-0 md:border-r-frame"
         href={feature.href}
       >
-        <div
-          className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.04]"
-          style={featureArtworkStyle}
-        />
+        <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.04]">
+          {feature.previewUrl ? (
+            <Image
+              fill
+              alt={feature.title}
+              className="object-cover object-center"
+              sizes="(max-width: 768px) 100vw, 58vw"
+              src={feature.previewUrl}
+            />
+          ) : (
+            <div className="absolute inset-0" style={{ backgroundImage: GRADIENTS[feature.gradient] }} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,8,4,0.22)] to-[rgba(10,8,4,0.12)]" />
+        </div>
         {feature.videoUrl ? (
           <MotionPreviewLayer
             className="transition duration-card ease-out group-hover:scale-[1.04]"
@@ -95,27 +96,25 @@ export function EditorialSection({
 
       <div className="flex flex-col">
         {items.map((item) => {
-          const itemArtworkStyle = item.previewUrl
-            ? {
-                backgroundImage: `linear-gradient(to top, rgba(10,8,4,0.16), rgba(10,8,4,0.04)), url("${item.previewUrl}")`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }
-            : {
-                backgroundImage: GRADIENTS[item.gradient],
-              };
-
           return (
             <Link
               key={item.number}
               className="group grid flex-1 grid-cols-[88px_1fr] border-b-frame border-ink transition last:border-b-0 hover:bg-paper2 md:grid-cols-[100px_1fr]"
               href={item.href}
             >
-              <div className="overflow-hidden border-r-frame border-ink">
-                <div
-                  className="h-full transition duration-card ease-out group-hover:scale-[1.08]"
-                  style={itemArtworkStyle}
-                >
+              <div className="relative overflow-hidden border-r-frame border-ink">
+                <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.08]">
+                  {item.previewUrl ? (
+                    <Image
+                      fill
+                      alt={item.title}
+                      className="object-cover object-center"
+                      sizes="100px"
+                      src={item.previewUrl}
+                    />
+                  ) : (
+                    <div className="absolute inset-0" style={{ backgroundImage: GRADIENTS[item.gradient] }} />
+                  )}
                   {item.videoUrl ? (
                     <MotionPreviewLayer
                       className="transition duration-card ease-out group-hover:scale-[1.08]"

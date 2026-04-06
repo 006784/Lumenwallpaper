@@ -7,15 +7,17 @@ const config: Config = {
     "./hooks/**/*.{ts,tsx}",
     "./lib/**/*.{ts,tsx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        ink: "#0A0804",
-        paper: "#F2EDE4",
-        paper2: "#E8E0D2",
-        red: "#D42B2B",
-        gold: "#F5C842",
-        muted: "#8A8070",
+        // CSS-variable driven — light/dark values defined in globals.css
+        ink: "rgb(var(--color-ink-rgb) / <alpha-value>)",
+        paper: "rgb(var(--color-paper-rgb) / <alpha-value>)",
+        paper2: "rgb(var(--color-paper-2-rgb) / <alpha-value>)",
+        red: "rgb(var(--color-red-rgb) / <alpha-value>)",
+        gold: "rgb(var(--color-gold-rgb) / <alpha-value>)",
+        muted: "rgb(var(--color-muted-rgb) / <alpha-value>)",
       },
       fontFamily: {
         body: ["var(--font-body)", "sans-serif"],

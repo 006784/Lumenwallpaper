@@ -9,18 +9,41 @@
     "STSong", "Iowan Old Style", "Baskerville", Georgia, serif;
   --font-mono: var(--font-geist-mono), "SFMono-Regular", "JetBrains Mono",
     monospace;
+
+  /* ── Light mode tokens ── */
   --color-ink: #0a0804;
+  --color-ink-rgb: 10 8 4;
   --color-paper: #f2ede4;
+  --color-paper-rgb: 242 237 228;
   --color-paper-2: #e8e0d2;
+  --color-paper-2-rgb: 232 224 210;
   --color-red: #d42b2b;
+  --color-red-rgb: 212 43 43;
   --color-gold: #f5c842;
+  --color-gold-rgb: 245 200 66;
   --color-muted: #8a8070;
+  --color-muted-rgb: 138 128 112;
   --border-frame: 1.5px solid #0a0804;
+
   --dur-film: 550ms;
   --dur-card: 700ms;
   --dur-info: 420ms;
   --dur-hover: 200ms;
   --ease-film: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Night / Dark mode tokens ── */
+.dark {
+  --color-ink: #ede8df;
+  --color-ink-rgb: 237 232 223;
+  --color-paper: #0d0b08;
+  --color-paper-rgb: 13 11 8;
+  --color-paper-2: #161310;
+  --color-paper-2-rgb: 22 19 16;
+  --color-muted: #9a8e7e;
+  --color-muted-rgb: 154 142 126;
+  /* red + gold stay identical — they read beautifully on dark */
+  --border-frame: 1.5px solid rgba(237, 232, 223, 0.16);
 }
 
 *,
@@ -51,6 +74,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 夜色模式背景 — 暗室感渐变 */
+.dark body {
+  background:
+    radial-gradient(circle at 16% 12%, rgba(245, 200, 66, 0.05), transparent 22%),
+    radial-gradient(circle at 84% 18%, rgba(212, 43, 43, 0.04), transparent 24%),
+    linear-gradient(180deg, #131009 0%, #0d0b08 40%, #090705 100%);
+}
+
 body::after {
   content: "";
   position: fixed;
@@ -60,6 +91,11 @@ body::after {
   opacity: 0.038;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)'/%3E%3C/svg%3E");
   background-size: 180px;
+}
+
+/* 暗室模式胶粒更明显 */
+.dark body::after {
+  opacity: 0.055;
 }
 
 a {
@@ -121,6 +157,19 @@ textarea:focus-visible {
     border-color: rgba(242, 237, 228, 0.4);
     background: rgba(242, 237, 228, 0.16);
     box-shadow: 8px 8px 0 0 rgba(245, 200, 66, 0.08);
+  }
+
+  /* Dark mode overrides for section-entry-link on light sections */
+  .dark .section-entry-link {
+    border-color: rgba(237, 232, 223, 0.14);
+    background: rgba(237, 232, 223, 0.05);
+    color: rgba(237, 232, 223, 0.78);
+  }
+
+  .dark .section-entry-link:hover {
+    border-color: rgba(237, 232, 223, 0.28);
+    background: rgba(237, 232, 223, 0.1);
+    box-shadow: 8px 8px 0 0 rgba(237, 232, 223, 0.04);
   }
 
   .safe-bottom-padding {

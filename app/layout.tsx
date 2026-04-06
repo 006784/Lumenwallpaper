@@ -6,7 +6,11 @@ import { ObservabilityWidgets } from "@/components/layout/observability-widgets"
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SmoothScrollProvider } from "@/components/layout/smooth-scroll-provider";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 import "@/styles/globals.css";
+
+// Inline script: apply .dark class before first paint to prevent flash
+const themeScript = `(function(){try{var t=localStorage.getItem('lumen-theme');var d=t==='dark'||((!t||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark')}catch(e){}})();`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL ?? "http://localhost:3000"),
@@ -37,18 +41,26 @@ export default function RootLayout({
 }>) {
   return (
     <html
+      suppressHydrationWarning
       className={`${GeistSans.variable} ${GeistMono.variable}`}
       lang="zh-CN"
     >
+      <head>
+        {/* Anti-flash: apply theme class synchronously before first paint */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="bg-paper font-body text-ink antialiased">
-        <SmoothScrollProvider>
-          <div className="relative min-h-screen overflow-x-hidden">
-            <SiteHeader />
-            <main className="pt-nav">{children}</main>
-            <SiteFooter />
-            <ObservabilityWidgets />
-          </div>
-        </SmoothScrollProvider>
+        <ThemeProvider>
+          <SmoothScrollProvider>
+            <div className="relative min-h-screen overflow-x-hidden">
+              <SiteHeader />
+              <main className="pt-nav">{children}</main>
+              <SiteFooter />
+              <ObservabilityWidgets />
+            </div>
+          </SmoothScrollProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
