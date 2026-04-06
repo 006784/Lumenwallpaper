@@ -20,6 +20,7 @@ export function DarkroomCard({ item }: DarkroomCardProps) {
         {item.previewUrl ? (
           <Image
             fill
+            unoptimized
             alt={item.title}
             className="object-cover object-center brightness-[.72] saturate-[.9]"
             sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"

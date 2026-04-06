@@ -56,6 +56,7 @@ export function MoodCard({ card }: MoodCardProps) {
         {card.previewUrl ? (
           <Image
             fill
+            unoptimized
             alt={card.name}
             className="object-cover object-center"
             sizes="(max-width: 640px) 50vw, 25vw"

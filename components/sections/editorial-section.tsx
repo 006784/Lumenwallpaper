@@ -53,6 +53,7 @@ export function EditorialSection({
           {feature.previewUrl ? (
             <Image
               fill
+              unoptimized
               alt={feature.title}
               className="object-cover object-center"
               sizes="(max-width: 768px) 100vw, 58vw"
@@ -107,6 +108,7 @@ export function EditorialSection({
                   {item.previewUrl ? (
                     <Image
                       fill
+                      unoptimized
                       alt={item.title}
                       className="object-cover object-center"
                       sizes="100px"

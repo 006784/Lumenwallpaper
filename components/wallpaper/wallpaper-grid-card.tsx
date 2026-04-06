@@ -52,6 +52,7 @@ export function WallpaperGridCard({
           <>
             <Image
               fill
+              unoptimized
               alt={displayTitle}
               className="object-cover object-center"
               sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
