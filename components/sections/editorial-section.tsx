@@ -44,7 +44,7 @@ export function EditorialSection({
         </div>
       </Reveal>
 
-      <Reveal className="overflow-hidden border-frame border-ink bg-paper shadow-[12px_12px_0_0_rgba(10,8,4,0.06)] md:grid md:grid-cols-[1.16fr_0.84fr]" y={30} duration={0.7}>
+      <Reveal className="overflow-hidden border-frame border-ink bg-paper dark:bg-paper2 shadow-[12px_12px_0_0_rgba(10,8,4,0.06)] dark:shadow-[12px_12px_0_0_rgba(0,0,0,0.35)] md:grid md:grid-cols-[1.16fr_0.84fr]" y={30} duration={0.7}>
       <Link
         className="group relative block min-h-[360px] overflow-hidden border-b-frame border-ink md:min-h-[540px] md:border-b-0 md:border-r-frame"
         href={feature.href}

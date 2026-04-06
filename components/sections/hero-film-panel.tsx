@@ -249,7 +249,7 @@ export function HeroFilmPanel({ rows = heroFilmRows }: HeroFilmPanelProps) {
   }, []);
 
   return (
-    <div className="relative min-h-[360px] overflow-hidden bg-[linear-gradient(180deg,#080704,#0b0906_42%,#11100b_100%)] sm:min-h-[460px] lg:min-h-full">
+    <div className="dm-light relative min-h-[360px] overflow-hidden bg-[linear-gradient(180deg,#080704,#0b0906_42%,#11100b_100%)] sm:min-h-[460px] lg:min-h-full">
       {/* 胶卷齿孔 */}
       <SprocketColumn side="left" />
       <SprocketColumn side="right" />

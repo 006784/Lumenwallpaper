@@ -10,7 +10,7 @@ type DarkroomSectionProps = {
 
 export function DarkroomSection({ items }: DarkroomSectionProps) {
   return (
-    <section className="border-b border-paper/10 bg-[radial-gradient(circle_at_top,rgba(245,200,66,0.08),transparent_24%),linear-gradient(180deg,#090805,#0d0b07_36%,#12100a_100%)] px-5 py-14 sm:px-6 md:px-10 md:py-section">
+    <section className="dm-light border-b border-paper/10 bg-[radial-gradient(circle_at_top,rgba(245,200,66,0.08),transparent_24%),linear-gradient(180deg,#090805,#0d0b07_36%,#12100a_100%)] px-5 py-14 sm:px-6 md:px-10 md:py-section">
       <Reveal className="mb-10 text-paper">
         <SectionHeading
           eyebrow="04 — 暗室精选"

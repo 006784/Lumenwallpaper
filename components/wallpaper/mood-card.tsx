@@ -44,7 +44,7 @@ export function MoodCard({ card }: MoodCardProps) {
     <Link
       ref={ref}
       className={cn(
-        "group relative block shrink-0 overflow-hidden border-frame border-ink bg-paper shadow-[0_4px_20px_rgba(10,8,4,0.08)] transition-shadow duration-card will-change-transform hover:shadow-paper",
+        "group relative block shrink-0 overflow-hidden border-frame border-ink bg-paper dark:bg-paper2 shadow-[0_4px_20px_rgba(10,8,4,0.08)] transition-shadow duration-card will-change-transform hover:shadow-paper",
         SHAPE_CLASSES[card.shape],
       )}
       href={card.href}

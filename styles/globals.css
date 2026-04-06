@@ -35,15 +35,25 @@
 /* ── Night / Dark mode tokens ── */
 .dark {
   --color-ink: #ede8df;
-  --color-ink-rgb: 237 232 223;
-  --color-paper: #0d0b08;
-  --color-paper-rgb: 13 11 8;
-  --color-paper-2: #161310;
-  --color-paper-2-rgb: 22 19 16;
+  --color-ink-rgb: 237 232 223;       /* warm cream — text & borders */
+  --color-paper: #0c0907;
+  --color-paper-rgb: 12 9 7;          /* deep warm black — page bg */
+  --color-paper-2: #151210;
+  --color-paper-2-rgb: 21 18 16;      /* elevated surface — cards */
   --color-muted: #9a8e7e;
   --color-muted-rgb: 154 142 126;
-  /* red + gold stay identical — they read beautifully on dark */
-  --border-frame: 1.5px solid rgba(237, 232, 223, 0.16);
+  /* red + gold unchanged — both shine on dark */
+  --border-frame: 1.5px solid rgba(237, 232, 223, 0.14);
+}
+
+/*
+ * dm-light — applied to sections that are ALWAYS dark (hero film panel,
+ * darkroom section). Inside these, paper stays cream so that text-paper,
+ * border-paper, bg-paper/xx all remain legible on the dark background.
+ */
+.dark .dm-light {
+  --color-paper: #f2ede4;
+  --color-paper-rgb: 242 237 228;
 }
 
 *,
@@ -74,12 +84,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 夜色模式背景 — 暗室感渐变 */
+/* 夜色模式背景 — 暗室感渐变，带微弱金色光晕 */
 .dark body {
   background:
-    radial-gradient(circle at 16% 12%, rgba(245, 200, 66, 0.05), transparent 22%),
-    radial-gradient(circle at 84% 18%, rgba(212, 43, 43, 0.04), transparent 24%),
-    linear-gradient(180deg, #131009 0%, #0d0b08 40%, #090705 100%);
+    radial-gradient(circle at 14% 10%, rgba(245, 200, 66, 0.07), transparent 24%),
+    radial-gradient(circle at 86% 20%, rgba(212, 43, 43, 0.05), transparent 26%),
+    linear-gradient(180deg, #110f0c 0%, #0c0907 42%, #080604 100%);
 }
 
 body::after {

@@ -36,7 +36,7 @@ export function WallpaperGridCard({
   return (
     <Link
       className={cn(
-        "group relative overflow-hidden border-frame border-ink bg-paper transition duration-card hover:-translate-y-1 hover:shadow-paper",
+        "group relative overflow-hidden border-frame border-ink bg-paper dark:bg-paper2 transition duration-card hover:-translate-y-1 hover:shadow-paper",
         className,
       )}
       href={`/wallpaper/${wallpaper.slug}`}

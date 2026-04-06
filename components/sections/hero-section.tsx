@@ -12,7 +12,7 @@ export function HeroSection({ filmRows }: HeroSectionProps) {
   return (
     <section className="border-b-frame border-ink lg:grid lg:min-h-[calc(100svh-56px)] lg:grid-cols-[1.04fr_0.96fr]">
       {/* ── 左侧文案区 ── */}
-      <div className="relative flex flex-col justify-between gap-8 overflow-hidden border-b-frame border-ink bg-[radial-gradient(circle_at_top_left,rgba(245,200,66,0.16),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.35),transparent_46%)] px-5 py-8 sm:px-6 sm:py-10 lg:border-b-0 lg:border-r-frame lg:px-12 lg:py-14">
+      <div className="relative flex flex-col justify-between gap-8 overflow-hidden border-b-frame border-ink bg-[radial-gradient(circle_at_top_left,rgba(245,200,66,0.16),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.35),transparent_46%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(245,200,66,0.08),transparent_30%),linear-gradient(180deg,transparent,transparent)] px-5 py-8 sm:px-6 sm:py-10 lg:border-b-0 lg:border-r-frame lg:px-12 lg:py-14">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red/25 to-transparent" />
         <div className="pointer-events-none absolute right-8 top-7 hidden items-center gap-3 text-[9px] uppercase tracking-[0.34em] text-muted/70 lg:flex">
           <span>Issue 01</span>
@@ -53,7 +53,7 @@ export function HeroSection({ filmRows }: HeroSectionProps) {
             className="group inline-flex items-center gap-3 font-mono text-[18px] tracking-[0.14em] transition-[gap] duration-300 hover:gap-5 sm:gap-4 sm:text-[22px] sm:tracking-[0.18em] sm:hover:gap-6"
             href="/explore"
           >
-            <span className="flex h-12 w-12 items-center justify-center rounded-full border-frame border-ink bg-paper/70 shadow-[8px_8px_0_0_rgba(10,8,4,0.08)] transition-[background-color,color,box-shadow] duration-200 group-hover:bg-ink group-hover:text-paper group-hover:shadow-[12px_12px_0_0_rgba(10,8,4,0.14)] sm:h-14 sm:w-14">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full border-frame border-ink bg-paper/70 shadow-[8px_8px_0_0_rgba(10,8,4,0.08)] transition-[background-color,color,box-shadow] duration-200 group-hover:bg-ink group-hover:text-paper group-hover:shadow-[12px_12px_0_0_rgba(10,8,4,0.14)] dark:border-[rgba(237,232,223,0.2)] dark:bg-[rgba(237,232,223,0.05)] dark:group-hover:bg-gold dark:group-hover:text-ink dark:group-hover:border-gold dark:group-hover:shadow-[8px_8px_0_0_rgba(245,200,66,0.15)] sm:h-14 sm:w-14">
               →
             </span>
             进入画廊
@@ -68,7 +68,7 @@ export function HeroSection({ filmRows }: HeroSectionProps) {
           {heroStats.map((stat) => (
             <div
               key={stat.label}
-              className="group border border-ink/10 bg-paper/45 px-4 py-4 backdrop-blur transition-colors duration-200 hover:border-ink/20 hover:bg-paper/70"
+              className="group border border-ink/10 bg-paper/45 px-4 py-4 backdrop-blur transition-colors duration-200 hover:border-ink/20 hover:bg-paper/70 dark:bg-[rgba(237,232,223,0.04)] dark:hover:bg-[rgba(237,232,223,0.07)]"
             >
               <div className="font-mono text-[32px] leading-none tracking-[-0.05em] transition-colors group-hover:text-red">
                 {stat.value}
