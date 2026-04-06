@@ -1,7 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
 
-import { GRADIENTS } from "@/lib/gradients";
 import {
   getWallpaperGradientKey,
   getWallpaperDisplayTitle,
@@ -11,6 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { Wallpaper } from "@/types/wallpaper";
 import { MotionPreviewLayer } from "@/components/wallpaper/motion-preview-layer";
+import { WallpaperCoverImage } from "@/components/wallpaper/wallpaper-cover-image";
 
 type WallpaperGridCardProps = {
   wallpaper: Wallpaper;
@@ -27,7 +26,7 @@ export function WallpaperGridCard({
   className,
 }: WallpaperGridCardProps) {
   const previewUrl = getWallpaperPreviewUrl(wallpaper, imageQuality);
-  const gradient = GRADIENTS[getWallpaperGradientKey(wallpaper)];
+  const gradientKey = getWallpaperGradientKey(wallpaper);
   const displayTitle = getWallpaperDisplayTitle(wallpaper);
   const visibleTags = (
     wallpaper.tags.length > 0 ? wallpaper.tags : wallpaper.aiTags
@@ -48,21 +47,13 @@ export function WallpaperGridCard({
       ) : null}
 
       <div className={cn(aspectRatio, "relative border-b-frame border-ink")}>
-        {previewUrl ? (
-          <>
-            <Image
-              fill
-              unoptimized
-              alt={displayTitle}
-              className="object-cover object-center"
-              sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              src={previewUrl}
-            />
-            <div className="absolute inset-0 bg-[rgba(10,8,4,0.15)]" />
-          </>
-        ) : (
-          <div className="absolute inset-0" style={{ backgroundImage: gradient }} />
-        )}
+        <WallpaperCoverImage
+          alt={displayTitle}
+          gradient={gradientKey}
+          sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+          src={previewUrl}
+        />
+        <div className="absolute inset-0 bg-[rgba(10,8,4,0.15)]" />
         {wallpaper.videoUrl ? (
           <MotionPreviewLayer videoUrl={wallpaper.videoUrl} />
         ) : null}

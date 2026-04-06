@@ -1,11 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { GRADIENTS } from "@/lib/gradients";
 import type { EditorialFeature, EditorialItem } from "@/types/home";
 import { MotionPreviewLayer } from "@/components/wallpaper/motion-preview-layer";
+import { WallpaperCoverImage } from "@/components/wallpaper/wallpaper-cover-image";
 
 type EditorialSectionProps = {
   feature: EditorialFeature;
@@ -50,18 +49,12 @@ export function EditorialSection({
         href={feature.href}
       >
         <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.04]">
-          {feature.previewUrl ? (
-            <Image
-              fill
-              unoptimized
-              alt={feature.title}
-              className="object-cover object-center"
-              sizes="(max-width: 768px) 100vw, 58vw"
-              src={feature.previewUrl}
-            />
-          ) : (
-            <div className="absolute inset-0" style={{ backgroundImage: GRADIENTS[feature.gradient] }} />
-          )}
+          <WallpaperCoverImage
+            alt={feature.title}
+            gradient={feature.gradient}
+            sizes="(max-width: 768px) 100vw, 58vw"
+            src={feature.previewUrl}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,8,4,0.22)] to-[rgba(10,8,4,0.12)]" />
         </div>
         {feature.videoUrl ? (
@@ -105,18 +98,12 @@ export function EditorialSection({
             >
               <div className="relative overflow-hidden border-r-frame border-ink">
                 <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.08]">
-                  {item.previewUrl ? (
-                    <Image
-                      fill
-                      unoptimized
-                      alt={item.title}
-                      className="object-cover object-center"
-                      sizes="100px"
-                      src={item.previewUrl}
-                    />
-                  ) : (
-                    <div className="absolute inset-0" style={{ backgroundImage: GRADIENTS[item.gradient] }} />
-                  )}
+                  <WallpaperCoverImage
+                    alt={item.title}
+                    gradient={item.gradient}
+                    sizes="100px"
+                    src={item.previewUrl}
+                  />
                   {item.videoUrl ? (
                     <MotionPreviewLayer
                       className="transition duration-card ease-out group-hover:scale-[1.08]"

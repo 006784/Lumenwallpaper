@@ -1,13 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 
-import { GRADIENTS } from "@/lib/gradients";
 import { cn } from "@/lib/utils";
 import type { MoodCardData, MoodShape } from "@/types/home";
 import { MotionPreviewLayer } from "@/components/wallpaper/motion-preview-layer";
+import { WallpaperCoverImage } from "@/components/wallpaper/wallpaper-cover-image";
 
 const SHAPE_CLASSES: Record<MoodShape, string> = {
   portrait: "h-[240px] w-[160px] md:h-[340px] md:w-[220px]",
@@ -53,18 +52,12 @@ export function MoodCard({ card }: MoodCardProps) {
       onMouseMove={handleMouseMove}
     >
       <div className="absolute inset-0 transition-transform duration-card ease-out group-hover:scale-[1.06]">
-        {card.previewUrl ? (
-          <Image
-            fill
-            unoptimized
-            alt={card.name}
-            className="object-cover object-center"
-            sizes="(max-width: 640px) 50vw, 25vw"
-            src={card.previewUrl}
-          />
-        ) : (
-          <div className="absolute inset-0" style={{ backgroundImage: GRADIENTS[card.gradient] }} />
-        )}
+        <WallpaperCoverImage
+          alt={card.name}
+          gradient={card.gradient}
+          sizes="(max-width: 640px) 50vw, 25vw"
+          src={card.previewUrl}
+        />
         <div className="absolute inset-0 bg-[rgba(10,8,4,0.12)]" />
       </div>
 

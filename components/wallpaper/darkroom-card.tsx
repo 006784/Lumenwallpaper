@@ -1,10 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 
-import { GRADIENTS } from "@/lib/gradients";
 import { cn } from "@/lib/utils";
 import type { DarkroomItem } from "@/types/home";
 import { MotionPreviewLayer } from "@/components/wallpaper/motion-preview-layer";
+import { WallpaperCoverImage } from "@/components/wallpaper/wallpaper-cover-image";
 
 type DarkroomCardProps = {
   item: DarkroomItem;
@@ -17,21 +16,14 @@ export function DarkroomCard({ item }: DarkroomCardProps) {
       href={item.href}
     >
       <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.05]">
-        {item.previewUrl ? (
-          <Image
-            fill
-            unoptimized
-            alt={item.title}
-            className="object-cover object-center brightness-[.72] saturate-[.9]"
-            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-            src={item.previewUrl}
-          />
-        ) : (
-          <div
-            className="absolute inset-0 brightness-[.72] saturate-[.82]"
-            style={{ backgroundImage: GRADIENTS[item.gradient] }}
-          />
-        )}
+        <WallpaperCoverImage
+          alt={item.title}
+          gradient={item.gradient}
+          gradientClassName="brightness-[.72] saturate-[.82]"
+          imageClassName="brightness-[.72] saturate-[.9]"
+          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+          src={item.previewUrl}
+        />
       </div>
 
       {item.videoUrl ? (
