@@ -449,6 +449,53 @@ function normalizeTags(tags: string[]) {
   return [...new Set(tags.map((tag) => tag.trim()).filter(Boolean))];
 }
 
+const TRANSIENT_SUPABASE_READ_RETRY_DELAYS_MS = [150, 400];
+
+function isRetryableSupabaseReadError(error: unknown) {
+  return (
+    error instanceof Error &&
+    /(fetch failed|terminated|econnreset|enotfound|etimedout|socket hang up)/i.test(
+      error.message,
+    )
+  );
+}
+
+async function waitForRetry(delayMs: number) {
+  await new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
+  });
+}
+
+async function withTransientSupabaseReadRetry<T>(
+  label: string,
+  operation: () => Promise<T>,
+) {
+  let attempt = 0;
+
+  while (true) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (
+        !isRetryableSupabaseReadError(error) ||
+        attempt >= TRANSIENT_SUPABASE_READ_RETRY_DELAYS_MS.length
+      ) {
+        throw error;
+      }
+
+      const delayMs = TRANSIENT_SUPABASE_READ_RETRY_DELAYS_MS[attempt];
+      const message = error instanceof Error ? error.message : String(error);
+
+      console.warn(
+        `[supabase] ${label} transient read failure (attempt ${attempt + 1}), retrying in ${delayMs}ms: ${message}`,
+      );
+
+      attempt += 1;
+      await waitForRetry(delayMs);
+    }
+  }
+}
+
 function normalizeColors(colors: string[]) {
   return [
     ...new Set(
@@ -1240,7 +1287,8 @@ async function fetchFilesMap(wallpaperIds: Array<string | number>) {
   const { data, error } = await client
     .from(wallpaperFilesTable)
     .select("*")
-    .in("wallpaper_id", wallpaperIds);
+    .in("wallpaper_id", wallpaperIds)
+    .limit(10000);
 
   if (error) {
     throw new Error(`Failed to load wallpaper files: ${error.message}`);
@@ -1943,55 +1991,57 @@ export async function listWallpapers(options: WallpaperListOptions = {}) {
         : filteredWallpapers;
   }
 
-  const client = createSupabaseAdminClient();
-  const buildWallpapersQuery = (applyMotionFilter: boolean) => {
-    let query = client
-      .from(wallpapersTable)
-      .select("*")
-      .eq("status", options.status ?? "published")
-      .order("created_at", { ascending: false });
+  return withTransientSupabaseReadRetry("listWallpapers", async () => {
+    const client = createSupabaseAdminClient();
+    const buildWallpapersQuery = (applyMotionFilter: boolean) => {
+      let query = client
+        .from(wallpapersTable)
+        .select("*")
+        .eq("status", options.status ?? "published")
+        .order("created_at", { ascending: false });
 
-    if (options.featured !== undefined) {
-      query = query.eq("featured", options.featured);
+      if (options.featured !== undefined) {
+        query = query.eq("featured", options.featured);
+      }
+
+      if (applyMotionFilter && options.motion !== undefined) {
+        query = options.motion
+          ? query.not("video_url", "is", null)
+          : query.is("video_url", null);
+      }
+
+      return query;
+    };
+
+    let { data, error } = await buildWallpapersQuery(true);
+
+    if (
+      error &&
+      options.motion !== undefined &&
+      /column .*video_url does not exist/i.test(error.message)
+    ) {
+      ({ data, error } = await buildWallpapersQuery(false));
     }
 
-    if (applyMotionFilter && options.motion !== undefined) {
-      query = options.motion
-        ? query.not("video_url", "is", null)
-        : query.is("video_url", null);
+    if (error) {
+      throw new Error(`Failed to list wallpapers: ${error.message}`);
     }
 
-    return query;
-  };
+    const wallpapers = filterWallpapers(await hydrateWallpapers(data ?? []), {
+      search: options.search,
+      tag: options.tag,
+      category: options.category,
+      featured: options.featured,
+      motion: options.motion,
+      sort: options.sort,
+    });
 
-  let { data, error } = await buildWallpapersQuery(true);
-
-  if (
-    error &&
-    options.motion !== undefined &&
-    /column .*video_url does not exist/i.test(error.message)
-  ) {
-    ({ data, error } = await buildWallpapersQuery(false));
-  }
-
-  if (error) {
-    throw new Error(`Failed to list wallpapers: ${error.message}`);
-  }
-
-  const wallpapers = filterWallpapers(await hydrateWallpapers(data ?? []), {
-    search: options.search,
-    tag: options.tag,
-    category: options.category,
-    featured: options.featured,
-    motion: options.motion,
-    sort: options.sort,
+    const offset = options.offset ?? 0;
+    if (options.limit) {
+      return wallpapers.slice(offset, offset + options.limit);
+    }
+    return offset > 0 ? wallpapers.slice(offset) : wallpapers;
   });
-
-  const offset = options.offset ?? 0;
-  if (options.limit) {
-    return wallpapers.slice(offset, offset + options.limit);
-  }
-  return offset > 0 ? wallpapers.slice(offset) : wallpapers;
 }
 
 export async function listPublishedWallpapers(
@@ -2018,51 +2068,56 @@ export async function getWallpaperByIdOrSlug(identifier: string) {
     return getFallbackWallpaperByIdentifier(identifier);
   }
 
-  const client = createSupabaseAdminClient();
-  const { data: bySlug, error: slugError } = await client
-    .from(wallpapersTable)
-    .select("*")
-    .eq("slug", identifier)
-    .limit(1)
-    .maybeSingle();
+  return withTransientSupabaseReadRetry(
+    `getWallpaperByIdOrSlug(${identifier})`,
+    async () => {
+      const client = createSupabaseAdminClient();
+      const { data: bySlug, error: slugError } = await client
+        .from(wallpapersTable)
+        .select("*")
+        .eq("slug", identifier)
+        .limit(1)
+        .maybeSingle();
 
-  if (slugError) {
-    throw new Error(`Failed to load wallpaper by slug: ${slugError.message}`);
-  }
+      if (slugError) {
+        throw new Error(`Failed to load wallpaper by slug: ${slugError.message}`);
+      }
 
-  if (bySlug) {
-    return (await hydrateWallpapers([bySlug]))[0] ?? null;
-  }
+      if (bySlug) {
+        return (await hydrateWallpapers([bySlug]))[0] ?? null;
+      }
 
-  const looksNumericId = /^\d+$/.test(identifier);
-  const looksUuidId =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      identifier,
-    );
+      const looksNumericId = /^\d+$/.test(identifier);
+      const looksUuidId =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          identifier,
+        );
 
-  if (!looksNumericId && !looksUuidId) {
-    return null;
-  }
+      if (!looksNumericId && !looksUuidId) {
+        return null;
+      }
 
-  const idValue: string | number = looksNumericId
-    ? Number(identifier)
-    : identifier;
-  const { data: byId, error: idError } = await client
-    .from(wallpapersTable)
-    .select("*")
-    .eq("id", idValue)
-    .limit(1)
-    .maybeSingle();
+      const idValue: string | number = looksNumericId
+        ? Number(identifier)
+        : identifier;
+      const { data: byId, error: idError } = await client
+        .from(wallpapersTable)
+        .select("*")
+        .eq("id", idValue)
+        .limit(1)
+        .maybeSingle();
 
-  if (idError) {
-    throw new Error(`Failed to load wallpaper by id: ${idError.message}`);
-  }
+      if (idError) {
+        throw new Error(`Failed to load wallpaper by id: ${idError.message}`);
+      }
 
-  if (!byId) {
-    return null;
-  }
+      if (!byId) {
+        return null;
+      }
 
-  return (await hydrateWallpapers([byId]))[0] ?? null;
+      return (await hydrateWallpapers([byId]))[0] ?? null;
+    },
+  );
 }
 
 export async function getCreatorByUsername(username: string) {
