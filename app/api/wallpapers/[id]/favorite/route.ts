@@ -36,9 +36,15 @@ export async function GET(
       currentUser?.id ?? null,
     );
 
-    return jsonSuccess(snapshot, {
+    return jsonSuccess(
+      {
+        ...snapshot,
+        isSignedIn: Boolean(currentUser),
+      },
+      {
       message: "Favorite state loaded.",
-    });
+      },
+    );
   } catch (error) {
     captureServerException(error, {
       route: "/api/wallpapers/[id]/favorite",

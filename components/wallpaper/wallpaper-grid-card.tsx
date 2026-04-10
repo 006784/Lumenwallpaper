@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import {
+  getWallpaperCoverSources,
   getWallpaperGradientKey,
   getWallpaperDisplayTitle,
   getWallpaperMeta,
@@ -26,6 +27,7 @@ export function WallpaperGridCard({
   className,
 }: WallpaperGridCardProps) {
   const previewUrl = getWallpaperPreviewUrl(wallpaper, imageQuality);
+  const coverSources = getWallpaperCoverSources(wallpaper);
   const gradientKey = getWallpaperGradientKey(wallpaper);
   const displayTitle = getWallpaperDisplayTitle(wallpaper);
   const visibleTags = (
@@ -49,6 +51,7 @@ export function WallpaperGridCard({
       <div className={cn(aspectRatio, "relative border-b-frame border-ink")}>
         <WallpaperCoverImage
           alt={displayTitle}
+          sources={coverSources}
           gradient={gradientKey}
           sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
           src={previewUrl}

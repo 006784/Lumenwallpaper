@@ -27,6 +27,11 @@ export interface HeroStat {
   value: string;
 }
 
+export interface WallpaperCoverSource {
+  src: string;
+  width: number;
+}
+
 export interface FilmCellData {
   gradient: GradientKey;
   label: string;
@@ -44,6 +49,7 @@ export interface MoodCardData {
   id: string;
   gradient: GradientKey;
   previewUrl?: string;
+  coverSources?: WallpaperCoverSource[];
   videoUrl?: string | null;
   shape: MoodShape;
   number: string;
@@ -60,6 +66,7 @@ export interface EditorialFeature {
   eyebrow: string;
   href: string;
   previewUrl?: string;
+  coverSources?: WallpaperCoverSource[];
   videoUrl?: string | null;
 }
 
@@ -70,6 +77,7 @@ export interface EditorialItem {
   meta: string;
   href: string;
   previewUrl?: string;
+  coverSources?: WallpaperCoverSource[];
   videoUrl?: string | null;
 }
 
@@ -86,6 +94,7 @@ export interface DarkroomItem {
   meta: string;
   href: string;
   previewUrl?: string;
+  coverSources?: WallpaperCoverSource[];
   videoUrl?: string | null;
   badge?: string;
   featured?: boolean;

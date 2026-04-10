@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
+const PROXY_SERVER = process.env.PLAYWRIGHT_PROXY_SERVER;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -24,10 +25,14 @@ export default defineConfig({
     baseURL: BASE_URL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
-    proxy: {
-      server: "http://127.0.0.1:7890",
-      bypass: "localhost,127.0.0.1",
-    },
+    ...(PROXY_SERVER
+      ? {
+          proxy: {
+            server: PROXY_SERVER,
+            bypass: "localhost,127.0.0.1",
+          },
+        }
+      : {}),
   },
   projects: [
     {

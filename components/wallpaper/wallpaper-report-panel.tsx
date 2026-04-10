@@ -210,7 +210,13 @@ export function WallpaperReportPanel({
                 type="email"
               />
             </div>
-          ) : null}
+          ) : (
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.25em] text-muted">
+                已使用当前登录账号提交举报
+              </p>
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-3">
             <button

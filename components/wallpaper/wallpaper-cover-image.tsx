@@ -1,34 +1,48 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
-import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { cn } from "@/lib/utils";
 import { GRADIENTS } from "@/lib/gradients";
-import type { GradientKey } from "@/types/home";
+import { cn } from "@/lib/utils";
+import type { GradientKey, WallpaperCoverSource } from "@/types/home";
 
 type WallpaperCoverImageProps = {
   src: string | undefined;
   alt: string;
   gradient: GradientKey;
   sizes?: string;
+  sources?: WallpaperCoverSource[];
   imageClassName?: string;
   gradientClassName?: string;
 };
 
 /**
  * Renders a wallpaper image with automatic gradient fallback.
- * Falls back to the gradient when src is absent or the image fails to load.
+ * Uses the browser's native responsive image selection so remote assets can
+ * load directly from the image CDN without losing srcset/sizes behavior.
  */
 export function WallpaperCoverImage({
   src,
   alt,
   gradient,
   sizes,
+  sources,
   imageClassName,
   gradientClassName,
 }: WallpaperCoverImageProps) {
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  const srcSet = sources?.length
+    ? sources
+        .filter((source) => source.src && source.width > 0)
+        .map((source) => `${source.src} ${source.width}w`)
+        .join(", ")
+    : undefined;
 
   if (!src || failed) {
     return (
@@ -40,13 +54,17 @@ export function WallpaperCoverImage({
   }
 
   return (
-    <Image
-      fill
-      unoptimized
+    <img
       alt={alt}
-      className={cn("object-cover object-center", imageClassName)}
+      className={cn(
+        "absolute inset-0 h-full w-full object-cover object-center",
+        imageClassName,
+      )}
+      decoding="async"
+      loading="lazy"
       sizes={sizes}
       src={src}
+      srcSet={srcSet}
       onError={() => setFailed(true)}
     />
   );

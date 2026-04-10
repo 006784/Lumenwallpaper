@@ -15,13 +15,18 @@ const config: Config = {
         ink: "rgb(var(--color-ink-rgb) / <alpha-value>)",
         paper: "rgb(var(--color-paper-rgb) / <alpha-value>)",
         paper2: "rgb(var(--color-paper-2-rgb) / <alpha-value>)",
+        "paper-2": "#e8e0d2",
         red: "rgb(var(--color-red-rgb) / <alpha-value>)",
+        "brand-red": "#d42b2b",
         gold: "rgb(var(--color-gold-rgb) / <alpha-value>)",
         muted: "rgb(var(--color-muted-rgb) / <alpha-value>)",
+        hint: "#b0a898",
+        border: "#d0c8b8",
       },
       fontFamily: {
         body: ["var(--font-body)", "sans-serif"],
         display: ["var(--font-display)", "serif"],
+        bebas: ['"Bebas Neue"', "sans-serif"],
         mono: ["var(--font-mono)", "sans-serif"],
       },
       spacing: {
@@ -30,6 +35,7 @@ const config: Config = {
         "card-sm": "13px",
       },
       borderWidth: {
+        "1.5": "1.5px",
         frame: "1.5px",
       },
       transitionDuration: {

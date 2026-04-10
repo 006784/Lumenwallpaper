@@ -6,6 +6,51 @@
 
 ## 进行中
 
+### TASK-018 · 全局主题首屏与错误页壳层体验优化
+- **状态**: ✅ codex done
+- **内容**: 优化根布局与全局错误页的主题初始化、字体继承和浏览器界面色彩一致性，减少首屏闪烁与错误态样式断层
+- **Codex 完成**:
+  - 新增 `lib/theme.ts` 统一维护主题存储 key、浅/深色浏览器界面色值和首屏主题初始化脚本
+  - `app/layout.tsx` 现通过共享脚本在 hydration 前同步 `.dark` 与 `color-scheme`，并补充 `viewport.themeColor`
+  - `app/global-error.tsx` 现继承 Geist 字体变量与同一套主题初始化逻辑，避免错误页回退到不一致的视觉外观
+
+### TASK-015 · 公开/私有布局拆分与公开页去用户态
+- **状态**: ✅ codex done
+- **内容**: 把公开页和私有页拆成独立 route group / layout，移除公共 header 对 session、通知数和管理入口的依赖，并让壁纸详情页的收藏状态改为客户端补拉
+- **Codex 完成**:
+  - 根布局 `app/layout.tsx` 现在只保留 providers，不再在全站共享 layout 里挂用户态 header
+  - 新增 `app/(public)/layout.tsx`、`app/(dashboard)/layout.tsx`、`app/(auth)/layout.tsx`
+  - 公共页与私有页已拆到 `app/(public)` / `app/(dashboard)`，URL 保持不变
+  - `components/layout/site-header.tsx` 已改成纯公共 header，不再读 session / 未读通知 / 管理入口
+  - 新增 `components/layout/dashboard-header.tsx` 承载私有区用户态导航
+  - 壁纸详情页已移除服务端 `getCurrentSession()` / `getWallpaperFavoriteState()` 依赖
+  - `GET /api/wallpapers/[id]/favorite` 现返回 `isSignedIn`，详情页收藏状态改为客户端补拉
+  - `package.json` 的 `type-check` 已切到 `tsc --noEmit --incremental false`，避免 route group 调整后 `.next/types` 残留导致假红
+
+### TASK-014 · 暗房下载配置面板
+- **状态**: ✅ codex done
+- **内容**: 按品牌规格实现新的暗房下载配置面板，并替换详情页当前下载弹层
+- **Codex 完成**:
+  - 新增 `components/wallpaper/DownloadPanel.tsx`，按暗房规格实现格式切换、比例裁切、辅助开关、输出信息块与下载/缓存按钮
+  - `app/wallpaper/[id]/page.tsx` 与 `components/wallpaper/wallpaper-detail-sidebar.tsx` 已切换到新下载面板
+  - 现有真实下载接口仍保留，点击面板下载会继续走 `/api/wallpapers/[id]/download`
+  - `tailwind.config.ts` 已补齐 `paper-2 / brand-red / hint / border / 1.5 / bebas` 扩展，避免破坏现有全站 token
+
+### TASK-013 · 封面加载与主题兼容修复
+- **状态**: ✅ codex done
+- **内容**: 修复封面错误状态卡死、恢复响应式封面加载、补齐旧版 Safari/WebView 的主题监听兼容
+- **Codex 完成**:
+  - `WallpaperCoverImage` 改为原生 `img + srcset + sizes` 直连资源域，不再全量禁用响应式加载
+  - `WallpaperCoverImage` 在 `src` 变化时重置失败状态，避免错误兜底卡死
+  - `types/home.ts` 新增共享类型 `WallpaperCoverSource`
+  - 首页/专题/卡片封面已接入 `coverSources`
+  - `ThemeProvider` 为 `matchMedia` 增加 `addListener/removeListener` 兼容分支
+- **共享类型变更**:
+  - `MoodCardData.coverSources?`
+  - `EditorialFeature.coverSources?`
+  - `EditorialItem.coverSources?`
+  - `DarkroomItem.coverSources?`
+
 ### TASK-011 · OpenClaw 管理 API 扩展
 - **状态**: ✅ codex done
 - **内容**: 为 OpenClaw 补齐可导入的工具清单，以及重复检测、批量重命名、批量审核、下载接口
@@ -38,6 +83,17 @@
 ---
 
 ## 待处理
+
+### TASK-019 · 首页 Hero 左侧文案区重排
+- **状态**: ⏳ claude todo
+- **内容**: 重做首页 Hero 左侧文案区的深色版式层级与信息编排，解决“空、闷、散、像 dashboard”的问题
+- **影响文件**:
+  - `components/sections/hero-section.tsx`
+- **设计说明**:
+  - 见 `docs/ai-collab/TASK-019-hero-brief.md`
+- **Codex 备注**:
+  - 当前不需要新增 API / hook / 类型
+  - 这是纯 UI 重排任务，可直接在现有数据契约上完成
 
 ### TASK-012 · Explore 分页支持
 - **状态**: ✅ claude done（Codex 额度不足，由 Claude 全程完成）
@@ -124,6 +180,34 @@
 ---
 
 ## 已完成
+
+### ✅ TASK-017 · 公开 API 元数据细化与下载面板联调
+- `GET /api/wallpapers?withMeta=true` 的分页结果已补充：
+  - `count`
+  - `pageSize`
+  - `hasNextPage`
+  - `hasPreviousPage`
+  - `filters`
+- `withMeta=true` 时现在会尊重 `limit` 作为每页大小（上限 100）
+- 共享类型 `types/wallpaper.ts` 已扩展：
+  - `WallpaperListFiltersSnapshot`
+  - `WallpaperListPageResult.count`
+  - `WallpaperListPageResult.pageSize`
+  - `WallpaperListPageResult.hasNextPage`
+  - `WallpaperListPageResult.hasPreviousPage`
+  - `WallpaperListPageResult.filters`
+- `explore-catalog.tsx` 已切到消费新的分页元数据
+- `playwright.config.ts` 已改成通过 `PLAYWRIGHT_PROXY_SERVER` 可选开启代理，便于线上联调
+- `e2e/download.spec.ts` 已补下载面板的打开、格式/比例切换、缓存恢复用例
+
+### ✅ TASK-016 · 公开探索页静态壳与公开缓存补强
+- `/explore` 改为静态壳 + 客户端读取缓存 `GET /api/wallpapers?withMeta=true`
+- `/explore/[category]` 补 `generateStaticParams()`，分类页按公开目录静态生成
+- `GET /api/wallpapers` 新增分页元数据返回能力（`withMeta=true` / `page`）
+- `wallpaper/[id]` 与 `creator/[username]` 补 `generateStaticParams()`，公开详情页更易命中预渲染
+- 新增共享类型：
+  - `types/api.ts` → `ApiSuccessResponse` / `ApiErrorResponse`
+  - `types/wallpaper.ts` → `WallpaperListPageResult`
 
 ### ✅ Phase 0 — 项目初始化
 - Next.js 14 + TypeScript + Tailwind + ESLint + Husky

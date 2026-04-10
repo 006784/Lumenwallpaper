@@ -18,6 +18,7 @@ export function DarkroomCard({ item }: DarkroomCardProps) {
       <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.05]">
         <WallpaperCoverImage
           alt={item.title}
+          sources={item.coverSources}
           gradient={item.gradient}
           gradientClassName="brightness-[.72] saturate-[.82]"
           imageClassName="brightness-[.72] saturate-[.9]"

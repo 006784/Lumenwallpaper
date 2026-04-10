@@ -54,6 +54,7 @@ export function MoodCard({ card }: MoodCardProps) {
       <div className="absolute inset-0 transition-transform duration-card ease-out group-hover:scale-[1.06]">
         <WallpaperCoverImage
           alt={card.name}
+          sources={card.coverSources}
           gradient={card.gradient}
           sizes="(max-width: 640px) 50vw, 25vw"
           src={card.previewUrl}

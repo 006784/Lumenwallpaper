@@ -158,6 +158,27 @@ export interface WallpaperListOptions {
   status?: WallpaperStatus;
 }
 
+export interface WallpaperListFiltersSnapshot {
+  category: string | null;
+  featured: boolean;
+  motion: boolean;
+  query: string | null;
+  sort: WallpaperSort;
+  tag: string | null;
+}
+
+export interface WallpaperListPageResult {
+  wallpapers: Wallpaper[];
+  count: number;
+  filters: WallpaperListFiltersSnapshot;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  pageSize: number;
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 export interface PresignedUploadPayload {
   key: string;
   presignedUrl: string;

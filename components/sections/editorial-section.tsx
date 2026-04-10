@@ -51,6 +51,7 @@ export function EditorialSection({
         <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.04]">
           <WallpaperCoverImage
             alt={feature.title}
+            sources={feature.coverSources}
             gradient={feature.gradient}
             sizes="(max-width: 768px) 100vw, 58vw"
             src={feature.previewUrl}
@@ -100,6 +101,7 @@ export function EditorialSection({
                 <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.08]">
                   <WallpaperCoverImage
                     alt={item.title}
+                    sources={item.coverSources}
                     gradient={item.gradient}
                     sizes="100px"
                     src={item.previewUrl}

@@ -9,7 +9,12 @@ import {
 } from "@/lib/api";
 import { getPublicApiCacheHeaders } from "@/lib/cache";
 import { getCurrentUser, isAuthConfigured } from "@/lib/auth";
-import { getCachedPublishedWallpapers } from "@/lib/public-wallpaper-cache";
+import {
+  getCachedPublishedWallpapers,
+  EXPLORE_PAGE_SIZE,
+  getCachedPublishedWallpapersPage,
+} from "@/lib/public-wallpaper-cache";
+import type { WallpaperSort } from "@/types/wallpaper";
 import {
   createWallpaperRecord,
   createWallpaperSchema,
@@ -26,14 +31,22 @@ export async function GET(request: Request) {
     const sort = searchParams.get("sort");
     const featured = searchParams.get("featured");
     const motion = searchParams.get("motion");
+    const page = searchParams.get("page");
+    const withMeta = searchParams.get("withMeta");
 
     const parsedLimit = limit ? Number.parseInt(limit, 10) : undefined;
     const parsedOffset = offset ? Number.parseInt(offset, 10) : undefined;
-    const wallpapers = await getCachedPublishedWallpapers({
-      limit:
-        parsedLimit && Number.isFinite(parsedLimit) && parsedLimit > 0
-          ? parsedLimit
-          : undefined,
+    const parsedSort: WallpaperSort | undefined =
+      sort === "popular" || sort === "likes" || sort === "latest"
+        ? sort
+        : undefined;
+    const parsedPage = page ? Number.parseInt(page, 10) : undefined;
+    const normalizedLimit =
+      parsedLimit && Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.min(parsedLimit, 100)
+        : undefined;
+    const options = {
+      limit: normalizedLimit,
       offset:
         parsedOffset && Number.isFinite(parsedOffset) && parsedOffset > 0
           ? parsedOffset
@@ -41,16 +54,33 @@ export async function GET(request: Request) {
       search: q ?? undefined,
       tag: tag ?? undefined,
       category: category ?? undefined,
-      sort:
-        sort === "popular" || sort === "likes" || sort === "latest"
-          ? sort
-          : undefined,
+      sort: parsedSort,
       featured:
         featured === null ? undefined : featured === "true" || featured === "1",
       motion: motion === null ? undefined : motion === "true" || motion === "1",
-    });
+    };
 
-    return jsonSuccess(wallpapers, {
+    const shouldReturnPageMeta =
+      withMeta === "true" || withMeta === "1" || parsedPage !== undefined;
+
+    const data = shouldReturnPageMeta
+      ? await getCachedPublishedWallpapersPage(
+          {
+            search: options.search,
+            tag: options.tag,
+            category: options.category,
+            featured: options.featured,
+            motion: options.motion,
+            sort: options.sort,
+          },
+          parsedPage && Number.isFinite(parsedPage) && parsedPage > 0
+            ? parsedPage
+            : 1,
+          normalizedLimit ?? EXPLORE_PAGE_SIZE,
+        )
+      : await getCachedPublishedWallpapers(options);
+
+    return jsonSuccess(data, {
       headers: getPublicApiCacheHeaders(true),
       message: "Wallpapers loaded.",
     });

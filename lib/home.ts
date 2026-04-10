@@ -24,6 +24,18 @@ const HOME_FEATURED_POOL_LIMIT = 12;
 const HOME_MOTION_LIMIT = 9;
 const HOME_IOS_POOL_LIMIT = 24;
 
+async function loadHomePool(
+  label: string,
+  loader: () => Promise<Wallpaper[]>,
+) {
+  try {
+    return await loader();
+  } catch (error) {
+    console.warn(`[home] failed to load ${label}`, error);
+    return [];
+  }
+}
+
 function getAdaptiveHomeLimits(staticPoolSize: number) {
   if (staticPoolSize >= 18) {
     return {
@@ -143,27 +155,35 @@ function getFallbackHomePageSnapshot(): HomePageSnapshot {
 export async function getHomePageSnapshot(): Promise<HomePageSnapshot> {
   const [publishedWallpapers, featuredWallpapers, motionWallpapers, iosCandidates] =
     await Promise.all([
-    getCachedPublishedWallpapers({
-      limit: HOME_PUBLISHED_POOL_LIMIT,
-      sort: "latest",
-      motion: false,
-    }),
-    getCachedFeaturedWallpapers({
-      limit: HOME_FEATURED_POOL_LIMIT,
-      sort: "popular",
-      motion: false,
-    }),
-    getCachedPublishedWallpapers({
-      limit: HOME_MOTION_LIMIT,
-      sort: "latest",
-      motion: true,
-    }),
-    getCachedPublishedWallpapers({
-      limit: HOME_IOS_POOL_LIMIT,
-      sort: "latest",
-      motion: false,
-    }),
-  ]);
+      loadHomePool("published wallpapers", () =>
+        getCachedPublishedWallpapers({
+          limit: HOME_PUBLISHED_POOL_LIMIT,
+          sort: "latest",
+          motion: false,
+        }),
+      ),
+      loadHomePool("featured wallpapers", () =>
+        getCachedFeaturedWallpapers({
+          limit: HOME_FEATURED_POOL_LIMIT,
+          sort: "popular",
+          motion: false,
+        }),
+      ),
+      loadHomePool("motion wallpapers", () =>
+        getCachedPublishedWallpapers({
+          limit: HOME_MOTION_LIMIT,
+          sort: "latest",
+          motion: true,
+        }),
+      ),
+      loadHomePool("ios wallpapers", () =>
+        getCachedPublishedWallpapers({
+          limit: HOME_IOS_POOL_LIMIT,
+          sort: "latest",
+          motion: false,
+        }),
+      ),
+    ]);
 
   const fallbackSnapshot = getFallbackHomePageSnapshot();
   const staticPool = getUniqueWallpapers([

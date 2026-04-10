@@ -1,0 +1,1134 @@
+"use client";
+/* eslint-disable @next/next/no-img-element */
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+type DownloadFormat = "PNG" | "WEBP";
+type DownloadState = "idle" | "loading" | "done";
+type CacheState = "idle" | "done";
+type FormatKey = "original" | "4k" | "webp";
+
+export interface DownloadPanelProps {
+  wallpaper: {
+    id: string;
+    title: string;
+    width: number;
+    height: number;
+    previewUrl: string;
+  };
+  onDownload: (config: { fmt: string; res: string; ratio: string }) => void;
+  onSaveConfig: (config: {
+    fmt: string;
+    ratio: string;
+    lockOn: boolean;
+  }) => void;
+  onClose: () => void;
+}
+
+type FormatPreset = {
+  fmt: DownloadFormat;
+  key: FormatKey;
+  label: string;
+  res: string;
+  size: string;
+  width: number;
+  height: number;
+};
+
+type RatioOption = {
+  label: string;
+  w: number;
+  h: number;
+};
+
+type BoxSize = {
+  width: number;
+  height: number;
+};
+
+type CachedDownloadPanelConfig = {
+  fmt?: DownloadFormat;
+  formatKey?: FormatKey;
+  lockOn?: boolean;
+  ratio?: string;
+  res?: string;
+  updatedAt?: string;
+};
+
+const OVERLAY_BG = "rgba(0,0,0,0.5)";
+const INK = "#0a0804";
+const PAPER = "#f2ede4";
+const PAPER_2 = "#e8e0d2";
+const RED = "#d42b2b";
+const MUTED = "#8a8070";
+const HINT = "#b0a898";
+const BORDER = "#d0c8b8";
+const BORDER_DK = "rgba(10,8,4,0.12)";
+const FILM_BG = "#0a0804";
+const FILM_HOLE = "#2a2820";
+
+const FONT_BODY = "'Instrument Sans', system-ui, sans-serif";
+const FONT_MONO = "monospace";
+
+const FREE_RATIO: RatioOption = {
+  label: "FREE",
+  w: 0,
+  h: 0,
+};
+
+const DESKTOP_RATIOS: RatioOption[] = [
+  FREE_RATIO,
+  { label: "16:9", w: 16, h: 9 },
+  { label: "21:9", w: 21, h: 9 },
+  { label: "4:3", w: 4, h: 3 },
+  { label: "5:4", w: 5, h: 4 },
+];
+
+const MOBILE_RATIOS: RatioOption[] = [
+  { label: "9:16", w: 9, h: 16 },
+  { label: "9:19.5", w: 9, h: 19.5 },
+  { label: "1:1", w: 1, h: 1 },
+  { label: "3:4", w: 3, h: 4 },
+];
+
+const ALL_RATIOS = [...DESKTOP_RATIOS, ...MOBILE_RATIOS];
+
+function formatResolution(width: number, height: number) {
+  return `${Math.round(width)} × ${Math.round(height)}`;
+}
+
+function estimateSizeLabel(
+  width: number,
+  height: number,
+  megapixelFactor: number,
+) {
+  const megapixels = Math.max((width * height) / 1_000_000, 0.4);
+  const estimated = megapixels * megapixelFactor;
+
+  return `~${estimated >= 10 ? estimated.toFixed(1) : estimated.toFixed(1)} MB`;
+}
+
+function computeBoxSize(width: number, height: number): BoxSize {
+  if (width >= height) {
+    return {
+      width: Math.min(340, Math.round(340)),
+      height: Math.min(240, Math.round((340 * height) / width)),
+    };
+  }
+
+  return {
+    height: Math.min(240, 220),
+    width: Math.min(340, Math.round((220 * width) / height)),
+  };
+}
+
+function buildFilmHint(label: string, fmt: DownloadFormat, size: string) {
+  return `${label} · ${fmt} · ${size}`;
+}
+
+function FilmHoles({ count }: { count: number }) {
+  return (
+    <div className="flex items-center gap-[6px]">
+      {Array.from({ length: count }, (_, index) => (
+        <span
+          key={index}
+          className="block h-2 w-[11px] rounded-[2px]"
+          style={{
+            background: FILM_BG,
+            border: `1px solid ${FILM_HOLE}`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Toggle({
+  checked,
+  onClick,
+}: {
+  checked: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      aria-pressed={checked}
+      className="relative block h-[18px] w-[34px]"
+      style={{
+        borderRadius: "9px",
+        background: checked ? RED : BORDER,
+      }}
+      type="button"
+      onClick={onClick}
+    >
+      <span
+        className="absolute top-[2px] block h-[14px] w-[14px] rounded-full transition-all duration-200"
+        style={{
+          left: checked ? "18px" : "2px",
+          background: PAPER,
+        }}
+      />
+    </button>
+  );
+}
+
+export function DownloadPanel({
+  wallpaper,
+  onDownload,
+  onSaveConfig,
+  onClose,
+}: DownloadPanelProps) {
+  const timeoutsRef = useRef<number[]>([]);
+  const storageKey = `lumen:download-config:${wallpaper.id}`;
+  const [viewportWidth, setViewportWidth] = useState(1024);
+
+  const presets = useMemo<Record<FormatKey, FormatPreset>>(() => {
+    const originalWidth = wallpaper.width > 0 ? wallpaper.width : 2358;
+    const originalHeight = wallpaper.height > 0 ? wallpaper.height : 1538;
+
+    return {
+      original: {
+        key: "original",
+        fmt: "PNG",
+        label: "原图输出",
+        res: formatResolution(originalWidth, originalHeight),
+        size: estimateSizeLabel(originalWidth, originalHeight, 2.3),
+        width: originalWidth,
+        height: originalHeight,
+      },
+      "4k": {
+        key: "4k",
+        fmt: "PNG",
+        label: "4K 超清",
+        res: "3840 × 2160",
+        size: "~14.2 MB",
+        width: 3840,
+        height: 2160,
+      },
+      webp: {
+        key: "webp",
+        fmt: "WEBP",
+        label: "WebP 压缩",
+        res: formatResolution(originalWidth, originalHeight),
+        size: estimateSizeLabel(originalWidth, originalHeight, 0.58),
+        width: originalWidth,
+        height: originalHeight,
+      },
+    };
+  }, [wallpaper.height, wallpaper.width]);
+
+  const [fmt, setFmt] = useState<DownloadFormat>(presets.original.fmt);
+  const [fmtLabel, setFmtLabel] = useState(presets.original.label);
+  const [res, setRes] = useState(presets.original.res);
+  const [size, setSize] = useState(presets.original.size);
+  const [ratio, setRatio] = useState(FREE_RATIO.label);
+  const [thirdsOn, setThirdsOn] = useState(false);
+  const [lockOn, setLockOn] = useState(true);
+  const [dlState, setDlState] = useState<DownloadState>("idle");
+  const [cacheState, setCacheState] = useState<CacheState>("idle");
+  const [formatKey, setFormatKey] = useState<FormatKey>("original");
+  const [selectedRatio, setSelectedRatio] = useState<RatioOption>(FREE_RATIO);
+  const [boxSize, setBoxSize] = useState<BoxSize>(() =>
+    computeBoxSize(presets.original.width, presets.original.height),
+  );
+  const [dimPill, setDimPill] = useState(
+    `${wallpaper.width} × ${wallpaper.height} px`,
+  );
+  const [detectLabel, setDetectLabel] = useState("检测");
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const timeouts = timeoutsRef.current;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      for (const timeout of timeouts) {
+        window.clearTimeout(timeout);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    function updateViewportWidth() {
+      setViewportWidth(window.innerWidth);
+    }
+
+    updateViewportWidth();
+    window.addEventListener("resize", updateViewportWidth);
+
+    return () => {
+      window.removeEventListener("resize", updateViewportWidth);
+    };
+  }, []);
+
+  const currentPreset = presets[formatKey];
+  const filmHint = buildFilmHint(fmtLabel, fmt, size);
+  const isCompact = viewportWidth < 900;
+  const isPhone = viewportWidth < 640;
+  const previewScale = isCompact
+    ? Math.min(1, Math.max(0.74, (viewportWidth - 88) / 340))
+    : 1;
+  const displayBoxWidth = Math.round(boxSize.width * previewScale);
+  const displayBoxHeight = Math.round(boxSize.height * previewScale);
+
+  function rememberTimeout(timeout: number) {
+    timeoutsRef.current.push(timeout);
+  }
+
+  function syncRatioState(nextRatio: RatioOption, nextPreset: FormatPreset) {
+    if (nextRatio.w === 0 || nextRatio.h === 0) {
+      const nextBoxSize = computeBoxSize(nextPreset.width, nextPreset.height);
+
+      setBoxSize(nextBoxSize);
+      setRatio(nextRatio.label);
+      setRes(nextPreset.res);
+      setDimPill(`${nextPreset.width} × ${nextPreset.height} px`);
+      return;
+    }
+
+    const nextBoxSize = computeBoxSize(nextRatio.w, nextRatio.h);
+    const scale = nextPreset.width / 340;
+    const nextWidth = Math.round(nextBoxSize.width * scale);
+    const nextHeight = Math.round(nextBoxSize.height * scale);
+
+    setBoxSize(nextBoxSize);
+    setRatio(nextRatio.label);
+    setRes(formatResolution(nextWidth, nextHeight));
+    setDimPill(`${nextWidth} × ${nextHeight} px`);
+  }
+
+  function applyPanelState(
+    nextFormatKey: FormatKey,
+    nextRatio: RatioOption,
+    nextLockOn?: boolean,
+  ) {
+    const nextPreset = presets[nextFormatKey];
+
+    setFormatKey(nextFormatKey);
+    setFmt(nextPreset.fmt);
+    setFmtLabel(nextPreset.label);
+    setSize(nextPreset.size);
+    setSelectedRatio(nextRatio);
+    if (typeof nextLockOn === "boolean") {
+      setLockOn(nextLockOn);
+    }
+    syncRatioState(nextRatio, nextPreset);
+  }
+
+  function applyFormat(nextFormatKey: FormatKey) {
+    applyPanelState(nextFormatKey, selectedRatio);
+  }
+
+  function applyRatio(nextRatio: RatioOption) {
+    applyPanelState(formatKey, nextRatio);
+  }
+
+  function toggleThirds() {
+    setThirdsOn((value) => !value);
+  }
+
+  function doDetect() {
+    const screenWidth = window.screen.width;
+    const screenHeight = window.screen.height;
+    const nextRes = formatResolution(screenWidth, screenHeight);
+
+    setDimPill(`${screenWidth} × ${screenHeight} px`);
+    setRes(nextRes);
+    setDetectLabel(`${screenWidth}×${screenHeight}`);
+
+    const timeout = window.setTimeout(() => {
+      setDetectLabel("检测");
+    }, 2200);
+
+    rememberTimeout(timeout);
+  }
+
+  function doDl() {
+    if (dlState !== "idle") {
+      return;
+    }
+
+    setDlState("loading");
+
+    const doneTimeout = window.setTimeout(() => {
+      setDlState("done");
+      onDownload({ fmt, res, ratio });
+    }, 900);
+
+    const resetTimeout = window.setTimeout(() => {
+      setDlState("idle");
+    }, 2400);
+
+    rememberTimeout(doneTimeout);
+    rememberTimeout(resetTimeout);
+  }
+
+  function doCache() {
+    if (cacheState !== "idle") {
+      return;
+    }
+
+    try {
+      const payload: CachedDownloadPanelConfig = {
+        fmt,
+        formatKey,
+        lockOn,
+        ratio,
+        res,
+        updatedAt: new Date().toISOString(),
+      };
+
+      window.localStorage.setItem(storageKey, JSON.stringify(payload));
+    } catch {
+      // Ignore storage failures and still allow normal UI flow.
+    }
+
+    setCacheState("done");
+    onSaveConfig({ fmt, ratio, lockOn });
+
+    const timeout = window.setTimeout(() => {
+      setCacheState("idle");
+    }, 1800);
+
+    rememberTimeout(timeout);
+  }
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+
+      if (!raw) {
+        return;
+      }
+
+      const parsed = JSON.parse(raw) as CachedDownloadPanelConfig;
+      const nextFormatKey =
+        parsed.formatKey === "original" ||
+        parsed.formatKey === "4k" ||
+        parsed.formatKey === "webp"
+          ? parsed.formatKey
+          : parsed.fmt === "WEBP"
+            ? "webp"
+            : parsed.res === presets["4k"].res
+              ? "4k"
+              : "original";
+      const nextRatio = ALL_RATIOS.find((option) => option.label === parsed.ratio) ?? FREE_RATIO;
+      const nextPreset = presets[nextFormatKey];
+
+      setFormatKey(nextFormatKey);
+      setFmt(nextPreset.fmt);
+      setFmtLabel(nextPreset.label);
+      setSize(nextPreset.size);
+      setSelectedRatio(nextRatio);
+      setLockOn(parsed.lockOn ?? true);
+      syncRatioState(nextRatio, nextPreset);
+    } catch {
+      // Ignore malformed local cache and keep defaults.
+    }
+  }, [presets, storageKey]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center px-3 py-3 sm:px-4 sm:py-6 md:items-center"
+      style={{
+        background: OVERLAY_BG,
+        fontFamily: FONT_BODY,
+      }}
+      onClick={onClose}
+    >
+      <div
+        className="grid w-full overflow-hidden"
+        style={{
+          background: PAPER,
+          border: `1.5px solid ${INK}`,
+          borderRadius: 0,
+          gridTemplateColumns: isCompact ? "1fr" : "minmax(0, 1fr) 300px",
+          maxWidth: "900px",
+          maxHeight: isCompact ? "calc(100vh - 24px)" : "calc(100vh - 48px)",
+          overflowY: isCompact ? "auto" : "hidden",
+        }}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div
+          className="flex flex-col"
+          style={{
+            borderRight: isCompact ? "none" : `1.5px solid ${INK}`,
+            borderBottom: isCompact ? `1.5px solid ${INK}` : "none",
+            minHeight: isCompact ? "auto" : "720px",
+          }}
+        >
+          <div
+            className="flex h-[26px] items-center justify-between px-3"
+            style={{
+              background: FILM_BG,
+              borderBottom: `1.5px solid ${INK}`,
+            }}
+          >
+            <FilmHoles count={5} />
+            <p
+              className="text-center"
+              style={{
+                color: "#3a3830",
+                fontFamily: FONT_MONO,
+                fontSize: "9px",
+                letterSpacing: "2.5px",
+              }}
+            >
+              FRAME™ · 2026 · ISO 400 · f/1.8 · 1/250s
+            </p>
+            <FilmHoles count={5} />
+          </div>
+
+          <div
+            className="flex flex-1 items-center justify-center"
+            style={{
+              background: PAPER_2,
+              padding: isPhone ? "36px 18px" : isCompact ? "40px 24px" : "48px 36px",
+            }}
+          >
+            <div className="relative">
+              <div
+                className="absolute left-0 top-[-24px]"
+                style={{
+                  background: INK,
+                  color: PAPER,
+                  fontFamily: FONT_MONO,
+                  fontSize: "9px",
+                  letterSpacing: "1.5px",
+                  padding: "3px 9px",
+                }}
+              >
+                {dimPill}
+              </div>
+
+              <div
+                className="relative overflow-hidden"
+                style={{
+                  width: `${displayBoxWidth}px`,
+                  height: `${displayBoxHeight}px`,
+                  background:
+                    "linear-gradient(135deg, #1a2a3a, #2a4060, #3a5580, #1a2a3a)",
+                  transition:
+                    "width 0.42s cubic-bezier(0.4,0,0.2,1), height 0.42s cubic-bezier(0.4,0,0.2,1)",
+                }}
+              >
+                <img
+                  alt={wallpaper.title}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  src={wallpaper.previewUrl}
+                />
+                <span
+                  className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2"
+                  style={{ background: "rgba(255,255,255,0.08)" }}
+                />
+                <span
+                  className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2"
+                  style={{ background: "rgba(255,255,255,0.08)" }}
+                />
+                {thirdsOn ? (
+                  <>
+                    <span
+                      className="absolute left-0 h-px w-full"
+                      style={{
+                        top: "33.3%",
+                        background: "rgba(245,200,66,0.4)",
+                      }}
+                    />
+                    <span
+                      className="absolute left-0 h-px w-full"
+                      style={{
+                        top: "66.6%",
+                        background: "rgba(245,200,66,0.4)",
+                      }}
+                    />
+                    <span
+                      className="absolute top-0 h-full w-px"
+                      style={{
+                        left: "33.3%",
+                        background: "rgba(245,200,66,0.4)",
+                      }}
+                    />
+                    <span
+                      className="absolute top-0 h-full w-px"
+                      style={{
+                        left: "66.6%",
+                        background: "rgba(245,200,66,0.4)",
+                      }}
+                    />
+                  </>
+                ) : null}
+                <span
+                  className="absolute inset-0"
+                  style={{ border: "1.5px solid rgba(242,237,228,0.6)" }}
+                />
+                <span
+                  className="absolute left-[-1px] top-[-1px] h-[10px] w-[10px]"
+                  style={{
+                    borderLeft: `2.5px solid ${RED}`,
+                    borderTop: `2.5px solid ${RED}`,
+                  }}
+                />
+                <span
+                  className="absolute right-[-1px] top-[-1px] h-[10px] w-[10px]"
+                  style={{
+                    borderRight: `2.5px solid ${RED}`,
+                    borderTop: `2.5px solid ${RED}`,
+                  }}
+                />
+                <span
+                  className="absolute bottom-[-1px] left-[-1px] h-[10px] w-[10px]"
+                  style={{
+                    borderBottom: `2.5px solid ${RED}`,
+                    borderLeft: `2.5px solid ${RED}`,
+                  }}
+                />
+                <span
+                  className="absolute bottom-[-1px] right-[-1px] h-[10px] w-[10px]"
+                  style={{
+                    borderBottom: `2.5px solid ${RED}`,
+                    borderRight: `2.5px solid ${RED}`,
+                  }}
+                />
+              </div>
+
+              <div
+                className="absolute bottom-[-24px] right-0"
+                style={{
+                  background: RED,
+                  color: PAPER,
+                  fontFamily: FONT_MONO,
+                  fontSize: "9px",
+                  letterSpacing: "2px",
+                  padding: "3px 9px",
+                }}
+              >
+                {ratio}
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="flex h-[26px] items-center justify-between px-3"
+            style={{
+              background: FILM_BG,
+              borderTop: `1.5px solid ${INK}`,
+            }}
+          >
+            <FilmHoles count={3} />
+            <p
+              className="text-center"
+              style={{
+                color: "#6a6050",
+                fontFamily: FONT_MONO,
+                fontSize: "9px",
+                letterSpacing: "2px",
+              }}
+            >
+              {filmHint}
+            </p>
+            <FilmHoles count={3} />
+          </div>
+        </div>
+
+        <div
+          className="flex flex-col"
+          style={{
+            background: PAPER,
+            minHeight: isCompact ? "auto" : "720px",
+          }}
+        >
+          <div
+            className="px-[22px] pb-4 pt-5"
+            style={{ borderBottom: `1.5px solid ${INK}` }}
+          >
+            <div className="flex items-start justify-between">
+              <p
+                style={{
+                  color: MUTED,
+                  fontFamily: FONT_MONO,
+                  fontSize: "9px",
+                  letterSpacing: "4px",
+                }}
+              >
+                DARKROOM EXPORT
+              </p>
+              <button
+                aria-label="关闭下载配置"
+                className="flex h-[22px] w-[22px] items-center justify-center transition-colors"
+                style={{
+                  background: PAPER,
+                  border: `1.5px solid ${INK}`,
+                  color: INK,
+                  fontSize: "11px",
+                }}
+                type="button"
+                onClick={onClose}
+                onMouseEnter={(event) => {
+                  event.currentTarget.style.background = INK;
+                  event.currentTarget.style.color = PAPER;
+                }}
+                onMouseLeave={(event) => {
+                  event.currentTarget.style.background = PAPER;
+                  event.currentTarget.style.color = INK;
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <h2
+              className="mt-5"
+              style={{
+                color: INK,
+                fontSize: "22px",
+                fontWeight: 500,
+                letterSpacing: "-0.5px",
+                lineHeight: 1,
+              }}
+            >
+              下载配置
+            </h2>
+            <p
+              className="mt-1"
+              style={{
+                color: MUTED,
+                fontSize: "11px",
+                letterSpacing: "0.5px",
+              }}
+            >
+              选择格式与裁切比例后下载
+            </p>
+          </div>
+
+          <div
+            className="flex flex-1 flex-col gap-5 overflow-y-auto"
+            style={{
+              padding: isPhone ? "16px 18px" : "18px 22px",
+            }}
+          >
+            <section>
+              <div className="mb-[10px] flex items-center gap-[10px]">
+                <span
+                  style={{
+                    color: MUTED,
+                    fontSize: "9px",
+                    letterSpacing: "4px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  格式
+                </span>
+                <span
+                  className="block h-px flex-1"
+                  style={{ background: BORDER_DK }}
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-[5px]">
+                {[
+                  ["原图", "original"],
+                  ["4K", "4k"],
+                  ["WebP", "webp"],
+                ].map(([label, key]) => {
+                  const active = formatKey === key;
+
+                  return (
+                    <button
+                      key={key}
+                      className="text-center"
+                      style={{
+                        background: active ? INK : PAPER,
+                        border: active
+                          ? `1.5px solid ${INK}`
+                          : `1px solid ${BORDER}`,
+                        borderRadius: 0,
+                        color: active ? PAPER : MUTED,
+                        cursor: "pointer",
+                        fontFamily: FONT_MONO,
+                        fontSize: "10px",
+                        letterSpacing: "2px",
+                        padding: "10px 0",
+                      }}
+                      type="button"
+                      onClick={() => applyFormat(key as FormatKey)}
+                      onMouseEnter={(event) => {
+                        if (active) {
+                          return;
+                        }
+
+                        event.currentTarget.style.borderColor = MUTED;
+                        event.currentTarget.style.color = INK;
+                      }}
+                      onMouseLeave={(event) => {
+                        if (active) {
+                          return;
+                        }
+
+                        event.currentTarget.style.borderColor = BORDER;
+                        event.currentTarget.style.color = MUTED;
+                      }}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section>
+              <div className="mb-[10px] flex items-center gap-[10px]">
+                <span
+                  style={{
+                    color: MUTED,
+                    fontSize: "9px",
+                    letterSpacing: "4px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  裁切比例
+                </span>
+                <span
+                  className="block h-px flex-1"
+                  style={{ background: BORDER_DK }}
+                />
+              </div>
+
+              <p
+                style={{
+                  color: HINT,
+                  fontFamily: FONT_MONO,
+                  fontSize: "9px",
+                  letterSpacing: "2px",
+                }}
+              >
+                桌面 / 平板
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {DESKTOP_RATIOS.map((option) => {
+                  const active = ratio === option.label;
+
+                  return (
+                    <button
+                      key={option.label}
+                      style={{
+                        background: active ? RED : PAPER,
+                        border: `1px solid ${active ? RED : BORDER}`,
+                        borderRadius: 0,
+                        color: active ? PAPER : MUTED,
+                        cursor: "pointer",
+                        fontFamily: FONT_MONO,
+                        fontSize: "9px",
+                        letterSpacing: "1.5px",
+                        padding: "5px 10px",
+                      }}
+                      type="button"
+                      onClick={() => applyRatio(option)}
+                      onMouseEnter={(event) => {
+                        if (active) {
+                          return;
+                        }
+
+                        event.currentTarget.style.borderColor = MUTED;
+                        event.currentTarget.style.color = INK;
+                      }}
+                      onMouseLeave={(event) => {
+                        if (active) {
+                          return;
+                        }
+
+                        event.currentTarget.style.borderColor = BORDER;
+                        event.currentTarget.style.color = MUTED;
+                      }}
+                    >
+                      {option.label === "FREE" ? "自由" : option.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <p
+                className="mt-[10px]"
+                style={{
+                  color: HINT,
+                  fontFamily: FONT_MONO,
+                  fontSize: "9px",
+                  letterSpacing: "2px",
+                }}
+              >
+                手机
+              </p>
+              <div className="mt-[6px] flex flex-wrap gap-1">
+                {MOBILE_RATIOS.map((option) => {
+                  const active = ratio === option.label;
+
+                  return (
+                    <button
+                      key={option.label}
+                      style={{
+                        background: active ? RED : PAPER,
+                        border: `1px solid ${active ? RED : BORDER}`,
+                        borderRadius: 0,
+                        color: active ? PAPER : MUTED,
+                        cursor: "pointer",
+                        fontFamily: FONT_MONO,
+                        fontSize: "9px",
+                        letterSpacing: "1.5px",
+                        padding: "5px 10px",
+                      }}
+                      type="button"
+                      onClick={() => applyRatio(option)}
+                      onMouseEnter={(event) => {
+                        if (active) {
+                          return;
+                        }
+
+                        event.currentTarget.style.borderColor = MUTED;
+                        event.currentTarget.style.color = INK;
+                      }}
+                      onMouseLeave={(event) => {
+                        if (active) {
+                          return;
+                        }
+
+                        event.currentTarget.style.borderColor = BORDER;
+                        event.currentTarget.style.color = MUTED;
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section>
+              <div className="mb-[10px] flex items-center gap-[10px]">
+                <span
+                  style={{
+                    color: MUTED,
+                    fontSize: "9px",
+                    letterSpacing: "4px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  辅助选项
+                </span>
+                <span
+                  className="block h-px flex-1"
+                  style={{ background: BORDER_DK }}
+                />
+              </div>
+
+              <div
+                className="flex items-center justify-between py-[9px]"
+                style={{ borderBottom: "1px solid rgba(10,8,4,0.08)" }}
+              >
+                <span style={{ color: "#5a5060", fontSize: "12px" }}>
+                  三分构图参考线
+                </span>
+                <Toggle checked={thirdsOn} onClick={toggleThirds} />
+              </div>
+              <div
+                className="flex items-center justify-between py-[9px]"
+                style={{ borderBottom: "1px solid rgba(10,8,4,0.08)" }}
+              >
+                <span style={{ color: "#5a5060", fontSize: "12px" }}>
+                  等比缩放锁定
+                </span>
+                <Toggle
+                  checked={lockOn}
+                  onClick={() => setLockOn((value) => !value)}
+                />
+              </div>
+              <div className="flex items-center justify-between py-[9px]">
+                <span style={{ color: "#5a5060", fontSize: "12px" }}>
+                  检测屏幕分辨率
+                </span>
+                <button
+                  style={{
+                    background: PAPER,
+                    border: `1px solid ${BORDER}`,
+                    borderRadius: 0,
+                    color: MUTED,
+                    cursor: "pointer",
+                    fontFamily: FONT_MONO,
+                    fontSize: "9px",
+                    letterSpacing: "2px",
+                    padding: "4px 10px",
+                  }}
+                  type="button"
+                  onClick={doDetect}
+                  onMouseEnter={(event) => {
+                    event.currentTarget.style.borderColor = MUTED;
+                    event.currentTarget.style.color = INK;
+                  }}
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.borderColor = BORDER;
+                    event.currentTarget.style.color = MUTED;
+                  }}
+                >
+                  {detectLabel}
+                </button>
+              </div>
+            </section>
+
+            <section
+              style={{
+                background: INK,
+                padding: "14px 16px",
+              }}
+            >
+              {[
+                ["分辨率", res, PAPER],
+                ["格式", fmt, MUTED],
+                ["大小", size, MUTED],
+                ["比例", ratio, RED],
+              ].map(([key, value, color]) => (
+                <div
+                  key={key}
+                  className="flex items-baseline justify-between py-[3px]"
+                >
+                  <span
+                    style={{
+                      color: "#4a4440",
+                      fontFamily: FONT_MONO,
+                      fontSize: "9px",
+                      letterSpacing: "2px",
+                    }}
+                  >
+                    {key}
+                  </span>
+                  <span
+                    style={{
+                      color,
+                      fontFamily: FONT_MONO,
+                      fontSize: "11px",
+                    }}
+                  >
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </section>
+          </div>
+
+          <div
+            className="flex flex-col gap-[7px]"
+            style={{
+              borderTop: `1.5px solid ${INK}`,
+              padding: isPhone ? "14px 18px" : "16px 22px",
+            }}
+          >
+            <button
+              className="w-full"
+              style={{
+                background:
+                  dlState === "done"
+                    ? "#1a3a1a"
+                    : dlState === "loading"
+                      ? "#1a1810"
+                      : INK,
+                border: "none",
+                borderRadius: 0,
+                color:
+                  dlState === "done"
+                    ? "#6ade80"
+                    : dlState === "loading"
+                      ? RED
+                      : PAPER,
+                cursor: dlState === "idle" ? "pointer" : "default",
+                fontFamily: FONT_MONO,
+                fontSize: "10px",
+                letterSpacing: "5px",
+                padding: "14px 0",
+                pointerEvents: dlState === "idle" ? "auto" : "none",
+                transition: "background 0.22s ease, color 0.22s ease",
+              }}
+              type="button"
+              onClick={doDl}
+              onMouseEnter={(event) => {
+                if (dlState !== "idle") {
+                  return;
+                }
+
+                event.currentTarget.style.background = RED;
+              }}
+              onMouseLeave={(event) => {
+                if (dlState !== "idle") {
+                  return;
+                }
+
+                event.currentTarget.style.background = INK;
+              }}
+            >
+              {dlState === "loading"
+                ? "冲洗中 · · ·"
+                : dlState === "done"
+                  ? "完成 ✓"
+                  : "下载壁纸"}
+            </button>
+
+            <button
+              className="w-full"
+              style={{
+                background: "transparent",
+                border: `1px solid ${cacheState === "done" ? "#1a6b3a" : BORDER}`,
+                borderRadius: 0,
+                color: cacheState === "done" ? "#1a6b3a" : MUTED,
+                cursor: cacheState === "idle" ? "pointer" : "default",
+                fontFamily: FONT_MONO,
+                fontSize: "9px",
+                letterSpacing: "3px",
+                padding: "8px 0",
+                transition: "border-color 0.18s ease, color 0.18s ease",
+              }}
+              type="button"
+              onClick={doCache}
+              onMouseEnter={(event) => {
+                if (cacheState !== "idle") {
+                  return;
+                }
+
+                event.currentTarget.style.borderColor = MUTED;
+                event.currentTarget.style.color = INK;
+              }}
+              onMouseLeave={(event) => {
+                if (cacheState !== "idle") {
+                  return;
+                }
+
+                event.currentTarget.style.borderColor = BORDER;
+                event.currentTarget.style.color = MUTED;
+              }}
+            >
+              {cacheState === "done" ? "已缓存 ✓" : "缓存配置"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Tailwind extend snippet:
+ *
+ * theme: {
+ *   extend: {
+ *     colors: {
+ *       ink: '#0a0804',
+ *       paper: '#f2ede4',
+ *       'paper-2': '#e8e0d2',
+ *       'brand-red': '#d42b2b',
+ *       muted: '#8a8070',
+ *       hint: '#b0a898',
+ *       border: '#d0c8b8',
+ *     },
+ *     fontFamily: {
+ *       display: ['"DM Serif Display"', 'serif'],
+ *       bebas: ['"Bebas Neue"', 'sans-serif'],
+ *       body: ['"Instrument Sans"', 'sans-serif'],
+ *     },
+ *     borderWidth: { '1.5': '1.5px' },
+ *   }
+ * }
+ */

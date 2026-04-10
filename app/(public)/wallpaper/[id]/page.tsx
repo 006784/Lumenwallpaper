@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { getCurrentSession } from "@/lib/auth";
+import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
 import { GRADIENTS } from "@/lib/gradients";
 import {
   getWallpaperDisplayTitle,
@@ -12,9 +12,6 @@ import {
   getWallpaperPreviewUrl,
 } from "@/lib/wallpaper-presenters";
 import { getCachedPublishedWallpapers, getCachedWallpaperByIdentifier } from "@/lib/public-wallpaper-cache";
-import {
-  getWallpaperFavoriteState,
-} from "@/lib/wallpapers";
 import { WallpaperDetailSidebar } from "@/components/wallpaper/wallpaper-detail-sidebar";
 import { WallpaperVideoPlayer } from "@/components/wallpaper/wallpaper-video-player";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
@@ -24,6 +21,41 @@ type WallpaperPageProps = {
     id: string;
   };
 };
+
+export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
+
+export async function generateStaticParams() {
+  try {
+    const wallpapers = await getCachedPublishedWallpapers({
+      limit: 1000,
+      sort: "latest",
+    });
+
+    return wallpapers.map((wallpaper) => ({
+      id: wallpaper.slug,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function normalizeTagValue(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function wallpaperMatchesRelatedTag(
+  wallpaper: {
+    aiTags: string[];
+    tags: string[];
+  },
+  relatedTag: string,
+) {
+  const normalizedRelatedTag = normalizeTagValue(relatedTag);
+
+  return [...wallpaper.tags, ...wallpaper.aiTags].some((tag) => {
+    return normalizeTagValue(tag) === normalizedRelatedTag;
+  });
+}
 
 function getVisibleWallpaperDescription(value: string | null) {
   if (!value) {
@@ -81,29 +113,37 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
     notFound();
   }
 
-  const currentSession = getCurrentSession();
   const displayTitle = getWallpaperDisplayTitle(wallpaper);
   const visibleDescription = getVisibleWallpaperDescription(wallpaper.description);
   const preferredFile = getPreferredWallpaperFile(wallpaper);
   const posterUrl = getWallpaperPreviewUrl(wallpaper);
   const downloadFile = getWallpaperDownloadFile(wallpaper);
   const downloadOptions = getWallpaperDownloadOptions(wallpaper);
-  const favoriteState = await getWallpaperFavoriteState(
-    wallpaper.slug,
-    currentSession?.user.id ?? null,
-  );
 
   const relatedTag = wallpaper.tags[0] ?? wallpaper.aiTags[0] ?? null;
-  const [relatedByTag, relatedPopular] = await Promise.all([
-    relatedTag
-      ? getCachedPublishedWallpapers({ tag: relatedTag, sort: "popular", limit: 7 })
-      : Promise.resolve([]),
-    getCachedPublishedWallpapers({ sort: "popular", limit: 7 }),
-  ]);
-  const candidatePool = relatedByTag.length >= 3 ? relatedByTag : relatedPopular;
-  const relatedWallpapers = candidatePool
-    .filter((w) => w.id !== wallpaper.id)
-    .slice(0, 6);
+  let relatedWallpapers: Awaited<
+    ReturnType<typeof getCachedPublishedWallpapers>
+  > = [];
+
+  try {
+    const relatedPopular = await getCachedPublishedWallpapers({
+      sort: "popular",
+    });
+    const relatedByTag = relatedTag
+      ? relatedPopular.filter((candidate) => {
+          return wallpaperMatchesRelatedTag(candidate, relatedTag);
+        })
+      : [];
+    const candidatePool =
+      relatedByTag.length >= 3 ? relatedByTag : relatedPopular;
+
+    relatedWallpapers = candidatePool
+      .filter((candidate) => candidate.id !== wallpaper.id)
+      .slice(0, 6);
+  } catch {
+    relatedWallpapers = [];
+  }
+
   const artworkStyle = preferredFile
     ? {
         backgroundImage: `url("${preferredFile.url}")`,
@@ -156,12 +196,12 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
               height={wallpaper.height}
               identifier={wallpaper.slug}
               initialDownloadsCount={wallpaper.downloadsCount}
-              initialIsFavorited={favoriteState.isFavorited}
-              initialLikesCount={favoriteState.likesCount}
-              isSignedIn={Boolean(currentSession)}
+              initialLikesCount={wallpaper.likesCount}
               loginHref={`/login?next=/wallpaper/${encodeURIComponent(wallpaper.slug)}`}
+              previewUrl={posterUrl ?? preferredFile?.url ?? null}
               slug={wallpaper.slug}
               tags={wallpaper.tags}
+              title={displayTitle}
               width={wallpaper.width}
             />
           </div>

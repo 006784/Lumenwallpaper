@@ -1,16 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 
 import { ObservabilityWidgets } from "@/components/layout/observability-widgets";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
 import { SmoothScrollProvider } from "@/components/layout/smooth-scroll-provider";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { THEME_COLOR_DARK, THEME_COLOR_LIGHT, THEME_INIT_SCRIPT } from "@/lib/theme";
 import "@/styles/globals.css";
-
-// Inline script: apply .dark class before first paint to prevent flash
-const themeScript = `(function(){try{var t=localStorage.getItem('lumen-theme');var d=t==='dark'||((!t||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark')}catch(e){}})();`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL ?? "http://localhost:3000"),
@@ -34,6 +30,14 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  colorScheme: "light dark",
+  themeColor: [
+    { color: THEME_COLOR_LIGHT, media: "(prefers-color-scheme: light)" },
+    { color: THEME_COLOR_DARK, media: "(prefers-color-scheme: dark)" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -48,15 +52,13 @@ export default function RootLayout({
       <head>
         {/* Anti-flash: apply theme class synchronously before first paint */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="bg-paper font-body text-ink antialiased">
         <ThemeProvider>
           <SmoothScrollProvider>
             <div className="relative min-h-screen overflow-x-hidden">
-              <SiteHeader />
-              <main className="pt-nav">{children}</main>
-              <SiteFooter />
+              {children}
               <ObservabilityWidgets />
             </div>
           </SmoothScrollProvider>

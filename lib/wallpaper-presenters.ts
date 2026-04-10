@@ -6,6 +6,7 @@ import type {
   GradientKey,
   MoodCardData,
   MoodShape,
+  WallpaperCoverSource,
 } from "@/types/home";
 import type {
   Wallpaper,
@@ -73,6 +74,23 @@ const DOWNLOAD_OPTION_VARIANT_ORDER: WallpaperVariant[] = [
   "original",
 ];
 
+const RESPONSIVE_SOURCE_VARIANT_FALLBACK_WIDTH: Record<
+  WallpaperFile["variant"],
+  number
+> = {
+  preview: 720,
+  thumb: 1440,
+  "4k": 2160,
+  original: 2880,
+};
+
+const RESPONSIVE_SOURCE_QUALITY_PRIORITY: Array<WallpaperFile["variant"]> = [
+  "original",
+  "4k",
+  "thumb",
+  "preview",
+];
+
 function hashInput(value: string) {
   let hash = 0;
 
@@ -103,6 +121,14 @@ function isVideoWallpaperFile(file: WallpaperFile) {
     file.format?.startsWith("video/") ||
     /\.(mp4|webm|mov)$/i.test(file.url) ||
     /\.(mp4|webm|mov)$/i.test(file.storagePath)
+  );
+}
+
+function getWallpaperFileSourceWidth(file: WallpaperFile) {
+  return (
+    file.width ??
+    RESPONSIVE_SOURCE_VARIANT_FALLBACK_WIDTH[file.variant] ??
+    0
   );
 }
 
@@ -155,6 +181,37 @@ export function getWallpaperPreviewUrl(
     },
     priorities,
   )?.url;
+}
+
+export function getWallpaperCoverSources(
+  wallpaper: Pick<Wallpaper, "files">,
+): WallpaperCoverSource[] {
+  const bestByWidth = new Map<number, WallpaperFile>();
+
+  for (const file of wallpaper.files.filter((candidate) => !isVideoWallpaperFile(candidate))) {
+    const width = getWallpaperFileSourceWidth(file);
+
+    if (!width) {
+      continue;
+    }
+
+    const existing = bestByWidth.get(width);
+
+    if (
+      !existing ||
+      RESPONSIVE_SOURCE_QUALITY_PRIORITY.indexOf(file.variant) <
+        RESPONSIVE_SOURCE_QUALITY_PRIORITY.indexOf(existing.variant)
+    ) {
+      bestByWidth.set(width, file);
+    }
+  }
+
+  return [...bestByWidth.entries()]
+    .sort(([leftWidth], [rightWidth]) => leftWidth - rightWidth)
+    .map(([width, file]) => ({
+      src: file.url,
+      width,
+    }));
 }
 
 export function getWallpaperDownloadFile(wallpaper: Pick<Wallpaper, "files">) {
@@ -332,6 +389,7 @@ export function wallpaperToMoodCard(
     id: wallpaper.id,
     gradient: getWallpaperGradientKey(wallpaper),
     previewUrl: getWallpaperPreviewUrl(wallpaper, "medium"),
+    coverSources: getWallpaperCoverSources(wallpaper),
     shape: getWallpaperShape(wallpaper),
     number: String(index + 1).padStart(3, "0"),
     name: getWallpaperDisplayTitle(wallpaper),
@@ -361,6 +419,7 @@ export function wallpaperToEditorialFeature(
     eyebrow: wallpaper.featured ? "编辑推荐 · 本周" : "编辑推荐",
     href: `/wallpaper/${wallpaper.slug}`,
     previewUrl: getWallpaperPreviewUrl(wallpaper, "large"),
+    coverSources: getWallpaperCoverSources(wallpaper),
     videoUrl: wallpaper.videoUrl,
   };
 }
@@ -376,6 +435,7 @@ export function wallpaperToEditorialItem(
     meta: `${getPrimaryWallpaperLabel(wallpaper)} · ${getWallpaperResolutionLabel(wallpaper)} · ${formatCompactCount(wallpaper.downloadsCount)} 次下载`,
     href: `/wallpaper/${wallpaper.slug}`,
     previewUrl: getWallpaperPreviewUrl(wallpaper, "medium"),
+    coverSources: getWallpaperCoverSources(wallpaper),
     videoUrl: wallpaper.videoUrl,
   };
 }
@@ -392,6 +452,7 @@ export function wallpaperToDarkroomItem(
     meta: `${getPrimaryWallpaperLabel(wallpaper)} · ${getWallpaperResolutionLabel(wallpaper)}`,
     href: `/wallpaper/${wallpaper.slug}`,
     previewUrl: getWallpaperPreviewUrl(wallpaper, "large"),
+    coverSources: getWallpaperCoverSources(wallpaper),
     videoUrl: wallpaper.videoUrl,
     badge: options?.featured ? "本周最佳" : undefined,
     featured: options?.featured ?? false,

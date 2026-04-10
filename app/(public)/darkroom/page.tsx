@@ -16,6 +16,9 @@ export default async function DarkroomPage() {
   const wallpapers = await getCachedFeaturedWallpapers({
     limit: 12,
     sort: "popular",
+  }).catch((error) => {
+    console.warn("[darkroom] failed to load featured wallpapers", error);
+    return [];
   });
 
   return (

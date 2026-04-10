@@ -7,7 +7,10 @@ import Link from "next/link";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
 import { Reveal } from "@/components/ui/reveal";
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
-import { getCachedCreatorPageSnapshot } from "@/lib/public-wallpaper-cache";
+import {
+  getCachedCreatorPageSnapshot,
+  getCachedPublishedWallpapers,
+} from "@/lib/public-wallpaper-cache";
 
 export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 
@@ -38,6 +41,28 @@ export async function generateMetadata({
       ...(creator.avatarUrl ? { images: [creator.avatarUrl] } : {}),
     },
   };
+}
+
+export async function generateStaticParams() {
+  try {
+    const wallpapers = await getCachedPublishedWallpapers({
+      limit: 1000,
+      sort: "latest",
+    });
+    const usernames = Array.from(
+      new Set(
+        wallpapers
+          .map((wallpaper) => wallpaper.creator?.username)
+          .filter((value): value is string => Boolean(value)),
+      ),
+    );
+
+    return usernames.map((username) => ({
+      username,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 // ─── 统计格 ───────────────────────────────────────────────────────────────────

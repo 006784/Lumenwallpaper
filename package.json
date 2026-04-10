@@ -11,7 +11,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit --incremental false",
     "check": "pnpm lint && pnpm build && pnpm type-check",
     "lighthouse": "pnpm build && lhci autorun --config=./lighthouserc.json",
     "test:e2e": "playwright test --ignore=\"e2e/visual\"",

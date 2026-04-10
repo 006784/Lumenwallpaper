@@ -47,12 +47,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyTheme(stored);
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    function onSystemChange() {
+    const onSystemChange = () => {
       const current = (localStorage.getItem("lumen-theme") as Theme | null) ?? "system";
       if (current === "system") applyTheme("system");
+    };
+
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", onSystemChange);
+      return () => mq.removeEventListener("change", onSystemChange);
     }
-    mq.addEventListener("change", onSystemChange);
-    return () => mq.removeEventListener("change", onSystemChange);
+
+    mq.addListener(onSystemChange);
+    return () => mq.removeListener(onSystemChange);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

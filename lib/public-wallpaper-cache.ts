@@ -3,7 +3,11 @@ import { unstable_cache } from "next/cache";
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
 import { getCreatorPageSnapshot } from "@/lib/creators";
 import { getWallpaperDisplayTitle } from "@/lib/wallpaper-presenters";
-import type { WallpaperListOptions } from "@/types/wallpaper";
+import type {
+  WallpaperListFiltersSnapshot,
+  WallpaperListOptions,
+  WallpaperSort,
+} from "@/types/wallpaper";
 import {
   getCreatorByUsername,
   getWallpaperByIdOrSlug,
@@ -131,14 +135,41 @@ export async function getCachedWallpapersByCreator(username: string) {
 
 export const EXPLORE_PAGE_SIZE = 24;
 
+function normalizeWallpaperListFilters(
+  options: Omit<WallpaperListOptions, "limit" | "offset" | "status"> = {},
+): WallpaperListFiltersSnapshot {
+  return {
+    category: options.category?.trim() || null,
+    featured: options.featured ?? false,
+    motion: options.motion ?? false,
+    query: options.search?.trim() || null,
+    sort: (options.sort ?? "latest") as WallpaperSort,
+    tag: options.tag?.trim() || null,
+  };
+}
+
 export async function getCachedPublishedWallpapersPage(
   options: Omit<WallpaperListOptions, "status" | "limit" | "offset"> = {},
   page: number,
+  pageSize = EXPLORE_PAGE_SIZE,
 ) {
   const all = await getCachedPublishedWallpapers({ ...options, limit: 1000 });
   const total = all.length;
-  const offset = Math.max(0, page - 1) * EXPLORE_PAGE_SIZE;
-  const wallpapers = all.slice(offset, offset + EXPLORE_PAGE_SIZE);
-  const totalPages = Math.ceil(total / EXPLORE_PAGE_SIZE);
-  return { wallpapers, total, page, totalPages };
+  const safePageSize = Math.max(1, pageSize);
+  const offset = Math.max(0, page - 1) * safePageSize;
+  const wallpapers = all.slice(offset, offset + safePageSize);
+  const totalPages = Math.max(1, Math.ceil(total / safePageSize));
+  const filters = normalizeWallpaperListFilters(options);
+
+  return {
+    wallpapers,
+    count: wallpapers.length,
+    filters,
+    hasNextPage: page < totalPages,
+    hasPreviousPage: page > 1,
+    page,
+    pageSize: safePageSize,
+    total,
+    totalPages,
+  };
 }
