@@ -38,8 +38,10 @@ export default async function CreatorStudioManagePage() {
     redirect("/login?next=/creator/studio/manage");
   }
 
-  const wallpapers = await listManagedWallpapers(currentUser.id);
   const isEditor = isEditorUser(currentUser);
+  const wallpapers = await listManagedWallpapers(currentUser.id, {
+    includeAll: isEditor,
+  });
 
   return (
     <section className="relative overflow-hidden border-b-frame border-ink px-4 py-16 md:px-10 md:py-24">
@@ -93,7 +95,10 @@ export default async function CreatorStudioManagePage() {
         </div>
 
         <div className="mt-12">
-          <ManageWallpapersBoard initialWallpapers={wallpapers} />
+          <ManageWallpapersBoard
+            canModerate={isEditor}
+            initialWallpapers={wallpapers}
+          />
         </div>
       </div>
     </section>

@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type DownloadFormat = "PNG" | "WEBP";
-type DownloadState = "idle" | "loading" | "done";
+type DownloadState = "idle" | "loading" | "done" | "error";
 type CacheState = "idle" | "done";
 type FormatKey = "original" | "4k" | "webp";
 
@@ -16,7 +16,11 @@ export interface DownloadPanelProps {
     height: number;
     previewUrl: string;
   };
-  onDownload: (config: { fmt: string; res: string; ratio: string }) => void;
+  onDownload: (config: {
+    fmt: string;
+    res: string;
+    ratio: string;
+  }) => Promise<void> | void;
   onSaveConfig: (config: {
     fmt: string;
     ratio: string;
@@ -225,6 +229,7 @@ export function DownloadPanel({
   const [thirdsOn, setThirdsOn] = useState(false);
   const [lockOn, setLockOn] = useState(true);
   const [dlState, setDlState] = useState<DownloadState>("idle");
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [cacheState, setCacheState] = useState<CacheState>("idle");
   const [formatKey, setFormatKey] = useState<FormatKey>("original");
   const [selectedRatio, setSelectedRatio] = useState<RatioOption>(FREE_RATIO);
@@ -344,24 +349,35 @@ export function DownloadPanel({
     rememberTimeout(timeout);
   }
 
-  function doDl() {
+  async function doDl() {
     if (dlState !== "idle") {
       return;
     }
 
     setDlState("loading");
+    setDownloadError(null);
 
-    const doneTimeout = window.setTimeout(() => {
+    try {
+      await Promise.resolve(onDownload({ fmt, res, ratio }));
       setDlState("done");
-      onDownload({ fmt, res, ratio });
-    }, 900);
 
-    const resetTimeout = window.setTimeout(() => {
-      setDlState("idle");
-    }, 2400);
+      const resetTimeout = window.setTimeout(() => {
+        setDlState("idle");
+      }, 1800);
 
-    rememberTimeout(doneTimeout);
-    rememberTimeout(resetTimeout);
+      rememberTimeout(resetTimeout);
+    } catch (error) {
+      setDlState("error");
+      setDownloadError(
+        error instanceof Error ? error.message : "下载失败，请稍后重试。",
+      );
+
+      const resetTimeout = window.setTimeout(() => {
+        setDlState("idle");
+      }, 4200);
+
+      rememberTimeout(resetTimeout);
+    }
   }
 
   function doCache() {
@@ -513,11 +529,13 @@ export function DownloadPanel({
                     "width 0.42s cubic-bezier(0.4,0,0.2,1), height 0.42s cubic-bezier(0.4,0,0.2,1)",
                 }}
               >
-                <img
-                  alt={wallpaper.title}
-                  className="absolute inset-0 h-full w-full object-cover"
-                  src={wallpaper.previewUrl}
-                />
+                {wallpaper.previewUrl ? (
+                  <img
+                    alt={wallpaper.title}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    src={wallpaper.previewUrl}
+                  />
+                ) : null}
                 <span
                   className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2"
                   style={{ background: "rgba(255,255,255,0.08)" }}
@@ -1024,6 +1042,8 @@ export function DownloadPanel({
                 background:
                   dlState === "done"
                     ? "#1a3a1a"
+                    : dlState === "error"
+                      ? "#3a1717"
                     : dlState === "loading"
                       ? "#1a1810"
                       : INK,
@@ -1032,6 +1052,8 @@ export function DownloadPanel({
                 color:
                   dlState === "done"
                     ? "#6ade80"
+                    : dlState === "error"
+                      ? "#ff8a8a"
                     : dlState === "loading"
                       ? RED
                       : PAPER,
@@ -1064,8 +1086,16 @@ export function DownloadPanel({
                 ? "冲洗中 · · ·"
                 : dlState === "done"
                   ? "完成 ✓"
+                  : dlState === "error"
+                    ? "下载失败"
                   : "下载壁纸"}
             </button>
+
+            {downloadError ? (
+              <p className="text-xs leading-5" style={{ color: RED }}>
+                {downloadError}
+              </p>
+            ) : null}
 
             <button
               className="w-full"

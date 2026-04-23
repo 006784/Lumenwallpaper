@@ -3,27 +3,28 @@
 @tailwind utilities;
 
 :root {
-  --font-body: var(--font-geist-sans), "PingFang SC", "Hiragino Sans GB",
+  --font-body:
+    var(--font-geist-sans), "PingFang SC", "Hiragino Sans GB",
     "Noto Sans CJK SC", "Microsoft YaHei UI", sans-serif;
-  --font-display: "Source Han Serif SC", "Noto Serif SC", "Songti SC",
-    "STSong", "Iowan Old Style", "Baskerville", Georgia, serif;
-  --font-mono: var(--font-geist-mono), "SFMono-Regular", "JetBrains Mono",
-    monospace;
+  --font-display:
+    "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC",
+    "Iowan Old Style", "Baskerville", Georgia, serif;
+  --font-mono:
+    var(--font-geist-mono), "SFMono-Regular", "JetBrains Mono", monospace;
 
-  /* ── Light mode tokens ── */
-  --color-ink: #0a0804;
-  --color-ink-rgb: 10 8 4;
-  --color-paper: #f2ede4;
-  --color-paper-rgb: 242 237 228;
-  --color-paper-2: #e8e0d2;
-  --color-paper-2-rgb: 232 224 210;
-  --color-red: #d42b2b;
-  --color-red-rgb: 212 43 43;
-  --color-gold: #f5c842;
-  --color-gold-rgb: 245 200 66;
-  --color-muted: #8a8070;
-  --color-muted-rgb: 138 128 112;
-  --border-frame: 1.5px solid #0a0804;
+  --color-ink: #111512;
+  --color-ink-rgb: 17 21 18;
+  --color-paper: #f5f7f2;
+  --color-paper-rgb: 245 247 242;
+  --color-paper-2: #e7ede6;
+  --color-paper-2-rgb: 231 237 230;
+  --color-red: #df4d43;
+  --color-red-rgb: 223 77 67;
+  --color-gold: #b58a20;
+  --color-gold-rgb: 181 138 32;
+  --color-muted: #66716b;
+  --color-muted-rgb: 102 113 107;
+  --border-frame: 1.5px solid #111512;
 
   --dur-film: 550ms;
   --dur-card: 700ms;
@@ -32,17 +33,15 @@
   --ease-film: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── Night / Dark mode tokens ── */
 .dark {
-  --color-ink: #ede8df;
-  --color-ink-rgb: 237 232 223;       /* warm cream — text & borders */
-  --color-paper: #0c0907;
-  --color-paper-rgb: 12 9 7;          /* deep warm black — page bg */
-  --color-paper-2: #151210;
-  --color-paper-2-rgb: 21 18 16;      /* elevated surface — cards */
-  --color-muted: #9a8e7e;
-  --color-muted-rgb: 154 142 126;
-  /* red + gold unchanged — both shine on dark */
+  --color-ink: #edf4ed;
+  --color-ink-rgb: 237 244 237;
+  --color-paper: #09100d;
+  --color-paper-rgb: 9 16 13;
+  --color-paper-2: #111c18;
+  --color-paper-2-rgb: 17 28 24;
+  --color-muted: #92a197;
+  --color-muted-rgb: 146 161 151;
   --border-frame: 1.5px solid rgba(237, 232, 223, 0.14);
 }
 
@@ -74,9 +73,9 @@ body {
   min-height: 100vh;
   overflow-x: clip;
   background:
-    radial-gradient(circle at 12% 14%, rgba(245, 200, 66, 0.12), transparent 22%),
-    radial-gradient(circle at 88% 16%, rgba(212, 43, 43, 0.06), transparent 24%),
-    linear-gradient(180deg, #f7f3eb 0%, #f2ede4 38%, #ece3d7 100%);
+    linear-gradient(135deg, rgba(223, 77, 67, 0.05) 0%, transparent 28%),
+    linear-gradient(225deg, rgba(28, 118, 95, 0.08) 0%, transparent 34%),
+    linear-gradient(180deg, #fbfcf8 0%, #f5f7f2 42%, #e8eee7 100%);
   color: var(--color-ink);
   font-feature-settings: "kern" 1;
   text-rendering: optimizeLegibility;
@@ -84,12 +83,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 夜色模式背景 — 暗室感渐变，带微弱金色光晕 */
 .dark body {
   background:
-    radial-gradient(circle at 14% 10%, rgba(245, 200, 66, 0.07), transparent 24%),
-    radial-gradient(circle at 86% 20%, rgba(212, 43, 43, 0.05), transparent 26%),
-    linear-gradient(180deg, #110f0c 0%, #0c0907 42%, #080604 100%);
+    linear-gradient(135deg, rgba(223, 77, 67, 0.08) 0%, transparent 30%),
+    linear-gradient(225deg, rgba(45, 150, 118, 0.1) 0%, transparent 36%),
+    linear-gradient(180deg, #0d1712 0%, #09100d 48%, #070b09 100%);
 }
 
 body::after {
@@ -277,7 +275,8 @@ textarea:focus-visible {
 
 /* 胶卷格子呼吸动画 */
 @keyframes cell-breathe {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     filter: brightness(0.62) saturate(0.75);
   }
@@ -289,7 +288,8 @@ textarea:focus-visible {
 
 /* 播放模式的主角动画 */
 @keyframes featured-breathe {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     filter: brightness(0.72) saturate(0.88);
   }

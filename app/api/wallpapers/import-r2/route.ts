@@ -104,13 +104,10 @@ export async function GET(request: Request) {
       },
     });
 
-    return jsonError(
-      error instanceof Error ? error.message : "Failed to scan R2 objects.",
-      {
-        status: 500,
-        code: "R2_IMPORT_SCAN_FAILED",
-      },
-    );
+    return jsonError("Failed to scan R2 objects.", {
+      status: 500,
+      code: "R2_IMPORT_SCAN_FAILED",
+    });
   }
 }
 
@@ -136,14 +133,11 @@ export async function POST(request: Request) {
     }
 
     body = parsed.data;
-  } catch (error) {
-    return jsonError(
-      error instanceof Error ? error.message : "Invalid R2 import payload.",
-      {
-        status: 400,
-        code: "INVALID_BODY",
-      },
-    );
+  } catch {
+    return jsonError("Invalid R2 import payload.", {
+      status: 400,
+      code: "INVALID_BODY",
+    });
   }
 
   logger.start({
@@ -175,12 +169,9 @@ export async function POST(request: Request) {
       },
     });
 
-    return jsonError(
-      error instanceof Error ? error.message : "Failed to import R2 objects.",
-      {
-        status: 500,
-        code: "R2_IMPORT_FAILED",
-      },
-    );
+    return jsonError("Failed to import R2 objects.", {
+      status: 500,
+      code: "R2_IMPORT_FAILED",
+    });
   }
 }

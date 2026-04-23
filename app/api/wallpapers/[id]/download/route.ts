@@ -5,10 +5,16 @@ import {
 } from "@/lib/api";
 import { getCurrentUser } from "@/lib/auth";
 import {
+  buildFallbackWallpaperSvg,
+  isFallbackWallpaperStoragePath,
+} from "@/lib/fallback-wallpaper-assets";
+import {
   getR2ObjectStream,
+  isR2Configured,
   normalizeR2StoragePath,
 } from "@/lib/r2";
 import {
+  getWallpaperGradientKey,
   getWallpaperDownloadFile,
   getWallpaperDownloadFileByVariant,
 } from "@/lib/wallpaper-presenters";
@@ -45,8 +51,26 @@ function getDownloadExtension(format: string | null | undefined) {
 
   const normalizedFormat = format.trim().toLowerCase();
 
+  if (normalizedFormat.includes("/")) {
+    const mimeToExtension: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/svg+xml": "svg",
+      "video/mp4": "mp4",
+      "video/quicktime": "mov",
+      "video/webm": "webm",
+    };
+
+    return mimeToExtension[normalizedFormat] ?? "bin";
+  }
+
   if (normalizedFormat === "jpeg") {
     return "jpg";
+  }
+
+  if (normalizedFormat === "svg+xml") {
+    return "svg";
   }
 
   return normalizedFormat || "bin";
@@ -115,7 +139,7 @@ export async function GET(
           ? "当前壁纸没有这个大小的下载文件。"
           : "Wallpaper download file not found.",
         {
-        status: 404,
+          status: 404,
           code: "WALLPAPER_DOWNLOAD_NOT_FOUND",
         },
       );
@@ -152,6 +176,57 @@ export async function GET(
         },
       });
       // Preserve the download flow even if tracking fails.
+    }
+
+    if (isFallbackWallpaperStoragePath(normalizedStoragePath)) {
+      const width = downloadFile.width ?? wallpaper.width ?? 3840;
+      const height = downloadFile.height ?? wallpaper.height ?? 2160;
+      const svg = buildFallbackWallpaperSvg({
+        gradient: getWallpaperGradientKey(wallpaper),
+        height,
+        title: buildDownloadLabel(
+          wallpaper.aiTags,
+          wallpaper.title,
+          wallpaper.tags,
+        ),
+        width,
+      });
+      const filename = buildDownloadFilename(
+        buildDownloadLabel(wallpaper.aiTags, wallpaper.title, wallpaper.tags),
+        downloadFile.variant,
+        "image/svg+xml",
+      );
+      const body = new TextEncoder().encode(svg);
+
+      logger.done("wallpaper.download.fallback", {
+        contentLength: body.byteLength,
+        wallpaperId: String(wallpaper.id),
+        variant: downloadFile.variant,
+      });
+
+      return new Response(body, {
+        status: 200,
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+          "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
+          "Content-Length": String(body.byteLength),
+          "Content-Type": "image/svg+xml; charset=utf-8",
+          ...(nextDownloadsCount !== null
+            ? {
+                "X-Wallpaper-Downloads-Count": String(nextDownloadsCount),
+              }
+            : {}),
+          "X-Wallpaper-Download-Variant": downloadFile.variant,
+          "X-Wallpaper-Fallback": "true",
+        },
+      });
+    }
+
+    if (!isR2Configured()) {
+      return jsonError("Wallpaper storage is not configured.", {
+        status: 503,
+        code: "R2_NOT_CONFIGURED",
+      });
     }
 
     const object = await getR2ObjectStream(normalizedStoragePath);
@@ -196,10 +271,8 @@ export async function GET(
     captureServerException(error, {
       route: "/api/wallpapers/[id]/download",
     });
-    const message =
-      error instanceof Error ? error.message : "Failed to download wallpaper.";
 
-    return jsonError(message, {
+    return jsonError("Failed to download wallpaper.", {
       status: 500,
       code: "WALLPAPER_DOWNLOAD_FAILED",
     });

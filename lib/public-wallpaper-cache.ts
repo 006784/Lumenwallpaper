@@ -16,6 +16,8 @@ import {
   listWallpapersByCreator,
 } from "@/lib/wallpapers";
 
+const PUBLIC_WALLPAPER_CACHE_VERSION = "v2";
+
 function normalizeWallpaperTags(tags: string[]) {
   return tags.map((tag) => (tag === "手动导入" ? "像素" : tag));
 }
@@ -55,7 +57,11 @@ export async function getCachedPublishedWallpapers(
 ) {
   return unstable_cache(
     async () => (await listPublishedWallpapers(options)).map(withDisplayTitle),
-    ["wallpapers:published", serializeWallpaperListOptions(options)],
+    [
+      "wallpapers:published",
+      PUBLIC_WALLPAPER_CACHE_VERSION,
+      serializeWallpaperListOptions(options),
+    ],
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
       tags: ["wallpapers", "wallpapers:explore"],
@@ -68,7 +74,11 @@ export async function getCachedFeaturedWallpapers(
 ) {
   return unstable_cache(
     async () => (await listFeaturedWallpapers(options)).map(withDisplayTitle),
-    ["wallpapers:featured", serializeWallpaperListOptions(options)],
+    [
+      "wallpapers:featured",
+      PUBLIC_WALLPAPER_CACHE_VERSION,
+      serializeWallpaperListOptions(options),
+    ],
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
       tags: ["wallpapers", "wallpapers:featured"],
@@ -79,7 +89,7 @@ export async function getCachedFeaturedWallpapers(
 export async function getCachedWallpaperByIdentifier(identifier: string) {
   const wallpaper = await unstable_cache(
     async () => getWallpaperByIdOrSlug(identifier),
-    ["wallpaper", identifier],
+    ["wallpaper", PUBLIC_WALLPAPER_CACHE_VERSION, identifier],
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
       tags: ["wallpapers", `wallpaper:${identifier}`],
@@ -103,7 +113,7 @@ export async function getCachedCreatorByUsername(username: string) {
 export async function getCachedCreatorPageSnapshot(username: string) {
   const snapshot = await unstable_cache(
     async () => getCreatorPageSnapshot(username),
-    ["creator-page", username],
+    ["creator-page", PUBLIC_WALLPAPER_CACHE_VERSION, username],
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
       tags: ["creators", "wallpapers", `creator:${username}`],
@@ -125,7 +135,7 @@ export async function getCachedCreatorPageSnapshot(username: string) {
 export async function getCachedWallpapersByCreator(username: string) {
   return unstable_cache(
     async () => (await listWallpapersByCreator(username)).map(withDisplayTitle),
-    ["creator-wallpapers", username],
+    ["creator-wallpapers", PUBLIC_WALLPAPER_CACHE_VERSION, username],
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
       tags: ["wallpapers", "creators", `creator:${username}`],

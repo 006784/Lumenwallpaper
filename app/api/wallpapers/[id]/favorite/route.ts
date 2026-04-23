@@ -42,7 +42,7 @@ export async function GET(
         isSignedIn: Boolean(currentUser),
       },
       {
-      message: "Favorite state loaded.",
+        message: "Favorite state loaded.",
       },
     );
   } catch (error) {
@@ -52,12 +52,7 @@ export async function GET(
         method: "GET",
       },
     });
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to load favorite state.";
-
-    return jsonError(message, {
+    return jsonError("Failed to load favorite state.", {
       status: 500,
       code: "WALLPAPER_FAVORITE_STATE_FAILED",
     });
@@ -108,10 +103,7 @@ export async function POST(
         method: "POST",
       },
     });
-    const message =
-      error instanceof Error ? error.message : "Failed to toggle favorite.";
-
-    return jsonError(message, {
+    return jsonError("Failed to toggle favorite.", {
       status: 500,
       code: "WALLPAPER_FAVORITE_TOGGLE_FAILED",
     });

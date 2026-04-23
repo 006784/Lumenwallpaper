@@ -35,6 +35,7 @@ export interface WallpaperCoverSource {
 export interface FilmCellData {
   gradient: GradientKey;
   label: string;
+  href?: string;
   /** 动态壁纸视频 URL（可选，留空时显示动态渐变） */
   videoUrl?: string;
   previewUrl?: string;

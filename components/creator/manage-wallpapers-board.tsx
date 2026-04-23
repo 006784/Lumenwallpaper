@@ -34,6 +34,7 @@ type ManagedWallpaperItem = {
 };
 
 type ManageWallpapersBoardProps = {
+  canModerate: boolean;
   initialWallpapers: Wallpaper[];
 };
 
@@ -58,6 +59,7 @@ function parseCsv(input: string) {
 }
 
 export function ManageWallpapersBoard({
+  canModerate,
   initialWallpapers,
 }: ManageWallpapersBoardProps) {
   const [items, setItems] = useState(
@@ -99,8 +101,12 @@ export function ManageWallpapersBoard({
             description: item.description.trim() || null,
             tags: parseCsv(item.tagsText),
             colors: parseCsv(item.colorsText),
-            featured: item.featured,
-            status: item.status,
+            ...(canModerate
+              ? {
+                  featured: item.featured,
+                  status: item.status,
+                }
+              : {}),
           }),
         },
       );
@@ -230,7 +236,17 @@ export function ManageWallpapersBoard({
   if (items.length === 0) {
     return (
       <div className="border-frame border-ink bg-paper/70 px-6 py-12 text-sm leading-7 text-muted">
-        你还没有发布任何作品。先去上传一张，管理台就会自动开始显示。
+        {canModerate
+          ? "当前还没有任何作品进入管理台。等上传或导入完成后，这里会显示全站作品。"
+          : "你还没有发布任何作品。先去上传一张，管理台就会自动开始显示。"}
+        <div className="mt-4">
+          <Link
+            className="inline-flex border-frame border-ink bg-ink px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-paper transition hover:bg-red"
+            href="/creator/studio"
+          >
+            去上传作品
+          </Link>
+        </div>
       </div>
     );
   }
@@ -453,47 +469,61 @@ export function ManageWallpapersBoard({
                   />
                 </div>
 
-                <div>
-                  <label
-                    className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted"
-                    htmlFor={`status-${item.wallpaper.id}`}
-                  >
-                    状态
-                  </label>
-                  <select
-                    className="w-full border-frame border-ink bg-paper px-4 py-3 outline-none transition focus:border-red"
-                    id={`status-${item.wallpaper.id}`}
-                    onChange={(event) =>
-                      updateItem(item.wallpaper.id, {
-                        status: event.target.value as WallpaperStatus,
-                      })
-                    }
-                    value={item.status}
-                  >
-                    <option value="published">published</option>
-                    <option value="processing">processing</option>
-                    <option value="rejected">rejected</option>
-                  </select>
-                </div>
+                {canModerate ? (
+                  <>
+                    <div>
+                      <label
+                        className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted"
+                        htmlFor={`status-${item.wallpaper.id}`}
+                      >
+                        状态
+                      </label>
+                      <select
+                        className="w-full border-frame border-ink bg-paper px-4 py-3 outline-none transition focus:border-red"
+                        id={`status-${item.wallpaper.id}`}
+                        onChange={(event) =>
+                          updateItem(item.wallpaper.id, {
+                            status: event.target.value as WallpaperStatus,
+                          })
+                        }
+                        value={item.status}
+                      >
+                        <option value="published">published</option>
+                        <option value="processing">processing</option>
+                        <option value="rejected">rejected</option>
+                      </select>
+                    </div>
 
-                <div className="flex items-center gap-3 border-frame border-ink bg-paper px-4 py-3">
-                  <input
-                    checked={item.featured}
-                    id={`featured-${item.wallpaper.id}`}
-                    onChange={(event) =>
-                      updateItem(item.wallpaper.id, {
-                        featured: event.target.checked,
-                      })
-                    }
-                    type="checkbox"
-                  />
-                  <label
-                    className="text-[11px] uppercase tracking-[0.22em] text-muted"
-                    htmlFor={`featured-${item.wallpaper.id}`}
-                  >
-                    加入编辑精选
-                  </label>
-                </div>
+                    <div className="flex items-center gap-3 border-frame border-ink bg-paper px-4 py-3">
+                      <input
+                        checked={item.featured}
+                        id={`featured-${item.wallpaper.id}`}
+                        onChange={(event) =>
+                          updateItem(item.wallpaper.id, {
+                            featured: event.target.checked,
+                          })
+                        }
+                        type="checkbox"
+                      />
+                      <label
+                        className="text-[11px] uppercase tracking-[0.22em] text-muted"
+                        htmlFor={`featured-${item.wallpaper.id}`}
+                      >
+                        加入编辑精选
+                      </label>
+                    </div>
+                  </>
+                ) : (
+                  <div className="border border-ink/10 bg-paper/60 px-4 py-4 text-sm leading-6 text-muted md:col-span-2">
+                    状态和精选位属于审核字段，只能由编辑账号调整。当前状态：
+                    <span className="ml-2 font-mono text-[11px] uppercase tracking-[0.18em] text-ink">
+                      {item.status}
+                    </span>
+                    {item.featured ? (
+                      <span className="ml-2 text-red">已进入编辑精选</span>
+                    ) : null}
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-4 border-t border-ink/10 pt-4">

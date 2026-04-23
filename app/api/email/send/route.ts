@@ -140,10 +140,7 @@ export async function POST(request: Request) {
     captureServerException(error, {
       route: "/api/email/send",
     });
-    const message =
-      error instanceof Error ? error.message : "Failed to send login email.";
-
-    return jsonError(message, {
+    return jsonError("Failed to send login email.", {
       status: 500,
       code: "MAGIC_LINK_SEND_FAILED",
     });
