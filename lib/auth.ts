@@ -1,8 +1,16 @@
-import { createHash, createHmac, randomBytes } from "node:crypto";
+import {
+  createHash,
+  createHmac,
+  randomBytes,
+  timingSafeEqual,
+} from "node:crypto";
 
 import { cookies } from "next/headers";
 
-import { createSupabaseAdminClient, isSupabaseConfigured } from "@/lib/supabase";
+import {
+  createSupabaseAdminClient,
+  isSupabaseConfigured,
+} from "@/lib/supabase";
 import { findOrCreateUserByEmail } from "@/lib/users";
 import type { SessionUser, FrameSession } from "@/types/auth";
 import type { Database } from "@/types/database";
@@ -30,7 +38,8 @@ function toBase64Url(input: Buffer | string) {
 
 function fromBase64Url(input: string) {
   const normalized = input.replace(/-/g, "+").replace(/_/g, "/");
-  const padding = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
+  const padding =
+    normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
   return Buffer.from(`${normalized}${padding}`, "base64");
 }
 
@@ -47,6 +56,16 @@ function getAuthSecret() {
 function signPayload(payload: string) {
   return toBase64Url(
     createHmac("sha256", getAuthSecret()).update(payload).digest(),
+  );
+}
+
+function safeSignatureEquals(left: string, right: string) {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+
+  return (
+    leftBuffer.length === rightBuffer.length &&
+    timingSafeEqual(leftBuffer, rightBuffer)
   );
 }
 
@@ -116,7 +135,9 @@ export function createSessionCookieValue(payload: SessionTokenPayload) {
   return `${body}.${signature}`;
 }
 
-export function readSessionCookieValue(value: string | null | undefined): FrameSession | null {
+export function readSessionCookieValue(
+  value: string | null | undefined,
+): FrameSession | null {
   const token = normalizeToken(value);
 
   if (!token) {
@@ -125,15 +146,24 @@ export function readSessionCookieValue(value: string | null | undefined): FrameS
 
   const [body, signature] = token.split(".");
 
-  if (!body || !signature || signPayload(body) !== signature) {
+  if (
+    !body ||
+    !signature ||
+    !safeSignatureEquals(signPayload(body), signature)
+  ) {
     return null;
   }
 
   try {
-    const parsed = JSON.parse(fromBase64Url(body).toString("utf8")) as SessionTokenPayload;
+    const parsed = JSON.parse(
+      fromBase64Url(body).toString("utf8"),
+    ) as SessionTokenPayload;
     const expiresAt = new Date(parsed.expiresAt);
 
-    if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+    if (
+      Number.isNaN(expiresAt.getTime()) ||
+      expiresAt.getTime() <= Date.now()
+    ) {
       return null;
     }
 
@@ -162,7 +192,9 @@ export function getCurrentUser() {
   return getCurrentSession()?.user ?? null;
 }
 
-export function isEditorUser(user: Pick<SessionUser, "email" | "username"> | null) {
+export function isEditorUser(
+  user: Pick<SessionUser, "email" | "username"> | null,
+) {
   if (!user) {
     return false;
   }
@@ -190,7 +222,10 @@ export function getSessionCookieOptions() {
   };
 }
 
-export async function createMagicLinkSession(email: string, redirectTo?: string | null) {
+export async function createMagicLinkSession(
+  email: string,
+  redirectTo?: string | null,
+) {
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase is required before sending magic links.");
   }
@@ -261,7 +296,9 @@ export async function consumeMagicLinkSession(token: string) {
     .maybeSingle();
 
   if (consumeError) {
-    throw new Error(`Failed to consume magic link session: ${consumeError.message}`);
+    throw new Error(
+      `Failed to consume magic link session: ${consumeError.message}`,
+    );
   }
 
   if (!consumed) {

@@ -56,19 +56,64 @@ export const heroStats: HeroStat[] = [
 
 export const heroFilmRows: FilmCellData[][] = [
   [
-    { gradient: "void", label: "宇宙 · 027" },
-    { gradient: "dusk", label: "黄昏 · 041" },
-    { gradient: "forest", label: "自然 · 013" },
+    {
+      gradient: "void",
+      href: "/wallpaper/void-001",
+      label: "宇宙 · 027",
+      previewUrl: "/api/wallpapers/void-001/fallback?variant=preview",
+    },
+    {
+      gradient: "dusk",
+      href: "/wallpaper/dusk-003",
+      label: "黄昏 · 041",
+      previewUrl: "/api/wallpapers/dusk-003/fallback?variant=preview",
+    },
+    {
+      gradient: "forest",
+      href: "/wallpaper/forest-002",
+      label: "自然 · 013",
+      previewUrl: "/api/wallpapers/forest-002/fallback?variant=preview",
+    },
   ],
   [
-    { gradient: "ocean", label: "深海 · 058" },
-    { gradient: "lava", label: "熔岩 · 072" },
-    { gradient: "night", label: "暗夜 · 089" },
+    {
+      gradient: "ocean",
+      href: "/wallpaper/ocean-006",
+      label: "深海 · 058",
+      previewUrl: "/api/wallpapers/ocean-006/fallback?variant=preview",
+    },
+    {
+      gradient: "lava",
+      href: "/wallpaper/lava-004",
+      label: "熔岩 · 072",
+      previewUrl: "/api/wallpapers/lava-004/fallback?variant=preview",
+    },
+    {
+      gradient: "night",
+      href: "/wallpaper/night-008",
+      label: "暗夜 · 089",
+      previewUrl: "/api/wallpapers/night-008/fallback?variant=preview",
+    },
   ],
   [
-    { gradient: "blush", label: "腮红 · 104" },
-    { gradient: "ice", label: "冰川 · 117" },
-    { gradient: "ember", label: "余烬 · 132" },
+    {
+      gradient: "blush",
+      href: "/wallpaper/blush-007",
+      label: "腮红 · 104",
+      previewUrl: "/api/wallpapers/blush-007/fallback?variant=preview",
+    },
+    {
+      gradient: "ice",
+      href: "/wallpaper/ice-005",
+      label: "冰川 · 117",
+      previewUrl: "/api/wallpapers/ice-005/fallback?variant=preview",
+    },
+    {
+      gradient: "ember",
+      href: "/wallpaper/ember-009",
+      label: "余烬 · 132",
+      previewUrl: "/api/wallpapers/ember-009/fallback?variant=preview",
+    },
   ],
 ];
 

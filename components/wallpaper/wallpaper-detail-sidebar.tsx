@@ -213,14 +213,14 @@ export function WallpaperDetailSidebar({
     URL.revokeObjectURL(url);
   }
 
-  function handleDownload(config: { fmt: string; res: string; ratio: string }) {
+  async function handleDownload(config: {
+    fmt: string;
+    res: string;
+    ratio: string;
+  }) {
     const variant = resolveDownloadVariant(config);
 
-    void handleDownloadVariant(variant).catch((error: unknown) => {
-      setFeedback(
-        error instanceof Error ? error.message : "下载失败，请稍后重试。",
-      );
-    });
+    await handleDownloadVariant(variant);
   }
 
   function handleSaveDownloadConfig(_config: {
@@ -303,6 +303,14 @@ export function WallpaperDetailSidebar({
       void toggleFavorite().catch((error: unknown) => {
         if (error instanceof Error && error.message.startsWith("AUTH_REQUIRED:")) {
           window.location.href = loginHref;
+          return;
+        }
+
+        if (
+          error instanceof Error &&
+          error.message.startsWith("AUTH_NOT_CONFIGURED:")
+        ) {
+          setFeedback("本地认证尚未配置，收藏功能需要先接入登录环境。");
           return;
         }
 

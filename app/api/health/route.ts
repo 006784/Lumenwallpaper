@@ -1,6 +1,4 @@
-import {
-  PRIVATE_NO_STORE_CACHE_CONTROL,
-} from "@/lib/cache";
+import { PRIVATE_NO_STORE_CACHE_CONTROL } from "@/lib/cache";
 import { jsonSuccess } from "@/lib/api";
 import { isAuthConfigured } from "@/lib/auth";
 import {
@@ -24,22 +22,30 @@ function getConfiguredAiProviderCount() {
 }
 
 export async function GET() {
+  const isProduction = process.env.NODE_ENV === "production";
+
   return jsonSuccess(
-    {
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development",
-      checks: {
-        auth: isAuthConfigured(),
-        r2: isR2Configured(),
-        resend: isResendConfigured(),
-        sentry: isSentryConfigured(),
-        supabase: isSupabaseConfigured(),
-        vercelAnalytics: shouldEnableVercelAnalytics(),
-        vercelSpeedInsights: shouldEnableVercelSpeedInsights(),
-      },
-      aiProvidersConfigured: getConfiguredAiProviderCount(),
-    },
+    isProduction
+      ? {
+          status: "ok",
+          timestamp: new Date().toISOString(),
+        }
+      : {
+          status: "ok",
+          timestamp: new Date().toISOString(),
+          environment:
+            process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development",
+          checks: {
+            auth: isAuthConfigured(),
+            r2: isR2Configured(),
+            resend: isResendConfigured(),
+            sentry: isSentryConfigured(),
+            supabase: isSupabaseConfigured(),
+            vercelAnalytics: shouldEnableVercelAnalytics(),
+            vercelSpeedInsights: shouldEnableVercelSpeedInsights(),
+          },
+          aiProvidersConfigured: getConfiguredAiProviderCount(),
+        },
     {
       headers: {
         "Cache-Control": PRIVATE_NO_STORE_CACHE_CONTROL,

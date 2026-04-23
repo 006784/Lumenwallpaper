@@ -78,10 +78,8 @@ export async function POST(
     captureServerException(error, {
       route: "/api/wallpapers/[id]/report",
     });
-    const message =
-      error instanceof Error ? error.message : "Failed to submit wallpaper report.";
 
-    return jsonError(message, {
+    return jsonError("Failed to submit wallpaper report.", {
       status: 500,
       code: "WALLPAPER_REPORT_FAILED",
       headers: rateLimitHeaders,

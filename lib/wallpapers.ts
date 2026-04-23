@@ -27,6 +27,10 @@ import {
 import { logServerEvent } from "@/lib/monitoring";
 import { analyzeWallpaperWithFallback } from "@/lib/wallpaper-ai";
 import { generateWallpaperVariantFiles } from "@/lib/wallpaper-variants";
+import {
+  createFallbackWallpaperAssetUrl,
+  createFallbackWallpaperStoragePath,
+} from "@/lib/fallback-wallpaper-assets";
 import type { Database } from "@/types/database";
 import type {
   DownloadHistoryItem,
@@ -851,8 +855,90 @@ function mapNotification(
   };
 }
 
+function getFallbackWallpaperDimensions(
+  shape: (typeof moodCards)[number]["shape"],
+) {
+  if (shape === "landscape") {
+    return {
+      width: 3840,
+      height: 2160,
+    };
+  }
+
+  if (shape === "square") {
+    return {
+      width: 2880,
+      height: 2880,
+    };
+  }
+
+  if (shape === "tall") {
+    return {
+      width: 2160,
+      height: 3840,
+    };
+  }
+
+  return {
+    width: 2400,
+    height: 3600,
+  };
+}
+
+function createFallbackWallpaperFiles(
+  card: (typeof moodCards)[number],
+  dimensions: {
+    width: number;
+    height: number;
+  },
+): WallpaperFile[] {
+  const now = new Date().toISOString();
+  const variants: Array<WallpaperFile["variant"]> = [
+    "preview",
+    "thumb",
+    "4k",
+    "original",
+  ];
+
+  return variants.map((variant) => {
+    const isOriginal = variant === "original";
+    const width =
+      variant === "preview"
+        ? Math.round(dimensions.width * 0.35)
+        : variant === "thumb"
+          ? Math.round(dimensions.width * 0.55)
+          : dimensions.width;
+    const height =
+      variant === "preview"
+        ? Math.round(dimensions.height * 0.35)
+        : variant === "thumb"
+          ? Math.round(dimensions.height * 0.55)
+          : dimensions.height;
+
+    return {
+      id: `${card.id}-${variant}`,
+      wallpaperId: card.id,
+      variant,
+      storagePath: createFallbackWallpaperStoragePath({
+        slug: card.id,
+        variant,
+      }),
+      url: createFallbackWallpaperAssetUrl({
+        slug: card.id,
+        variant,
+      }),
+      size: isOriginal ? 180_000 : 86_000,
+      format: "image/svg+xml",
+      width,
+      height,
+      createdAt: now,
+    };
+  });
+}
+
 function createFallbackWallpaper(index: number): Wallpaper {
   const card = moodCards[index];
+  const dimensions = getFallbackWallpaperDimensions(card.shape);
 
   return {
     id: card.id,
@@ -872,22 +958,8 @@ function createFallbackWallpaper(index: number): Wallpaper {
     aiAnalysisError: null,
     aiAnalyzedAt: null,
     colors: [],
-    width:
-      card.shape === "landscape"
-        ? 380
-        : card.shape === "square"
-          ? 280
-          : card.shape === "tall"
-            ? 180
-            : 220,
-    height:
-      card.shape === "landscape"
-        ? 240
-        : card.shape === "square"
-          ? 280
-          : card.shape === "tall"
-            ? 380
-            : 340,
+    width: dimensions.width,
+    height: dimensions.height,
     downloadsCount: 0,
     likesCount: 0,
     reportsCount: 0,
@@ -897,7 +969,7 @@ function createFallbackWallpaper(index: number): Wallpaper {
     lastReportedAt: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    files: [],
+    files: createFallbackWallpaperFiles(card, dimensions),
     creator: null,
   };
 }
@@ -2173,17 +2245,27 @@ export async function listWallpapersByCreator(username: string) {
   return hydrateWallpapers(data);
 }
 
-export async function listManagedWallpapers(userId: string | number) {
+export async function listManagedWallpapers(
+  userId: string | number,
+  options?: {
+    includeAll?: boolean;
+  },
+) {
   if (!isSupabaseConfigured()) {
     return [];
   }
 
   const client = createSupabaseAdminClient();
-  const { data, error } = await client
+  let query = client
     .from(wallpapersTable)
     .select("*")
-    .eq("user_id", toDbIdValue(userId))
     .order("created_at", { ascending: false });
+
+  if (!options?.includeAll) {
+    query = query.eq("user_id", toDbIdValue(userId));
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(`Failed to list managed wallpapers: ${error.message}`);
@@ -3407,9 +3489,23 @@ export async function createWallpaperReport(
   },
 ) {
   if (!isSupabaseConfigured()) {
-    throw new Error(
-      "Supabase is not configured. Add the required environment variables before reporting wallpapers.",
-    );
+    const fallbackWallpaper = getFallbackWallpaperByIdentifier(identifier);
+
+    if (!fallbackWallpaper) {
+      return null;
+    }
+
+    return {
+      id: `fallback-report-${Date.now()}`,
+      wallpaperId: fallbackWallpaper.id,
+      reason: input.reason,
+      status: "pending",
+      reporterEmail:
+        (input.reporterEmail ?? options?.reporterEmail ?? null)
+          ?.trim()
+          .toLowerCase() || null,
+      createdAt: new Date().toISOString(),
+    } satisfies WallpaperReportReceipt;
   }
 
   const wallpaper = await getWallpaperByIdOrSlug(identifier);

@@ -66,7 +66,7 @@ function AnimatedCell({
   return (
     <button
       aria-label={`播放动态壁纸：${cell.label}`}
-      className="group relative min-w-0 flex-1 cursor-pointer overflow-hidden border-r border-white/10 last:border-r-0"
+      className="group relative min-w-0 flex-1 cursor-pointer overflow-hidden border-r border-white/10 outline-none transition-[flex,filter] duration-300 last:border-r-0 hover:flex-[1.4] hover:brightness-110 focus-visible:flex-[1.4] focus-visible:ring-2 focus-visible:ring-gold"
       type="button"
       onClick={onPlay}
     >
@@ -109,19 +109,19 @@ function AnimatedCell({
         />
       )}
 
-      {/* hover 亮色遮罩 */}
       <div className="absolute inset-0 bg-paper/0 transition-colors duration-200 group-hover:bg-paper/8" />
 
-      {/* hover 播放图标 */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+      <div className="absolute inset-0 flex items-center justify-center opacity-70 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
         <div className="flex h-9 w-9 items-center justify-center rounded-full border border-paper/40 bg-black/40 text-[10px] text-paper backdrop-blur-sm">
           ▶
         </div>
       </div>
 
-      {/* 格子标签 */}
-      <div className="absolute bottom-2 left-2 translate-y-1 text-[8px] uppercase tracking-[0.28em] text-paper/50 opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-        {cell.label}
+      <div className="absolute inset-x-2 bottom-2 translate-y-1 transition-[opacity,transform] duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 sm:opacity-75">
+        <p className="truncate text-[8px] uppercase tracking-[0.26em] text-paper/70">
+          {cell.label}
+        </p>
+        <p className="mt-1 text-[9px] text-gold/90">点击预览</p>
       </div>
     </button>
   );
@@ -186,7 +186,6 @@ function FeaturedView({
         <p className="font-display text-[26px] italic text-paper">{cell.label}</p>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          {/* 播放/暂停 */}
           <button
             aria-label={paused ? "继续播放" : "暂停"}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-paper/30 text-[10px] text-paper/70 backdrop-blur-sm transition hover:border-paper/60 hover:text-paper"
@@ -196,15 +195,22 @@ function FeaturedView({
             {paused ? "▶" : "⏸"}
           </button>
 
-          {/* 下载按钮 */}
+          {cell.href ? (
+            <Link
+              className="section-entry-link section-entry-link--dark"
+              href={cell.href}
+            >
+              查看作品 ↗
+            </Link>
+          ) : null}
+
           <Link
             className="section-entry-link section-entry-link--dark"
             href="/explore?motion=true"
           >
-            ↗ 进入动态专区
+            进入动态专区 ↗
           </Link>
 
-          {/* 返回胶卷 */}
           <button
             aria-label="返回胶卷视图"
             className="ml-auto flex h-9 items-center gap-2 text-[9px] uppercase tracking-[0.22em] text-paper/40 transition hover:text-paper/70"
@@ -255,11 +261,11 @@ export function HeroFilmPanel({ rows = heroFilmRows }: HeroFilmPanelProps) {
       <SprocketColumn side="right" />
 
       {/* 顶部元信息 */}
-      <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 pt-4 sm:px-7 sm:pt-5">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 pt-4 sm:px-7 sm:pt-5">
         <p className="text-[9px] uppercase tracking-[0.35em] text-paper/45">
           {activeCell ? "动态专区 · 正在播放" : "动态专区"}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="pointer-events-auto flex items-center gap-2">
           {activeCell ? (
             /* 播放状态指示 */
             <span className="inline-flex items-center gap-1.5 font-mono text-[9px] tracking-[0.2em] text-paper/30">
@@ -331,7 +337,10 @@ export function HeroFilmPanel({ rows = heroFilmRows }: HeroFilmPanelProps) {
       {/* 格子模式底部信息 */}
       <div
         className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-black/80 to-transparent px-4 pb-5 pt-14 transition-opacity duration-500 sm:px-7 sm:pb-7 sm:pt-16"
-        style={{ opacity: activeCell ? 0 : 1 }}
+        style={{
+          opacity: activeCell ? 0 : 1,
+          pointerEvents: "none",
+        }}
       >
         <p className="font-display text-[22px] italic text-paper sm:text-[28px]">动态专区</p>
         <p className="mt-2 max-w-sm text-sm leading-6 text-paper/48">

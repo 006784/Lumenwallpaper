@@ -102,6 +102,12 @@ function hashInput(value: string) {
 }
 
 export function getWallpaperGradientKey(wallpaper: Pick<Wallpaper, "slug" | "tags" | "colors">): GradientKey {
+  const slugPrefix = wallpaper.slug?.split("-")[0] ?? "";
+
+  if (GRADIENT_SEQUENCE.includes(slugPrefix as GradientKey)) {
+    return slugPrefix as GradientKey;
+  }
+
   const source =
     wallpaper.tags[0] ?? wallpaper.colors[0] ?? wallpaper.slug ?? "frame";
   return GRADIENT_SEQUENCE[hashInput(source) % GRADIENT_SEQUENCE.length];
@@ -403,6 +409,7 @@ export function wallpaperToMoodCard(
 export function wallpaperToFilmCell(wallpaper: Wallpaper): FilmCellData {
   return {
     gradient: getWallpaperGradientKey(wallpaper),
+    href: `/wallpaper/${wallpaper.slug}`,
     label: getWallpaperDisplayTitle(wallpaper),
     previewUrl: getWallpaperPreviewUrl(wallpaper, "medium"),
     videoUrl: wallpaper.videoUrl ?? undefined,

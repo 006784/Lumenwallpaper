@@ -15,6 +15,8 @@ const CONTENT_SECURITY_POLICY = [
     process.env.NODE_ENV === "development" ? " http: ws:" : ""
   }`,
   "media-src 'self' blob: https:",
+  "frame-src 'none'",
+  "manifest-src 'self'",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
@@ -25,11 +27,15 @@ const CONTENT_SECURITY_POLICY = [
 const SECURITY_HEADERS = {
   "Content-Security-Policy": CONTENT_SECURITY_POLICY,
   "Cross-Origin-Opener-Policy": "same-origin",
+  "Cross-Origin-Resource-Policy": "same-origin",
+  "Origin-Agent-Cluster": "?1",
   "Permissions-Policy":
     "camera=(), geolocation=(), microphone=(), browsing-topics=()",
   "Referrer-Policy": "strict-origin-when-cross-origin",
+  "X-DNS-Prefetch-Control": "off",
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
+  "X-Permitted-Cross-Domain-Policies": "none",
 } satisfies Record<string, string>;
 
 function shouldDisableCaching(request: NextRequest) {

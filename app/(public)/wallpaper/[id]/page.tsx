@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
-import { GRADIENTS } from "@/lib/gradients";
 import {
   getWallpaperDisplayTitle,
   getWallpaperDownloadFile,
@@ -10,11 +9,13 @@ import {
   getPreferredWallpaperFile,
   getWallpaperGradientKey,
   getWallpaperPreviewUrl,
+  getWallpaperCoverSources,
 } from "@/lib/wallpaper-presenters";
 import { getCachedPublishedWallpapers, getCachedWallpaperByIdentifier } from "@/lib/public-wallpaper-cache";
 import { WallpaperDetailSidebar } from "@/components/wallpaper/wallpaper-detail-sidebar";
 import { WallpaperVideoPlayer } from "@/components/wallpaper/wallpaper-video-player";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
+import { WallpaperCoverImage } from "@/components/wallpaper/wallpaper-cover-image";
 
 type WallpaperPageProps = {
   params: {
@@ -90,6 +91,10 @@ export async function generateMetadata({
   const preferredFile = getPreferredWallpaperFile(wallpaper);
   const tagLine = wallpaper.tags[0] ?? wallpaper.aiCategory ?? "高质感壁纸";
   const visibleDescription = getVisibleWallpaperDescription(wallpaper.description);
+  const openGraphImage =
+    preferredFile?.url && !preferredFile.url.startsWith("data:")
+      ? preferredFile.url
+      : undefined;
 
   return {
     title: wallpaper.title,
@@ -101,7 +106,7 @@ export async function generateMetadata({
       description:
         visibleDescription ??
         `${wallpaper.title} · ${tagLine} · 来自 Lumen 的高质感壁纸详情页。`,
-      images: preferredFile?.url ? [{ url: preferredFile.url }] : undefined,
+      images: openGraphImage ? [{ url: openGraphImage }] : undefined,
     },
   };
 }
@@ -144,15 +149,8 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
     relatedWallpapers = [];
   }
 
-  const artworkStyle = preferredFile
-    ? {
-        backgroundImage: `url("${preferredFile.url}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
-    : {
-        backgroundImage: GRADIENTS[getWallpaperGradientKey(wallpaper)],
-      };
+  const gradientKey = getWallpaperGradientKey(wallpaper);
+  const coverSources = getWallpaperCoverSources(wallpaper);
 
   return (
     <>
@@ -167,10 +165,18 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
           ) : (
             <div
               aria-label={displayTitle}
-              className="aspect-[3/4] w-full border-frame border-ink bg-paper sm:aspect-[4/5]"
+              className="relative aspect-[3/4] w-full overflow-hidden border-frame border-ink bg-paper sm:aspect-[4/5]"
               role="img"
-              style={artworkStyle}
-            />
+            >
+              <WallpaperCoverImage
+                alt={displayTitle}
+                gradient={gradientKey}
+                imageClassName="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                sources={coverSources}
+                src={posterUrl ?? preferredFile?.url}
+              />
+            </div>
           )}
           <div>
             <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">

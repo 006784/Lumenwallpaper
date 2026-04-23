@@ -71,14 +71,11 @@ export async function POST(request: Request) {
     }
 
     parsedBody = result.data;
-  } catch (error) {
-    return jsonError(
-      error instanceof Error ? error.message : "Invalid wallpaper backfill payload.",
-      {
-        status: 400,
-        code: "INVALID_BODY",
-      },
-    );
+  } catch {
+    return jsonError("Invalid wallpaper backfill payload.", {
+      status: 400,
+      code: "INVALID_BODY",
+    });
   }
 
   logger.start({
@@ -134,12 +131,9 @@ export async function POST(request: Request) {
       error: error instanceof Error ? error.message : "Unknown error.",
     });
 
-    return jsonError(
-      error instanceof Error ? error.message : "Failed to backfill wallpapers.",
-      {
-        status: 500,
-        code: "WALLPAPER_BACKFILL_FAILED",
-      },
-    );
+    return jsonError("Failed to backfill wallpapers.", {
+      status: 500,
+      code: "WALLPAPER_BACKFILL_FAILED",
+    });
   }
 }

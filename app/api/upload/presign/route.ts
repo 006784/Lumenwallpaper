@@ -86,10 +86,8 @@ export async function POST(request: Request) {
     captureServerException(error, {
       route: "/api/upload/presign",
     });
-    const message =
-      error instanceof Error ? error.message : "Failed to create upload URL.";
 
-    return jsonError(message, {
+    return jsonError("Failed to create upload URL.", {
       status: 500,
       code: "UPLOAD_PRESIGN_FAILED",
     });

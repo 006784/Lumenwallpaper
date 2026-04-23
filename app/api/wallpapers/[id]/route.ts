@@ -7,7 +7,7 @@ import {
   jsonSuccess,
 } from "@/lib/api";
 import { getPublicApiCacheHeaders } from "@/lib/cache";
-import { getCurrentUser, isAuthConfigured } from "@/lib/auth";
+import { getCurrentUser, isAuthConfigured, isEditorUser } from "@/lib/auth";
 import {
   deleteWallpaperRecord,
   getWallpaperByIdOrSlug,
@@ -47,10 +47,7 @@ export async function GET(
         method: "GET",
       },
     });
-    const message =
-      error instanceof Error ? error.message : "Failed to load wallpaper.";
-
-    return jsonError(message, {
+    return jsonError("Failed to load wallpaper.", {
       status: 500,
       code: "WALLPAPER_GET_FAILED",
     });
@@ -87,7 +84,9 @@ export async function PATCH(
       });
     }
 
-    if (wallpaper.userId !== currentUser.id) {
+    const canModerate = isEditorUser(currentUser);
+
+    if (wallpaper.userId !== currentUser.id && !canModerate) {
       return jsonError("You can only update your own wallpapers.", {
         status: 403,
         code: "WALLPAPER_FORBIDDEN",
@@ -95,6 +94,19 @@ export async function PATCH(
     }
 
     const payload = updateWallpaperSchema.parse(await request.json());
+
+    if (
+      !canModerate &&
+      ((payload.featured !== undefined &&
+        payload.featured !== wallpaper.featured) ||
+        (payload.status !== undefined && payload.status !== wallpaper.status))
+    ) {
+      return jsonError("Only editor accounts can change moderation fields.", {
+        status: 403,
+        code: "WALLPAPER_MODERATION_FORBIDDEN",
+      });
+    }
+
     const updatedWallpaper = await updateWallpaperRecord(wallpaper.id, payload);
 
     if (!updatedWallpaper) {
@@ -122,10 +134,7 @@ export async function PATCH(
         method: "PATCH",
       },
     });
-    const message =
-      error instanceof Error ? error.message : "Failed to update wallpaper.";
-
-    return jsonError(message, {
+    return jsonError("Failed to update wallpaper.", {
       status: 500,
       code: "WALLPAPER_UPDATE_FAILED",
     });
@@ -162,7 +171,7 @@ export async function DELETE(
       });
     }
 
-    if (wallpaper.userId !== currentUser.id) {
+    if (wallpaper.userId !== currentUser.id && !isEditorUser(currentUser)) {
       return jsonError("You can only delete your own wallpapers.", {
         status: 403,
         code: "WALLPAPER_FORBIDDEN",
@@ -186,10 +195,7 @@ export async function DELETE(
         method: "DELETE",
       },
     });
-    const message =
-      error instanceof Error ? error.message : "Failed to delete wallpaper.";
-
-    return jsonError(message, {
+    return jsonError("Failed to delete wallpaper.", {
       status: 500,
       code: "WALLPAPER_DELETE_FAILED",
     });

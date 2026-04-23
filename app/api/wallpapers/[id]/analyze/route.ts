@@ -3,7 +3,7 @@ import {
   jsonError,
   jsonSuccess,
 } from "@/lib/api";
-import { getCurrentUser, isAuthConfigured } from "@/lib/auth";
+import { getCurrentUser, isAuthConfigured, isEditorUser } from "@/lib/auth";
 import { consumeRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 import {
   getWallpaperByIdOrSlug,
@@ -60,7 +60,7 @@ export async function POST(
       });
     }
 
-    if (wallpaper.userId !== currentUser.id) {
+    if (wallpaper.userId !== currentUser.id && !isEditorUser(currentUser)) {
       return jsonError("You can only analyze your own wallpapers.", {
         status: 403,
         code: "WALLPAPER_FORBIDDEN",
@@ -84,10 +84,7 @@ export async function POST(
     captureServerException(error, {
       route: "/api/wallpapers/[id]/analyze",
     });
-    const message =
-      error instanceof Error ? error.message : "Failed to analyze wallpaper.";
-
-    return jsonError(message, {
+    return jsonError("Failed to analyze wallpaper.", {
       status: 500,
       code: "WALLPAPER_ANALYZE_FAILED",
     });

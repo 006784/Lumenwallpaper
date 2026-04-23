@@ -1,4 +1,4 @@
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 
 import {
   captureServerException,
@@ -8,60 +8,100 @@ import {
   jsonSuccess,
 } from "@/lib/api";
 import { getPublicApiCacheHeaders } from "@/lib/cache";
-import { getCurrentUser, isAuthConfigured } from "@/lib/auth";
+import { getCurrentUser, isAuthConfigured, isEditorUser } from "@/lib/auth";
 import {
   getCachedPublishedWallpapers,
   EXPLORE_PAGE_SIZE,
   getCachedPublishedWallpapersPage,
 } from "@/lib/public-wallpaper-cache";
-import type { WallpaperSort } from "@/types/wallpaper";
-import {
-  createWallpaperRecord,
-  createWallpaperSchema,
-} from "@/lib/wallpapers";
+import { getExploreCategory } from "@/lib/explore";
+import { createWallpaperRecord, createWallpaperSchema } from "@/lib/wallpapers";
+
+const optionalBooleanQueryParam = z.preprocess((value) => {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  if (value === "true" || value === "1") {
+    return true;
+  }
+
+  if (value === "false" || value === "0") {
+    return false;
+  }
+
+  return value;
+}, z.boolean().optional());
+
+function optionalIntegerQueryParam(options: { max: number; min?: number }) {
+  return z.preprocess(
+    (value) => {
+      if (value === undefined || value === null || value === "") {
+        return undefined;
+      }
+
+      const numberValue = Number(value);
+      return Number.isFinite(numberValue) ? numberValue : value;
+    },
+    z
+      .number()
+      .int()
+      .min(options.min ?? 1)
+      .max(options.max)
+      .optional(),
+  );
+}
+
+const wallpapersQuerySchema = z.object({
+  category: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(40)
+    .optional()
+    .transform((value) => value || undefined)
+    .refine((value) => !value || Boolean(getExploreCategory(value)), {
+      message: "Unknown wallpaper category.",
+    }),
+  featured: optionalBooleanQueryParam,
+  limit: optionalIntegerQueryParam({ max: 100 }),
+  motion: optionalBooleanQueryParam,
+  offset: optionalIntegerQueryParam({ max: 5000, min: 0 }),
+  page: optionalIntegerQueryParam({ max: 1000 }),
+  q: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .transform((value) => value || undefined),
+  sort: z.enum(["popular", "likes", "latest"]).optional(),
+  tag: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .transform((value) => value || undefined),
+  withMeta: optionalBooleanQueryParam,
+});
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = searchParams.get("limit");
-    const offset = searchParams.get("offset");
-    const q = searchParams.get("q");
-    const tag = searchParams.get("tag");
-    const category = searchParams.get("category");
-    const sort = searchParams.get("sort");
-    const featured = searchParams.get("featured");
-    const motion = searchParams.get("motion");
-    const page = searchParams.get("page");
-    const withMeta = searchParams.get("withMeta");
-
-    const parsedLimit = limit ? Number.parseInt(limit, 10) : undefined;
-    const parsedOffset = offset ? Number.parseInt(offset, 10) : undefined;
-    const parsedSort: WallpaperSort | undefined =
-      sort === "popular" || sort === "likes" || sort === "latest"
-        ? sort
-        : undefined;
-    const parsedPage = page ? Number.parseInt(page, 10) : undefined;
-    const normalizedLimit =
-      parsedLimit && Number.isFinite(parsedLimit) && parsedLimit > 0
-        ? Math.min(parsedLimit, 100)
-        : undefined;
+    const query = wallpapersQuerySchema.parse(
+      Object.fromEntries(searchParams.entries()),
+    );
     const options = {
-      limit: normalizedLimit,
-      offset:
-        parsedOffset && Number.isFinite(parsedOffset) && parsedOffset > 0
-          ? parsedOffset
-          : undefined,
-      search: q ?? undefined,
-      tag: tag ?? undefined,
-      category: category ?? undefined,
-      sort: parsedSort,
-      featured:
-        featured === null ? undefined : featured === "true" || featured === "1",
-      motion: motion === null ? undefined : motion === "true" || motion === "1",
+      limit: query.limit,
+      offset: query.offset,
+      search: query.q,
+      tag: query.tag,
+      category: query.category,
+      sort: query.sort,
+      featured: query.featured,
+      motion: query.motion,
     };
 
-    const shouldReturnPageMeta =
-      withMeta === "true" || withMeta === "1" || parsedPage !== undefined;
+    const shouldReturnPageMeta = query.withMeta || query.page !== undefined;
 
     const data = shouldReturnPageMeta
       ? await getCachedPublishedWallpapersPage(
@@ -73,10 +113,8 @@ export async function GET(request: Request) {
             motion: options.motion,
             sort: options.sort,
           },
-          parsedPage && Number.isFinite(parsedPage) && parsedPage > 0
-            ? parsedPage
-            : 1,
-          normalizedLimit ?? EXPLORE_PAGE_SIZE,
+          query.page ?? 1,
+          query.limit ?? EXPLORE_PAGE_SIZE,
         )
       : await getCachedPublishedWallpapers(options);
 
@@ -85,16 +123,22 @@ export async function GET(request: Request) {
       message: "Wallpapers loaded.",
     });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return jsonError("Invalid wallpaper query parameters.", {
+        status: 400,
+        code: "INVALID_WALLPAPER_QUERY",
+        details: formatZodError(error),
+      });
+    }
+
     captureServerException(error, {
       route: "/api/wallpapers",
       tags: {
         method: "GET",
       },
     });
-    const message =
-      error instanceof Error ? error.message : "Failed to list wallpapers.";
 
-    return jsonError(message, {
+    return jsonError("Failed to list wallpapers.", {
       status: 500,
       code: "WALLPAPERS_LIST_FAILED",
     });
@@ -121,7 +165,19 @@ export async function POST(request: Request) {
   }
 
   try {
-    const payload = createWallpaperSchema.parse(await request.json());
+    const rawBody = await request.json();
+    const payload = createWallpaperSchema.parse(rawBody);
+
+    if (
+      !isEditorUser(currentUser) &&
+      (payload.featured || payload.status !== "published")
+    ) {
+      return jsonError("Only editor accounts can set moderation fields.", {
+        status: 403,
+        code: "WALLPAPER_MODERATION_FORBIDDEN",
+      });
+    }
+
     logger.start({
       creatorId: String(currentUser.id),
       hasDescription: Boolean(payload.description?.trim()),
@@ -163,10 +219,7 @@ export async function POST(request: Request) {
         method: "POST",
       },
     });
-    const message =
-      error instanceof Error ? error.message : "Failed to create wallpaper.";
-
-    return jsonError(message, {
+    return jsonError("Failed to create wallpaper.", {
       status: 500,
       code: "WALLPAPER_CREATE_FAILED",
     });
