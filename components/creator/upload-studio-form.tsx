@@ -143,6 +143,42 @@ function getAllowedSizeBytes(contentType: string) {
     : MAX_IMAGE_UPLOAD_SIZE_BYTES;
 }
 
+function getXhrResponseSnippet(xhr: XMLHttpRequest) {
+  try {
+    return xhr.responseText.trim().slice(0, 180);
+  } catch {
+    return "";
+  }
+}
+
+function buildR2UploadErrorMessage(
+  xhr: XMLHttpRequest,
+  kind: "network" | "timeout" | "abort" | "status",
+) {
+  if (kind === "timeout") {
+    return "上传到 R2 超时。文件可能较大，或 R2/CORS 预检响应过慢，请稍后重试。";
+  }
+
+  if (kind === "abort") {
+    return "上传到 R2 已中断，请重新选择文件后再试。";
+  }
+
+  if (xhr.status === 0) {
+    return "上传到 R2 被浏览器拦截或连接中断（status 0）。常见原因是 R2 CORS 未允许 PUT/Content-Type，或签名 URL 的请求头与浏览器实际上传不一致。";
+  }
+
+  const responseSnippet = getXhrResponseSnippet(xhr);
+  const statusText = xhr.statusText ? ` ${xhr.statusText}` : "";
+  const statusHint =
+    xhr.status === 403
+      ? " 请确认 R2 凭证、Bucket 权限和签名头配置。"
+      : xhr.status === 404
+        ? " 请确认 Bucket 名称和对象路径。"
+        : "";
+
+  return `上传到 R2 失败，状态码 ${xhr.status}${statusText}。${responseSnippet ? `返回：${responseSnippet}` : ""}${statusHint}`;
+}
+
 function uploadFileToPresignedUrl(
   upload: PresignedUploadPayload,
   file: File,
@@ -152,6 +188,7 @@ function uploadFileToPresignedUrl(
     const xhr = new XMLHttpRequest();
 
     xhr.open(upload.method, upload.presignedUrl, true);
+    xhr.timeout = 5 * 60 * 1000;
 
     Object.entries(upload.headers).forEach(([key, value]) => {
       xhr.setRequestHeader(key, value);
@@ -165,7 +202,15 @@ function uploadFileToPresignedUrl(
     };
 
     xhr.onerror = () => {
-      reject(new Error("上传到 R2 失败，请检查网络后重试。"));
+      reject(new Error(buildR2UploadErrorMessage(xhr, "network")));
+    };
+
+    xhr.ontimeout = () => {
+      reject(new Error(buildR2UploadErrorMessage(xhr, "timeout")));
+    };
+
+    xhr.onabort = () => {
+      reject(new Error(buildR2UploadErrorMessage(xhr, "abort")));
     };
 
     xhr.onload = () => {
@@ -178,7 +223,7 @@ function uploadFileToPresignedUrl(
         return;
       }
 
-      reject(new Error(`上传到 R2 失败，状态码 ${xhr.status}。`));
+      reject(new Error(buildR2UploadErrorMessage(xhr, "status")));
     };
 
     xhr.send(file);

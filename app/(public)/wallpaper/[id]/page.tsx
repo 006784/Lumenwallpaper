@@ -154,7 +154,7 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
 
   return (
     <>
-      <section className="border-b-frame border-ink px-5 py-14 sm:px-6 md:px-10 md:py-24">
+      <section className="border-b-frame border-ink px-5 py-8 sm:px-6 md:px-10 md:py-12">
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
           {wallpaper.videoUrl ? (
             <WallpaperVideoPlayer
@@ -165,13 +165,14 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
           ) : (
             <div
               aria-label={displayTitle}
-              className="relative aspect-[3/4] w-full overflow-hidden border-frame border-ink bg-paper sm:aspect-[4/5]"
+              className="relative h-[min(74vh,820px)] min-h-[420px] w-full overflow-hidden border-frame border-ink bg-paper/65 lg:sticky lg:top-24"
               role="img"
             >
               <WallpaperCoverImage
                 alt={displayTitle}
                 gradient={gradientKey}
-                imageClassName="object-cover"
+                imageClassName="!object-contain bg-paper/70"
+                loading="eager"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 sources={coverSources}
                 src={posterUrl ?? preferredFile?.url}
@@ -182,7 +183,7 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
             <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
               Wallpaper Detail
             </p>
-            <h1 className="font-display text-[clamp(2.4rem,6vw,4.5rem)] leading-[0.94] tracking-[-0.05em]">
+            <h1 className="font-display text-[clamp(2.1rem,5vw,3.8rem)] leading-[1.02] tracking-normal">
               {displayTitle}
             </h1>
 
@@ -215,14 +216,14 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
       </section>
 
       {relatedWallpapers.length > 0 ? (
-        <section className="border-b-frame border-ink bg-paper/45 px-5 py-12 sm:px-6 md:px-10 md:py-20">
+        <section className="border-b-frame border-ink bg-paper/45 px-5 py-10 sm:px-6 md:px-10 md:py-14">
           <div className="mx-auto max-w-6xl">
             <div className="mb-8 flex items-baseline justify-between gap-4">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.35em] text-red">
                   {relatedTag ? `更多 #${relatedTag}` : "热门推荐"}
                 </p>
-                <h2 className="mt-3 font-display text-[clamp(1.8rem,4vw,3rem)] leading-[0.96] tracking-[-0.05em]">
+                <h2 className="mt-3 font-display text-[clamp(1.7rem,3vw,2.6rem)] leading-tight tracking-normal">
                   你可能也喜欢
                 </h2>
               </div>

@@ -7,8 +7,8 @@
     var(--font-geist-sans), "PingFang SC", "Hiragino Sans GB",
     "Noto Sans CJK SC", "Microsoft YaHei UI", sans-serif;
   --font-display:
-    "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC",
-    "Iowan Old Style", "Baskerville", Georgia, serif;
+    "Noto Serif SC", "Source Han Serif SC", "PingFang SC",
+    "Hiragino Sans GB", "Songti SC", "Iowan Old Style", Georgia, serif;
   --font-mono:
     var(--font-geist-mono), "SFMono-Regular", "JetBrains Mono", monospace;
 
@@ -26,11 +26,11 @@
   --color-muted-rgb: 102 113 107;
   --border-frame: 1.5px solid #111512;
 
-  --dur-film: 550ms;
-  --dur-card: 700ms;
-  --dur-info: 420ms;
-  --dur-hover: 200ms;
-  --ease-film: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-film: 520ms;
+  --dur-card: 560ms;
+  --dur-info: 360ms;
+  --dur-hover: 220ms;
+  --ease-film: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {
@@ -115,6 +115,11 @@ button,
 input,
 textarea {
   font: inherit;
+}
+
+img,
+video {
+  content-visibility: auto;
 }
 
 a:focus-visible,
@@ -215,7 +220,22 @@ textarea:focus-visible {
   }
 
   .fade-up {
-    animation: fade-up 0.7s ease both;
+    animation: fade-up 0.62s var(--ease-film) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
   }
 }
 

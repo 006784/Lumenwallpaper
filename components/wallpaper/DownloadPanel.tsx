@@ -7,6 +7,14 @@ type DownloadFormat = "PNG" | "WEBP";
 type DownloadState = "idle" | "loading" | "done" | "error";
 type CacheState = "idle" | "done";
 type FormatKey = "original" | "4k" | "webp";
+export type DownloadProgressSnapshot = {
+  loaded: number;
+  total: number | null;
+  percent: number | null;
+};
+export type DownloadProgressCallback = (
+  snapshot: DownloadProgressSnapshot,
+) => void;
 
 export interface DownloadPanelProps {
   wallpaper: {
@@ -16,11 +24,14 @@ export interface DownloadPanelProps {
     height: number;
     previewUrl: string;
   };
-  onDownload: (config: {
-    fmt: string;
-    res: string;
-    ratio: string;
-  }) => Promise<void> | void;
+  onDownload: (
+    config: {
+      fmt: string;
+      res: string;
+      ratio: string;
+    },
+    onProgress: DownloadProgressCallback,
+  ) => Promise<void> | void;
   onSaveConfig: (config: {
     fmt: string;
     ratio: string;
@@ -113,17 +124,67 @@ function estimateSizeLabel(
 }
 
 function computeBoxSize(width: number, height: number): BoxSize {
-  if (width >= height) {
+  const safeWidth = width > 0 ? width : 16;
+  const safeHeight = height > 0 ? height : 9;
+  const ratio = safeWidth / safeHeight;
+  const maxWidth = ratio >= 1 ? 760 : 520;
+  const maxHeight = ratio >= 1 ? 520 : 680;
+  let nextWidth = maxWidth;
+  let nextHeight = nextWidth / ratio;
+
+  if (nextHeight > maxHeight) {
+    nextHeight = maxHeight;
+    nextWidth = nextHeight * ratio;
+  }
+
+  return {
+    width: Math.max(180, Math.round(nextWidth)),
+    height: Math.max(140, Math.round(nextHeight)),
+  };
+}
+
+function computeCroppedResolution(
+  preset: Pick<FormatPreset, "width" | "height">,
+  ratioOption: RatioOption,
+) {
+  if (ratioOption.w === 0 || ratioOption.h === 0) {
     return {
-      width: Math.min(340, Math.round(340)),
-      height: Math.min(240, Math.round((340 * height) / width)),
+      width: preset.width,
+      height: preset.height,
+    };
+  }
+
+  const targetRatio = ratioOption.w / ratioOption.h;
+  const sourceRatio = preset.width / preset.height;
+
+  if (sourceRatio >= targetRatio) {
+    return {
+      width: Math.round(preset.height * targetRatio),
+      height: preset.height,
     };
   }
 
   return {
-    height: Math.min(240, 220),
-    width: Math.min(340, Math.round((220 * width) / height)),
+    width: preset.width,
+    height: Math.round(preset.width / targetRatio),
   };
+}
+
+function formatBytes(value: number | null | undefined) {
+  if (!value || value <= 0) {
+    return "0 KB";
+  }
+
+  const units = ["B", "KB", "MB", "GB"];
+  let size = value;
+  let unitIndex = 0;
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex += 1;
+  }
+
+  return `${size >= 10 || unitIndex === 0 ? size.toFixed(0) : size.toFixed(1)} ${units[unitIndex]}`;
 }
 
 function buildFilmHint(label: string, fmt: DownloadFormat, size: string) {
@@ -230,6 +291,8 @@ export function DownloadPanel({
   const [lockOn, setLockOn] = useState(true);
   const [dlState, setDlState] = useState<DownloadState>("idle");
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [downloadProgress, setDownloadProgress] =
+    useState<DownloadProgressSnapshot | null>(null);
   const [cacheState, setCacheState] = useState<CacheState>("idle");
   const [formatKey, setFormatKey] = useState<FormatKey>("original");
   const [selectedRatio, setSelectedRatio] = useState<RatioOption>(FREE_RATIO);
@@ -267,15 +330,21 @@ export function DownloadPanel({
     };
   }, []);
 
-  const currentPreset = presets[formatKey];
   const filmHint = buildFilmHint(fmtLabel, fmt, size);
   const isCompact = viewportWidth < 900;
   const isPhone = viewportWidth < 640;
   const previewScale = isCompact
-    ? Math.min(1, Math.max(0.74, (viewportWidth - 88) / 340))
+    ? Math.min(1, Math.max(0.42, (viewportWidth - 92) / boxSize.width))
     : 1;
   const displayBoxWidth = Math.round(boxSize.width * previewScale);
   const displayBoxHeight = Math.round(boxSize.height * previewScale);
+  const progressPercent =
+    downloadProgress?.percent ??
+    (downloadProgress?.total && downloadProgress.total > 0
+      ? Math.round((downloadProgress.loaded / downloadProgress.total) * 100)
+      : dlState === "loading"
+        ? 8
+        : 0);
 
   function rememberTimeout(timeout: number) {
     timeoutsRef.current.push(timeout);
@@ -293,14 +362,12 @@ export function DownloadPanel({
     }
 
     const nextBoxSize = computeBoxSize(nextRatio.w, nextRatio.h);
-    const scale = nextPreset.width / 340;
-    const nextWidth = Math.round(nextBoxSize.width * scale);
-    const nextHeight = Math.round(nextBoxSize.height * scale);
+    const croppedResolution = computeCroppedResolution(nextPreset, nextRatio);
 
     setBoxSize(nextBoxSize);
     setRatio(nextRatio.label);
-    setRes(formatResolution(nextWidth, nextHeight));
-    setDimPill(`${nextWidth} × ${nextHeight} px`);
+    setRes(formatResolution(croppedResolution.width, croppedResolution.height));
+    setDimPill(`${croppedResolution.width} × ${croppedResolution.height} px`);
   }
 
   function applyPanelState(
@@ -356,13 +423,35 @@ export function DownloadPanel({
 
     setDlState("loading");
     setDownloadError(null);
+    setDownloadProgress({
+      loaded: 0,
+      percent: 0,
+      total: null,
+    });
 
     try {
-      await Promise.resolve(onDownload({ fmt, res, ratio }));
+      await Promise.resolve(
+        onDownload({ fmt, res, ratio }, (snapshot) => {
+          setDownloadProgress({
+            loaded: snapshot.loaded,
+            percent:
+              typeof snapshot.percent === "number"
+                ? Math.min(100, Math.max(0, snapshot.percent))
+                : null,
+            total: snapshot.total,
+          });
+        }),
+      );
+      setDownloadProgress((current) => ({
+        loaded: current?.total ?? current?.loaded ?? 0,
+        percent: 100,
+        total: current?.total ?? null,
+      }));
       setDlState("done");
 
       const resetTimeout = window.setTimeout(() => {
         setDlState("idle");
+        setDownloadProgress(null);
       }, 1800);
 
       rememberTimeout(resetTimeout);
@@ -374,6 +463,7 @@ export function DownloadPanel({
 
       const resetTimeout = window.setTimeout(() => {
         setDlState("idle");
+        setDownloadProgress(null);
       }, 4200);
 
       rememberTimeout(resetTimeout);
@@ -459,8 +549,10 @@ export function DownloadPanel({
           background: PAPER,
           border: `1.5px solid ${INK}`,
           borderRadius: 0,
-          gridTemplateColumns: isCompact ? "1fr" : "minmax(0, 1fr) 300px",
-          maxWidth: "900px",
+          gridTemplateColumns: isCompact
+            ? "1fr"
+            : "minmax(560px, 1.35fr) minmax(360px, 0.65fr)",
+          maxWidth: "min(96vw, 1280px)",
           maxHeight: isCompact ? "calc(100vh - 24px)" : "calc(100vh - 48px)",
           overflowY: isCompact ? "auto" : "hidden",
         }}
@@ -471,7 +563,7 @@ export function DownloadPanel({
           style={{
             borderRight: isCompact ? "none" : `1.5px solid ${INK}`,
             borderBottom: isCompact ? `1.5px solid ${INK}` : "none",
-            minHeight: isCompact ? "auto" : "720px",
+            minHeight: isCompact ? "auto" : "min(760px, calc(100vh - 48px))",
           }}
         >
           <div
@@ -653,7 +745,7 @@ export function DownloadPanel({
           className="flex flex-col"
           style={{
             background: PAPER,
-            minHeight: isCompact ? "auto" : "720px",
+            minHeight: isCompact ? "auto" : "min(760px, calc(100vh - 48px))",
           }}
         >
           <div
@@ -700,7 +792,7 @@ export function DownloadPanel({
                 color: INK,
                 fontSize: "22px",
                 fontWeight: 500,
-                letterSpacing: "-0.5px",
+                letterSpacing: 0,
                 lineHeight: 1,
               }}
             >
@@ -1083,13 +1175,53 @@ export function DownloadPanel({
               }}
             >
               {dlState === "loading"
-                ? "冲洗中 · · ·"
+                ? `${Math.max(1, Math.min(100, progressPercent))}%`
                 : dlState === "done"
                   ? "完成 ✓"
                   : dlState === "error"
                     ? "下载失败"
                   : "下载壁纸"}
             </button>
+
+            {downloadProgress && dlState !== "idle" ? (
+              <div
+                className="space-y-2"
+                aria-live="polite"
+              >
+                <div
+                  className="h-[5px] overflow-hidden"
+                  style={{ background: "rgba(10,8,4,0.1)" }}
+                >
+                  <div
+                    className="h-full"
+                    style={{
+                      background: dlState === "error" ? "#3a1717" : RED,
+                      transform: `scaleX(${Math.max(0.04, Math.min(1, progressPercent / 100))})`,
+                      transformOrigin: "left",
+                      transition: "transform 0.22s ease-out",
+                    }}
+                  />
+                </div>
+                <div
+                  className="flex items-center justify-between gap-3"
+                  style={{
+                    color: MUTED,
+                    fontFamily: FONT_MONO,
+                    fontSize: "9px",
+                    letterSpacing: "1.5px",
+                  }}
+                >
+                  <span>
+                    {dlState === "done" ? "写入本地下载" : "正在接收文件"}
+                  </span>
+                  <span>
+                    {downloadProgress.total
+                      ? `${formatBytes(downloadProgress.loaded)} / ${formatBytes(downloadProgress.total)}`
+                      : `${formatBytes(downloadProgress.loaded)} 已接收`}
+                  </span>
+                </div>
+              </div>
+            ) : null}
 
             {downloadError ? (
               <p className="text-xs leading-5" style={{ color: RED }}>

@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 
-import { DownloadPanel } from "@/components/wallpaper/DownloadPanel";
+import {
+  DownloadPanel,
+  type DownloadProgressCallback,
+} from "@/components/wallpaper/DownloadPanel";
 import { WallpaperReportPanel } from "@/components/wallpaper/wallpaper-report-panel";
 import { cn } from "@/lib/utils";
 import type {
@@ -152,11 +155,22 @@ export function WallpaperDetailSidebar({
     );
   }
 
-  async function handleDownloadVariant(variant: WallpaperVariant) {
+  async function handleDownloadVariant(
+    variant: WallpaperVariant,
+    config: {
+      fmt: string;
+      res: string;
+      ratio: string;
+    },
+    onProgress: DownloadProgressCallback,
+  ) {
     setFeedback(null);
 
     const params = new URLSearchParams();
     params.set("variant", variant);
+    params.set("format", config.fmt.toLowerCase());
+    params.set("ratio", config.ratio);
+    params.set("resolution", config.res);
 
     const response = await fetch(
       `/api/wallpapers/${encodeURIComponent(identifier)}/download?${params.toString()}`,
@@ -187,8 +201,13 @@ export function WallpaperDetailSidebar({
 
     const contentType =
       response.headers.get("Content-Type") ?? "application/octet-stream";
+    const contentLength = Number.parseInt(
+      response.headers.get("Content-Length") ?? "0",
+      10,
+    );
     const reader = response.body.getReader();
     const chunks: Uint8Array<ArrayBuffer>[] = [];
+    let receivedBytes = 0;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -199,8 +218,23 @@ export function WallpaperDetailSidebar({
 
       if (value) {
         chunks.push(value);
+        receivedBytes += value.byteLength;
+        onProgress({
+          loaded: receivedBytes,
+          percent:
+            contentLength > 0
+              ? Math.round((receivedBytes / contentLength) * 100)
+              : null,
+          total: contentLength > 0 ? contentLength : null,
+        });
       }
     }
+
+    onProgress({
+      loaded: contentLength > 0 ? contentLength : receivedBytes,
+      percent: 100,
+      total: contentLength > 0 ? contentLength : null,
+    });
 
     const blob = new Blob(chunks, { type: contentType });
     const url = URL.createObjectURL(blob);
@@ -213,14 +247,17 @@ export function WallpaperDetailSidebar({
     URL.revokeObjectURL(url);
   }
 
-  async function handleDownload(config: {
-    fmt: string;
-    res: string;
-    ratio: string;
-  }) {
+  async function handleDownload(
+    config: {
+      fmt: string;
+      res: string;
+      ratio: string;
+    },
+    onProgress: DownloadProgressCallback,
+  ) {
     const variant = resolveDownloadVariant(config);
 
-    await handleDownloadVariant(variant);
+    await handleDownloadVariant(variant, config, onProgress);
   }
 
   function handleSaveDownloadConfig(_config: {

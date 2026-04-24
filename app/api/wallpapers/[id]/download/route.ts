@@ -3,6 +3,7 @@ import {
   createRouteLogger,
   jsonError,
 } from "@/lib/api";
+import sharp from "sharp";
 import { getCurrentUser } from "@/lib/auth";
 import {
   buildFallbackWallpaperSvg,
@@ -28,6 +29,19 @@ type WallpaperDownloadRouteProps = {
   params: {
     id: string;
   };
+};
+
+type DownloadTransformConfig = {
+  format: "original" | "png" | "webp";
+  ratio: {
+    label: string;
+    width: number;
+    height: number;
+  } | null;
+  resolution: {
+    width: number;
+    height: number;
+  } | null;
 };
 
 const DOWNLOAD_VARIANTS = new Set<WallpaperVariant>([
@@ -109,6 +123,157 @@ function buildDownloadFilename(
   return `${safeTitle}${variantSuffix}.${extension}`;
 }
 
+function parseResolution(value: string | null) {
+  const match = value?.match(/(\d+)\s*[×x]\s*(\d+)/i);
+
+  if (!match) {
+    return null;
+  }
+
+  const width = Number.parseInt(match[1]!, 10);
+  const height = Number.parseInt(match[2]!, 10);
+
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return null;
+  }
+
+  return { width, height };
+}
+
+function parseRatio(value: string | null) {
+  if (!value || value === "FREE") {
+    return null;
+  }
+
+  const match = value.match(/^(\d+(?:\.\d+)?)\s*:\s*(\d+(?:\.\d+)?)$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const width = Number.parseFloat(match[1]!);
+  const height = Number.parseFloat(match[2]!);
+
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return null;
+  }
+
+  return {
+    label: value,
+    width,
+    height,
+  };
+}
+
+function getTransformConfig(request: Request): DownloadTransformConfig {
+  const searchParams = new URL(request.url).searchParams;
+  const requestedFormat = searchParams.get("format")?.toLowerCase();
+
+  return {
+    format:
+      requestedFormat === "webp"
+        ? "webp"
+        : requestedFormat === "png"
+          ? "png"
+          : "original",
+    ratio: parseRatio(searchParams.get("ratio")),
+    resolution: parseResolution(searchParams.get("resolution")),
+  };
+}
+
+function canTransformContentType(contentType: string) {
+  return /^image\/(png|jpe?g|webp|avif)$/i.test(contentType);
+}
+
+function shouldTransformDownload(
+  config: DownloadTransformConfig,
+  contentType: string,
+) {
+  if (!canTransformContentType(contentType)) {
+    return false;
+  }
+
+  return Boolean(config.ratio) || config.format === "webp";
+}
+
+async function readWebStreamAsBuffer(stream: ReadableStream<Uint8Array>) {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalLength = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    if (value) {
+      chunks.push(value);
+      totalLength += value.byteLength;
+    }
+  }
+
+  return Buffer.concat(chunks, totalLength);
+}
+
+async function transformDownloadBuffer(
+  source: Buffer,
+  config: DownloadTransformConfig,
+) {
+  const image = sharp(source, {
+    animated: false,
+    failOn: "none",
+  });
+  const metadata = await image.metadata();
+  const sourceWidth = metadata.width ?? config.resolution?.width ?? 0;
+  const sourceHeight = metadata.height ?? config.resolution?.height ?? 0;
+  let pipeline = image.rotate();
+
+  if (config.ratio && sourceWidth > 0 && sourceHeight > 0) {
+    const targetRatio = config.ratio.width / config.ratio.height;
+    const sourceRatio = sourceWidth / sourceHeight;
+    const cropWidth =
+      sourceRatio >= targetRatio
+        ? Math.round(sourceHeight * targetRatio)
+        : sourceWidth;
+    const cropHeight =
+      sourceRatio >= targetRatio
+        ? sourceHeight
+        : Math.round(sourceWidth / targetRatio);
+
+    pipeline = pipeline.extract({
+      height: Math.max(1, cropHeight),
+      left: Math.max(0, Math.round((sourceWidth - cropWidth) / 2)),
+      top: Math.max(0, Math.round((sourceHeight - cropHeight) / 2)),
+      width: Math.max(1, cropWidth),
+    });
+  }
+
+  if (config.resolution) {
+    pipeline = pipeline.resize({
+      fit: "inside",
+      height: config.resolution.height,
+      withoutEnlargement: true,
+      width: config.resolution.width,
+    });
+  }
+
+  if (config.format === "webp") {
+    return {
+      buffer: await pipeline.webp({ quality: 88 }).toBuffer(),
+      contentType: "image/webp",
+      format: "image/webp",
+    };
+  }
+
+  return {
+    buffer: await pipeline.png({ compressionLevel: 8 }).toBuffer(),
+    contentType: "image/png",
+    format: "image/png",
+  };
+}
+
 export async function GET(
   request: Request,
   { params }: WallpaperDownloadRouteProps,
@@ -128,6 +293,7 @@ export async function GET(
     const requestedVariant = new URL(request.url).searchParams.get(
       "variant",
     ) as WallpaperVariant | null;
+    const transformConfig = getTransformConfig(request);
     const downloadFile =
       requestedVariant && DOWNLOAD_VARIANTS.has(requestedVariant)
         ? getWallpaperDownloadFileByVariant(wallpaper, requestedVariant)
@@ -230,6 +396,20 @@ export async function GET(
     }
 
     const object = await getR2ObjectStream(normalizedStoragePath);
+    const shouldTransform = shouldTransformDownload(
+      transformConfig,
+      object.contentType,
+    );
+    const transformed = shouldTransform
+      ? await transformDownloadBuffer(
+          await readWebStreamAsBuffer(object.stream),
+          transformConfig,
+        )
+      : null;
+    const responseContentType = transformed?.contentType ?? object.contentType;
+    const responseBody = transformed?.buffer ?? object.stream;
+    const responseContentLength =
+      transformed?.buffer.byteLength ?? object.contentLength;
     const filename = buildDownloadFilename(
       buildDownloadLabel(
         wallpaper.aiTags,
@@ -237,26 +417,27 @@ export async function GET(
         wallpaper.tags,
       ),
       downloadFile.variant,
-      downloadFile.format ?? object.contentType,
+      transformed?.format ?? downloadFile.format ?? object.contentType,
     );
 
     logger.done("wallpaper.download.stream", {
-      contentLength: object.contentLength,
+      contentLength: responseContentLength,
       wallpaperId: String(wallpaper.id),
+      transformed: Boolean(transformed),
       variant: downloadFile.variant,
     });
 
-    return new Response(object.stream, {
+    return new Response(responseBody, {
       status: 200,
       headers: {
         "Cache-Control": "private, no-store, max-age=0, must-revalidate",
         "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
-        "Content-Type": object.contentType,
-        ...(object.contentLength && object.contentLength > 0
-          ? { "Content-Length": String(object.contentLength) }
+        "Content-Type": responseContentType,
+        ...(responseContentLength && responseContentLength > 0
+          ? { "Content-Length": String(responseContentLength) }
           : {}),
-        ...(object.etag ? { ETag: object.etag } : {}),
-        ...(object.lastModified
+        ...(!transformed && object.etag ? { ETag: object.etag } : {}),
+        ...(!transformed && object.lastModified
           ? { "Last-Modified": object.lastModified }
           : {}),
         ...(nextDownloadsCount !== null
@@ -265,6 +446,11 @@ export async function GET(
             }
           : {}),
         "X-Wallpaper-Download-Variant": downloadFile.variant,
+        ...(transformed
+          ? {
+              "X-Wallpaper-Transformed": "true",
+            }
+          : {}),
       },
     });
   } catch (error) {

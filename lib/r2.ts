@@ -332,11 +332,6 @@ export async function createPresignedUpload(
     Bucket: config.bucket,
     Key: key,
     ContentType: contentType,
-    CacheControl: getVariantCacheControl("original"),
-    Metadata: {
-      source: "lumen-web-upload",
-      variant: "original",
-    },
   });
 
   const presignedUrl = await getSignedUrl(client, command, {
