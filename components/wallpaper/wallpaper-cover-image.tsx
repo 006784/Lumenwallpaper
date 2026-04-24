@@ -15,6 +15,7 @@ type WallpaperCoverImageProps = {
   sources?: WallpaperCoverSource[];
   imageClassName?: string;
   gradientClassName?: string;
+  loading?: "eager" | "lazy";
 };
 
 /**
@@ -30,12 +31,27 @@ export function WallpaperCoverImage({
   sources,
   imageClassName,
   gradientClassName,
+  loading = "lazy",
 }: WallpaperCoverImageProps) {
   const [failed, setFailed] = useState(false);
+  const [candidateIndex, setCandidateIndex] = useState(0);
+
+  const candidates = [
+    src,
+    ...(sources ?? [])
+      .filter((source) => source.src)
+      .sort((left, right) => right.width - left.width)
+      .map((source) => source.src),
+  ].filter((candidate, index, array): candidate is string => {
+    return Boolean(candidate) && array.indexOf(candidate) === index;
+  });
+  const candidatesKey = candidates.join("\n");
+  const currentSrc = candidates[candidateIndex];
 
   useEffect(() => {
     setFailed(false);
-  }, [src]);
+    setCandidateIndex(0);
+  }, [candidatesKey]);
 
   const srcSet = sources?.length
     ? sources
@@ -44,7 +60,7 @@ export function WallpaperCoverImage({
         .join(", ")
     : undefined;
 
-  if (!src || failed) {
+  if (!currentSrc || failed) {
     return (
       <div
         aria-label={alt}
@@ -70,15 +86,22 @@ export function WallpaperCoverImage({
     <img
       alt={alt}
       className={cn(
-        "absolute inset-0 h-full w-full object-cover object-center",
+        "absolute inset-0 h-full w-full object-cover object-center transition-[opacity,transform] duration-500 ease-out",
         imageClassName,
       )}
       decoding="async"
-      loading="lazy"
+      loading={loading}
       sizes={sizes}
-      src={src}
-      srcSet={srcSet}
-      onError={() => setFailed(true)}
+      src={currentSrc}
+      srcSet={candidateIndex === 0 ? srcSet : undefined}
+      onError={() => {
+        if (candidateIndex < candidates.length - 1) {
+          setCandidateIndex((index) => index + 1);
+          return;
+        }
+
+        setFailed(true);
+      }}
     />
   );
 }

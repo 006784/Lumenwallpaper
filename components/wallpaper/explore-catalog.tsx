@@ -173,19 +173,19 @@ export function ExploreCatalogLoading({
     : "按关键词、标签、分类、动态壁纸和热度筛选壁纸目录。结果优先读取真实数据，并兼容 AI 标签与人工标签。";
 
   return (
-    <section className="relative overflow-hidden border-b-frame border-ink px-5 py-14 sm:px-6 md:px-10 md:py-24">
+    <section className="relative overflow-hidden border-b-frame border-ink px-5 py-8 sm:px-6 md:px-10 md:py-12">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_16%,rgba(245,200,66,0.12),transparent_18%),radial-gradient(circle_at_88%_14%,rgba(212,43,43,0.08),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.14),transparent_40%)]" />
 
       <div className="relative mx-auto max-w-7xl">
-        <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
+        <p className="mb-3 text-[10px] uppercase tracking-[0.35em] text-red">
           Explore
         </p>
-        <div className="flex flex-col gap-6 border-b border-ink/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-5 border-b border-ink/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-4xl">
-            <h1 className="font-display text-[clamp(2.5rem,7vw,5rem)] leading-[0.94] tracking-[-0.05em]">
+            <h1 className="font-display text-[clamp(2rem,5vw,3.6rem)] leading-tight tracking-normal">
               {heading}
             </h1>
-            <p className="mt-6 max-w-3xl text-sm leading-7 text-muted md:text-base">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">
               {description}
             </p>
           </div>
@@ -201,7 +201,7 @@ export function ExploreCatalogLoading({
           />
         </div>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }, (_, index) => (
             <ExploreCardSkeleton key={index} />
           ))}
@@ -300,19 +300,19 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
     : "按关键词、标签、分类、动态壁纸和热度筛选壁纸目录。结果优先读取真实数据，并兼容 AI 标签与人工标签。";
 
   return (
-    <section className="relative overflow-hidden border-b-frame border-ink px-5 py-14 sm:px-6 md:px-10 md:py-24">
+    <section className="relative overflow-hidden border-b-frame border-ink px-5 py-8 sm:px-6 md:px-10 md:py-12">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_16%,rgba(245,200,66,0.12),transparent_18%),radial-gradient(circle_at_88%_14%,rgba(212,43,43,0.08),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.14),transparent_40%)]" />
 
       <div className="relative mx-auto max-w-7xl">
-        <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
+        <p className="mb-3 text-[10px] uppercase tracking-[0.35em] text-red">
           Explore
         </p>
-        <div className="flex flex-col gap-6 border-b border-ink/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-5 border-b border-ink/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-4xl">
-            <h1 className="font-display text-[clamp(2.5rem,7vw,5rem)] leading-[0.94] tracking-[-0.05em]">
+            <h1 className="font-display text-[clamp(2rem,5vw,3.6rem)] leading-tight tracking-normal">
               {heading}
             </h1>
-            <p className="mt-6 max-w-3xl text-sm leading-7 text-muted md:text-base">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">
               {description}
             </p>
           </div>
@@ -330,26 +330,26 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
 
         <form
           action={category ? `/explore/${category.slug}` : "/explore"}
-          className="bg-paper/78 mt-8 grid gap-4 border-frame border-ink p-4 lg:grid-cols-[1.2fr_0.8fr_auto]"
+          className="bg-paper/78 mt-6 grid gap-3 border-frame border-ink p-3 lg:grid-cols-[1.2fr_0.8fr_auto]"
           key={`${category?.slug ?? "all"}:${query}:${tag ?? ""}:${sort}:${featuredOnly}:${motionOnly}`}
           method="get"
         >
           <input
-            className="min-w-0 border border-ink/10 bg-transparent px-5 py-4 font-display text-[22px] italic outline-none placeholder:text-muted transition focus:border-ink focus:bg-paper/60"
+            className="min-w-0 border border-ink/10 bg-transparent px-4 py-3 font-display text-[20px] italic outline-none placeholder:text-muted transition focus:border-ink focus:bg-paper/60"
             defaultValue={query}
             name="q"
             placeholder="搜索标题、描述、AI 标签或创作者…"
             type="text"
           />
           <input
-            className="min-w-0 border border-ink/10 bg-transparent px-5 py-4 font-mono text-[11px] uppercase tracking-[0.2em] outline-none placeholder:text-muted transition focus:border-ink focus:bg-paper/60"
+            className="min-w-0 border border-ink/10 bg-transparent px-4 py-3 font-mono text-[11px] uppercase tracking-[0.2em] outline-none placeholder:text-muted transition focus:border-ink focus:bg-paper/60"
             defaultValue={tag}
             name="tag"
             placeholder="标签，如 自然 / 赛博 / 晨雾"
             type="text"
           />
           <button
-            className="border border-ink bg-ink px-6 py-4 font-mono text-[12px] uppercase tracking-[0.22em] text-paper transition hover:bg-red focus-visible:outline-none focus-visible:bg-red"
+            className="border border-ink bg-ink px-5 py-3 font-mono text-[12px] uppercase tracking-[0.22em] text-paper transition hover:bg-red focus-visible:outline-none focus-visible:bg-red"
             type="submit"
           >
             搜索目录
