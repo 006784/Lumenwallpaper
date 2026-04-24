@@ -11,6 +11,12 @@ import type {
   PresignedUploadPayload,
   WallpaperVariant,
 } from "@/types/wallpaper";
+import type {
+  R2UploadCorsDiagnosticHeaders,
+  R2UploadCorsDiagnosticIssue,
+  R2UploadCorsDiagnostics,
+  R2UploadCorsRequirement,
+} from "@/types/r2-diagnostics";
 
 export const ALLOWED_UPLOAD_MIME_TYPES = [
   "image/jpeg",
@@ -31,6 +37,9 @@ export const R2_STORAGE_PREFIXES: Record<WallpaperVariant, string> = {
   thumb: "thumbnails",
   preview: "previews",
 };
+export const R2_UPLOAD_CORS_REQUEST_HEADERS = ["content-type"] as const;
+export const R2_UPLOAD_CORS_EXPOSE_HEADERS = ["ETag"] as const;
+export const R2_UPLOAD_CORS_METHODS = ["PUT"] as const;
 
 let r2Client: S3Client | null = null;
 
@@ -69,6 +78,205 @@ export function getR2ObjectUrl(path: string) {
   const base = getR2Config().publicUrl;
   const normalizedBase = base.endsWith("/") ? base : `${base}/`;
   return new URL(path.replace(/^\/+/, ""), normalizedBase).toString();
+}
+
+function normalizeCorsList(value: string | null) {
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function corsAllowsValue(headerValue: string | null, requiredValue: string) {
+  const allowedValues = normalizeCorsList(headerValue);
+  return (
+    allowedValues.includes("*") ||
+    allowedValues.includes(requiredValue.trim().toLowerCase())
+  );
+}
+
+function corsAllowsOrigin(headerValue: string | null, origin: string) {
+  const allowedOrigins = normalizeCorsList(headerValue);
+  return (
+    allowedOrigins.includes("*") ||
+    allowedOrigins.includes(origin.trim().toLowerCase())
+  );
+}
+
+function getR2UploadCorsDiagnosticStatus(
+  issues: R2UploadCorsDiagnosticIssue[],
+) {
+  if (issues.some((issue) => issue.severity === "error")) {
+    return "fail";
+  }
+
+  if (issues.length > 0) {
+    return "warning";
+  }
+
+  return "pass";
+}
+
+function readCorsDiagnosticHeaders(headers: Headers): R2UploadCorsDiagnosticHeaders {
+  return {
+    accessControlAllowHeaders: headers.get("access-control-allow-headers"),
+    accessControlAllowMethods: headers.get("access-control-allow-methods"),
+    accessControlAllowOrigin: headers.get("access-control-allow-origin"),
+    accessControlExposeHeaders: headers.get("access-control-expose-headers"),
+    accessControlMaxAge: headers.get("access-control-max-age"),
+  };
+}
+
+export function getR2UploadCorsRequirement(origin: string): R2UploadCorsRequirement {
+  return {
+    origins: [origin],
+    methods: [...R2_UPLOAD_CORS_METHODS],
+    requestHeaders: [...R2_UPLOAD_CORS_REQUEST_HEADERS],
+    exposeHeaders: [...R2_UPLOAD_CORS_EXPOSE_HEADERS],
+    examplePolicy: [
+      {
+        AllowedOrigins: [origin],
+        AllowedMethods: [...R2_UPLOAD_CORS_METHODS],
+        AllowedHeaders: [...R2_UPLOAD_CORS_REQUEST_HEADERS],
+        ExposeHeaders: [...R2_UPLOAD_CORS_EXPOSE_HEADERS],
+        MaxAgeSeconds: 3600,
+      },
+    ],
+  };
+}
+
+export async function inspectR2UploadCors(
+  origin: string,
+): Promise<R2UploadCorsDiagnostics> {
+  const config = getR2Config();
+  const requirements = getR2UploadCorsRequirement(origin);
+  const upload = await createPresignedUpload(
+    "lumen-cors-diagnostic.png",
+    "image/png",
+  );
+  const requestHeaders = Object.keys(upload.headers).map((header) =>
+    header.toLowerCase(),
+  );
+  const issues: R2UploadCorsDiagnosticIssue[] = [];
+  let responseStatus: number | null = null;
+  let responseOk = false;
+  let responseHeaders: R2UploadCorsDiagnosticHeaders = {
+    accessControlAllowHeaders: null,
+    accessControlAllowMethods: null,
+    accessControlAllowOrigin: null,
+    accessControlExposeHeaders: null,
+    accessControlMaxAge: null,
+  };
+
+  try {
+    const response = await fetch(upload.presignedUrl, {
+      method: "OPTIONS",
+      headers: {
+        Origin: origin,
+        "Access-Control-Request-Headers": requestHeaders.join(", "),
+        "Access-Control-Request-Method": upload.method,
+      },
+      cache: "no-store",
+    });
+
+    responseStatus = response.status;
+    responseOk = response.ok;
+    responseHeaders = readCorsDiagnosticHeaders(response.headers);
+
+    if (!response.ok) {
+      issues.push({
+        code: "R2_CORS_PREFLIGHT_STATUS",
+        message: `R2 预检请求返回 ${response.status}，浏览器直传会被阻止。`,
+        severity: "error",
+      });
+    }
+
+    if (
+      !corsAllowsOrigin(
+        responseHeaders.accessControlAllowOrigin,
+        origin,
+      )
+    ) {
+      issues.push({
+        code: "R2_CORS_ORIGIN_MISSING",
+        message: `R2 CORS 没有允许当前来源 ${origin}。`,
+        severity: "error",
+      });
+    }
+
+    if (
+      !corsAllowsValue(
+        responseHeaders.accessControlAllowMethods,
+        upload.method,
+      )
+    ) {
+      issues.push({
+        code: "R2_CORS_METHOD_MISSING",
+        message: "R2 CORS 没有允许浏览器直传所需的 PUT 方法。",
+        severity: "error",
+      });
+    }
+
+    for (const header of requestHeaders) {
+      if (!corsAllowsValue(responseHeaders.accessControlAllowHeaders, header)) {
+        issues.push({
+          code: "R2_CORS_HEADER_MISSING",
+          message: `R2 CORS 没有允许请求头 ${header}。`,
+          severity: "error",
+        });
+      }
+    }
+
+    if (
+      !corsAllowsValue(
+        responseHeaders.accessControlExposeHeaders,
+        "etag",
+      )
+    ) {
+      issues.push({
+        code: "R2_CORS_ETAG_NOT_EXPOSED",
+        message: "建议暴露 ETag，便于浏览器和诊断工具确认对象写入结果。",
+        severity: "warning",
+      });
+    }
+  } catch (error) {
+    issues.push({
+      code: "R2_CORS_PREFLIGHT_FAILED",
+      message:
+        error instanceof Error
+          ? `R2 预检请求失败：${error.message}`
+          : "R2 预检请求失败。",
+      severity: "error",
+    });
+  }
+
+  const status = getR2UploadCorsDiagnosticStatus(issues);
+
+  return {
+    bucket: config.bucket,
+    checkedAt: new Date().toISOString(),
+    issues,
+    ok: status === "pass" || status === "warning",
+    origin,
+    preflight: {
+      ok: responseOk && !issues.some((issue) => issue.severity === "error"),
+      requestHeaders,
+      responseHeaders,
+      status: responseStatus,
+    },
+    publicUrl: config.publicUrl,
+    requirements,
+    status,
+    upload: {
+      expiresIn: upload.expiresIn,
+      method: upload.method,
+      signedHeaders: requestHeaders,
+    },
+  };
 }
 
 export function normalizeR2StoragePath(path: string) {

@@ -6,6 +6,19 @@
 
 ## 进行中
 
+### TASK-020 · 下载转换与 R2 上传诊断补强
+- **状态**: ✅ codex done
+- **内容**: 修复 fallback 壁纸下载配置被绕过的问题，并为下载转换加限流 / 内存缓存 / 大文件保护；补齐上传链路的 R2 CORS 预检诊断
+- **Codex 完成**:
+  - `GET /api/wallpapers/[id]/download` 现在会对 fallback SVG 走同一套裁切、分辨率和 PNG/WebP 转换逻辑
+  - 下载转换增加 per user/IP 限流、源文件大小/像素保护和进程内短 TTL 缓存，响应头返回 `X-Wallpaper-Transform-Cache`
+  - 新增 `GET /api/upload/diagnostics`，登录后可对当前 `Origin` 生成 presigned URL 并执行 R2 CORS `OPTIONS` 预检
+  - `lib/r2.ts` 新增 R2 上传 CORS 需求与诊断工具，`types/r2-diagnostics.ts` 新增显式响应类型
+  - `README.md` 与 `docs/production-runbook.md` 已补最小 CORS 配置和诊断入口说明
+- **给 Claude 的可选 UI 交接**:
+  - 上传页如果捕获到 R2 `status 0`，可以提示用户打开 `/api/upload/diagnostics` 或在管理区展示诊断结果
+  - 诊断接口返回结构见 `types/r2-diagnostics.ts`
+
 ### TASK-018 · 全局主题首屏与错误页壳层体验优化
 - **状态**: ✅ codex done
 - **内容**: 优化根布局与全局错误页的主题初始化、字体继承和浏览器界面色彩一致性，减少首屏闪烁与错误态样式断层

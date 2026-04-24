@@ -79,8 +79,29 @@ LUMEN_EDITOR_USERNAMES=
 
 1. Bucket 为私有
 2. 自定义域已经指向 R2
-3. CORS 至少允许站点域名和 Vercel Preview 域名访问 `PUT / GET / HEAD`
+3. CORS 至少允许站点域名和 Vercel Preview 域名访问 `PUT`，并允许请求头 `Content-Type`
 4. 公网访问域已经写入 `CLOUDFLARE_R2_PUBLIC_URL`
+
+站内上传链路的最小 CORS 规则：
+
+```json
+[
+  {
+    "AllowedOrigins": [
+      "https://byteify.icu",
+      "https://your-preview-deployment.vercel.app"
+    ],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["Content-Type"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+`AllowedOrigins` 必须是精确 origin，不能带路径；Vercel Preview 需要把实际预览域名逐个加入。
+
+上线后用已登录账号访问 `/api/upload/diagnostics`，确认返回的 `status` 为 `pass` 或仅有 `R2_CORS_ETAG_NOT_EXPOSED` 这类 warning。若返回 `R2_CORS_ORIGIN_MISSING`、`R2_CORS_METHOD_MISSING` 或 `R2_CORS_HEADER_MISSING`，浏览器直传会失败。
 
 建议再检查对象前缀是否正常生成：
 

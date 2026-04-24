@@ -102,7 +102,26 @@ pnpm lighthouse
    - `CLOUDFLARE_R2_BUCKET`
 3. 给 R2 绑定一个可公开访问的自定义域或 R2 公网域，并填到：
    - `CLOUDFLARE_R2_PUBLIC_URL`
-4. 给 bucket 配置浏览器直传所需的 CORS，至少允许你的站点域名和本地开发域名访问 `PUT / GET / HEAD`
+4. 给 bucket 配置浏览器直传所需的 CORS，至少允许你的站点域名和本地开发域名使用 `PUT`，并允许请求头 `Content-Type`
+
+Lumen 的站内上传只会用 presigned `PUT` 并携带 `Content-Type` 请求头。最小可用 CORS 示例：
+
+```json
+[
+  {
+    "AllowedOrigins": [
+      "http://localhost:3000",
+      "https://byteify.icu"
+    ],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["Content-Type"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+登录后访问 `/api/upload/diagnostics` 可以让服务端生成一条临时 presigned URL，并用当前 `Origin` 对 R2 执行一次 `OPTIONS` 预检，返回缺失的 origin、method 或 header，方便定位浏览器里 `status 0` 的上传失败。
 
 如果你准备把生产站放在 `byteify.icu`，推荐把图片和视频资源单独放到：
 

@@ -393,6 +393,8 @@ type NotificationRow = Database["public"]["Tables"]["notifications"]["Row"];
 type IncrementWallpaperDownloadsRow =
   Database["public"]["Functions"]["increment_wallpaper_downloads"]["Returns"][number];
 
+const WALLPAPER_FILE_QUERY_BATCH_SIZE = 200;
+
 function getWallpaperDisplayTitle(
   wallpaper: Pick<Wallpaper, "title" | "aiTags" | "tags">,
 ) {
@@ -1356,19 +1358,34 @@ async function fetchFilesMap(wallpaperIds: Array<string | number>) {
   }
 
   const client = createSupabaseAdminClient();
-  const { data, error } = await client
-    .from(wallpaperFilesTable)
-    .select("*")
-    .in("wallpaper_id", wallpaperIds)
-    .limit(10000);
+  const rows: WallpaperFileRow[] = [];
 
-  if (error) {
-    throw new Error(`Failed to load wallpaper files: ${error.message}`);
+  // Supabase REST responses are commonly capped at 1,000 rows. Four variants
+  // per wallpaper means one huge query can drop file records for newer items.
+  for (
+    let index = 0;
+    index < wallpaperIds.length;
+    index += WALLPAPER_FILE_QUERY_BATCH_SIZE
+  ) {
+    const batch = wallpaperIds.slice(
+      index,
+      index + WALLPAPER_FILE_QUERY_BATCH_SIZE,
+    );
+    const { data, error } = await client
+      .from(wallpaperFilesTable)
+      .select("*")
+      .in("wallpaper_id", batch);
+
+    if (error) {
+      throw new Error(`Failed to load wallpaper files: ${error.message}`);
+    }
+
+    rows.push(...data);
   }
 
   const map = new Map<string, WallpaperFile[]>();
 
-  for (const row of data) {
+  for (const row of rows) {
     const file = mapWallpaperFile(row);
     const existing = map.get(file.wallpaperId) ?? [];
     existing.push(file);
