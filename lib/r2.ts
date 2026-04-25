@@ -232,14 +232,13 @@ export async function inspectR2UploadCors(
     }
 
     if (
-      !corsAllowsValue(
-        responseHeaders.accessControlExposeHeaders,
-        "etag",
-      )
+      responseHeaders.accessControlExposeHeaders &&
+      !corsAllowsValue(responseHeaders.accessControlExposeHeaders, "etag")
     ) {
       issues.push({
         code: "R2_CORS_ETAG_NOT_EXPOSED",
-        message: "建议暴露 ETag，便于浏览器和诊断工具确认对象写入结果。",
+        message:
+          "R2 CORS 响应暴露了部分响应头，但没有暴露 ETag；建议暴露 ETag，便于浏览器和诊断工具确认对象写入结果。",
         severity: "warning",
       });
     }
