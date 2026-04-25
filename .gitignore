@@ -12,6 +12,7 @@ test-results
 *.log
 
 .turbo
+.tmp/
 
 # Lighthouse CI local reports
 .lighthouseci/

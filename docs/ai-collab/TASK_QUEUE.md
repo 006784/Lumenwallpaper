@@ -6,6 +6,21 @@
 
 ## 进行中
 
+### TASK-023 · 公开页 UI/UX 二次打磨
+
+- **状态**: ✅ codex done / ⏳ claude todo
+- **内容**: 继续打磨 Explore、详情页、下载配置面板、上传工作台的 UI/UX，减少首屏说明文字和默认封面感，补齐下载/上传失败态的用户路径
+- **Codex 完成**:
+  - 已复核 `/explore`、`/wallpaper/beauty-photo-0403`、下载配置弹层和上传工作台的主要问题
+  - `lib/explore.ts` 已把媒体完整度纳入公共壁纸列表排序，优先展示带 preview/thumb/4k、尺寸、视频封面的作品，降低缺少变体或 poster 的 published 数据出现在首屏的概率
+  - 下载配置面板已补齐 `formatKey / outputWidth / outputHeight / crop` 回调参数，详情侧栏改用 `formatKey` 选择下载源，避免竖图/非 16:9 继续靠固定 `3840 × 2160` 判断 4K
+  - 已新增设计交接文档 `docs/ai-collab/TASK-023-ui-ux-polish-brief.md`
+- **给 Claude 的 UI 交接**:
+  - 详情页压缩说明区，避免中文标题单字孤行，让下载主操作上移
+  - 下载配置面板扩大预览图占比，拆清“原图”和“格式转换”，接入下载进度与最终响应头
+  - 上传页把 R2/CORS 错误改成短提示 + 诊断入口，使用 presign 响应里的 `diagnostics` 和 `constraints`
+  - 动态壁纸/封面缺失状态需要比默认黑块更像产品内占位
+
 ### TASK-022 · 上传 presign 兼容与创建失败分层
 
 - **状态**: ✅ codex done

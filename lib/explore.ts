@@ -1,5 +1,9 @@
 import type { GradientKey } from "@/types/home";
-import type { Wallpaper, WallpaperSort } from "@/types/wallpaper";
+import type {
+  Wallpaper,
+  WallpaperFile,
+  WallpaperSort,
+} from "@/types/wallpaper";
 
 export const DEFAULT_EXPLORE_SORT: WallpaperSort = "latest";
 
@@ -155,6 +159,57 @@ export function matchesExploreCategory(
   });
 }
 
+function isVideoWallpaperFile(
+  file: Pick<WallpaperFile, "format" | "storagePath" | "url">,
+) {
+  return (
+    file.format?.startsWith("video/") ||
+    /\.(mp4|webm|mov)$/i.test(file.url) ||
+    /\.(mp4|webm|mov)$/i.test(file.storagePath)
+  );
+}
+
+function getMediaReadinessScore(
+  wallpaper: Pick<Wallpaper, "files" | "height" | "videoUrl" | "width">,
+) {
+  const imageFiles = wallpaper.files.filter(
+    (file) => !isVideoWallpaperFile(file),
+  );
+  const variants = new Set(imageFiles.map((file) => file.variant));
+  const hasTopLevelDimensions = Boolean(wallpaper.width && wallpaper.height);
+  const hasImageDimensions = imageFiles.some(
+    (file) => file.width && file.height,
+  );
+  const everyImageFileHasDimensions =
+    imageFiles.length > 0 &&
+    imageFiles.every((file) => file.width && file.height);
+
+  if (wallpaper.videoUrl) {
+    return (
+      20 +
+      (imageFiles.length > 0 ? 30 : 0) +
+      (variants.has("preview") ? 18 : 0) +
+      (variants.has("thumb") ? 12 : 0) +
+      (hasTopLevelDimensions || hasImageDimensions ? 12 : 0)
+    );
+  }
+
+  return (
+    (imageFiles.length > 0 ? 20 : 0) +
+    (variants.has("preview") ? 24 : 0) +
+    (variants.has("thumb") ? 18 : 0) +
+    (variants.has("4k") ? 12 : 0) +
+    (variants.has("original") ? 8 : 0) +
+    (hasTopLevelDimensions ? 10 : 0) +
+    (hasImageDimensions ? 6 : 0) +
+    (everyImageFileHasDimensions ? 4 : 0)
+  );
+}
+
+function compareMediaReadiness(left: Wallpaper, right: Wallpaper) {
+  return getMediaReadinessScore(right) - getMediaReadinessScore(left);
+}
+
 export function sortWallpapers(
   wallpapers: Wallpaper[],
   sort: WallpaperSort | undefined,
@@ -164,6 +219,7 @@ export function sortWallpapers(
   if (sort === "popular") {
     return nextWallpapers.sort((left, right) => {
       return (
+        compareMediaReadiness(left, right) ||
         right.downloadsCount - left.downloadsCount ||
         right.likesCount - left.likesCount ||
         Date.parse(right.createdAt) - Date.parse(left.createdAt)
@@ -174,6 +230,7 @@ export function sortWallpapers(
   if (sort === "likes") {
     return nextWallpapers.sort((left, right) => {
       return (
+        compareMediaReadiness(left, right) ||
         right.likesCount - left.likesCount ||
         right.downloadsCount - left.downloadsCount ||
         Date.parse(right.createdAt) - Date.parse(left.createdAt)
@@ -182,6 +239,9 @@ export function sortWallpapers(
   }
 
   return nextWallpapers.sort((left, right) => {
-    return Date.parse(right.createdAt) - Date.parse(left.createdAt);
+    return (
+      compareMediaReadiness(left, right) ||
+      Date.parse(right.createdAt) - Date.parse(left.createdAt)
+    );
   });
 }

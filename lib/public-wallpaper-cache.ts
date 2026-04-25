@@ -16,15 +16,15 @@ import {
   listWallpapersByCreator,
 } from "@/lib/wallpapers";
 
-const PUBLIC_WALLPAPER_CACHE_VERSION = "v2";
+const PUBLIC_WALLPAPER_CACHE_VERSION = "v3";
 
 function normalizeWallpaperTags(tags: string[]) {
   return tags.map((tag) => (tag === "手动导入" ? "像素" : tag));
 }
 
-function withDisplayTitle<T extends { title: string; aiTags: string[]; tags: string[] }>(
-  wallpaper: T,
-) {
+function withDisplayTitle<
+  T extends { title: string; aiTags: string[]; tags: string[] },
+>(wallpaper: T) {
   const normalizedTags = normalizeWallpaperTags(wallpaper.tags);
 
   return {

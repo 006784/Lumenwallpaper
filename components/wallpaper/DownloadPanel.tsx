@@ -3,10 +3,16 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type DownloadFormat = "PNG" | "WEBP";
+type DownloadFormat = "ORIGINAL" | "PNG" | "WEBP";
 type DownloadState = "idle" | "loading" | "done" | "error";
 type CacheState = "idle" | "done";
-type FormatKey = "original" | "4k" | "webp";
+export type FormatKey = "original" | "4k" | "webp";
+export type CropFrame = {
+  heightPercent: number;
+  leftPercent: number;
+  topPercent: number;
+  widthPercent: number;
+};
 export type DownloadProgressSnapshot = {
   loaded: number;
   total: number | null;
@@ -15,6 +21,15 @@ export type DownloadProgressSnapshot = {
 export type DownloadProgressCallback = (
   snapshot: DownloadProgressSnapshot,
 ) => void;
+export type DownloadPanelConfig = {
+  crop: CropFrame;
+  fmt: string;
+  formatKey: FormatKey;
+  outputHeight: number;
+  outputWidth: number;
+  ratio: string;
+  res: string;
+};
 
 export interface DownloadPanelProps {
   wallpaper: {
@@ -25,11 +40,7 @@ export interface DownloadPanelProps {
     previewUrl: string;
   };
   onDownload: (
-    config: {
-      fmt: string;
-      res: string;
-      ratio: string;
-    },
+    config: DownloadPanelConfig,
     onProgress: DownloadProgressCallback,
   ) => Promise<void> | void;
   onSaveConfig: (config: {
@@ -108,6 +119,12 @@ const MOBILE_RATIOS: RatioOption[] = [
 
 const ALL_RATIOS = [...DESKTOP_RATIOS, ...MOBILE_RATIOS];
 
+const FORMAT_TABS: Array<{ label: string; key: FormatKey }> = [
+  { label: "原图", key: "original" },
+  { label: "4K", key: "4k" },
+  { label: "WebP", key: "webp" },
+];
+
 function formatResolution(width: number, height: number) {
   return `${Math.round(width)} × ${Math.round(height)}`;
 }
@@ -120,15 +137,15 @@ function estimateSizeLabel(
   const megapixels = Math.max((width * height) / 1_000_000, 0.4);
   const estimated = megapixels * megapixelFactor;
 
-  return `~${estimated >= 10 ? estimated.toFixed(1) : estimated.toFixed(1)} MB`;
+  return `~${estimated.toFixed(1)} MB`;
 }
 
 function computeBoxSize(width: number, height: number): BoxSize {
   const safeWidth = width > 0 ? width : 16;
   const safeHeight = height > 0 ? height : 9;
   const ratio = safeWidth / safeHeight;
-  const maxWidth = ratio >= 1 ? 760 : 520;
-  const maxHeight = ratio >= 1 ? 520 : 680;
+  const maxWidth = ratio >= 1 ? 900 : 560;
+  const maxHeight = ratio >= 1 ? 560 : 720;
   let nextWidth = maxWidth;
   let nextHeight = nextWidth / ratio;
 
@@ -140,6 +157,30 @@ function computeBoxSize(width: number, height: number): BoxSize {
   return {
     width: Math.max(180, Math.round(nextWidth)),
     height: Math.max(140, Math.round(nextHeight)),
+  };
+}
+
+function fitWithinMaxDimension(
+  width: number,
+  height: number,
+  maxDimension: number,
+) {
+  const safeWidth = width > 0 ? width : 16;
+  const safeHeight = height > 0 ? height : 9;
+  const dominant = Math.max(safeWidth, safeHeight);
+
+  if (dominant <= maxDimension) {
+    return {
+      width: safeWidth,
+      height: safeHeight,
+    };
+  }
+
+  const scale = maxDimension / dominant;
+
+  return {
+    width: Math.max(1, Math.round(safeWidth * scale)),
+    height: Math.max(1, Math.round(safeHeight * scale)),
   };
 }
 
@@ -170,6 +211,43 @@ function computeCroppedResolution(
   };
 }
 
+function computeCropFrame(
+  boxSize: BoxSize,
+  ratioOption: RatioOption,
+): CropFrame {
+  if (ratioOption.w === 0 || ratioOption.h === 0) {
+    return {
+      heightPercent: 100,
+      leftPercent: 0,
+      topPercent: 0,
+      widthPercent: 100,
+    };
+  }
+
+  const sourceRatio = boxSize.width / boxSize.height;
+  const targetRatio = ratioOption.w / ratioOption.h;
+
+  if (sourceRatio >= targetRatio) {
+    const widthPercent = Math.min(100, (targetRatio / sourceRatio) * 100);
+
+    return {
+      heightPercent: 100,
+      leftPercent: (100 - widthPercent) / 2,
+      topPercent: 0,
+      widthPercent,
+    };
+  }
+
+  const heightPercent = Math.min(100, (sourceRatio / targetRatio) * 100);
+
+  return {
+    heightPercent,
+    leftPercent: 0,
+    topPercent: (100 - heightPercent) / 2,
+    widthPercent: 100,
+  };
+}
+
 function formatBytes(value: number | null | undefined) {
   if (!value || value <= 0) {
     return "0 KB";
@@ -187,8 +265,12 @@ function formatBytes(value: number | null | undefined) {
   return `${size >= 10 || unitIndex === 0 ? size.toFixed(0) : size.toFixed(1)} ${units[unitIndex]}`;
 }
 
+function getFormatDisplayName(fmt: DownloadFormat) {
+  return fmt === "ORIGINAL" ? "原格式" : fmt;
+}
+
 function buildFilmHint(label: string, fmt: DownloadFormat, size: string) {
-  return `${label} · ${fmt} · ${size}`;
+  return `${label} · ${getFormatDisplayName(fmt)} · ${size}`;
 }
 
 function FilmHoles({ count }: { count: number }) {
@@ -246,41 +328,42 @@ export function DownloadPanel({
   const timeoutsRef = useRef<number[]>([]);
   const storageKey = `lumen:download-config:${wallpaper.id}`;
   const [viewportWidth, setViewportWidth] = useState(1024);
+  const initialWidth = wallpaper.width > 0 ? wallpaper.width : 2358;
+  const initialHeight = wallpaper.height > 0 ? wallpaper.height : 1538;
 
   const presets = useMemo<Record<FormatKey, FormatPreset>>(() => {
-    const originalWidth = wallpaper.width > 0 ? wallpaper.width : 2358;
-    const originalHeight = wallpaper.height > 0 ? wallpaper.height : 1538;
+    const fourKSize = fitWithinMaxDimension(initialWidth, initialHeight, 3840);
 
     return {
       original: {
         key: "original",
-        fmt: "PNG",
-        label: "原图输出",
-        res: formatResolution(originalWidth, originalHeight),
-        size: estimateSizeLabel(originalWidth, originalHeight, 2.3),
-        width: originalWidth,
-        height: originalHeight,
+        fmt: "ORIGINAL",
+        label: "源文件",
+        res: formatResolution(initialWidth, initialHeight),
+        size: "原始大小",
+        width: initialWidth,
+        height: initialHeight,
       },
       "4k": {
         key: "4k",
         fmt: "PNG",
         label: "4K 超清",
-        res: "3840 × 2160",
-        size: "~14.2 MB",
-        width: 3840,
-        height: 2160,
+        res: formatResolution(fourKSize.width, fourKSize.height),
+        size: estimateSizeLabel(fourKSize.width, fourKSize.height, 1.45),
+        width: fourKSize.width,
+        height: fourKSize.height,
       },
       webp: {
         key: "webp",
         fmt: "WEBP",
         label: "WebP 压缩",
-        res: formatResolution(originalWidth, originalHeight),
-        size: estimateSizeLabel(originalWidth, originalHeight, 0.58),
-        width: originalWidth,
-        height: originalHeight,
+        res: formatResolution(initialWidth, initialHeight),
+        size: estimateSizeLabel(initialWidth, initialHeight, 0.58),
+        width: initialWidth,
+        height: initialHeight,
       },
     };
-  }, [wallpaper.height, wallpaper.width]);
+  }, [initialHeight, initialWidth]);
 
   const [fmt, setFmt] = useState<DownloadFormat>(presets.original.fmt);
   const [fmtLabel, setFmtLabel] = useState(presets.original.label);
@@ -296,11 +379,12 @@ export function DownloadPanel({
   const [cacheState, setCacheState] = useState<CacheState>("idle");
   const [formatKey, setFormatKey] = useState<FormatKey>("original");
   const [selectedRatio, setSelectedRatio] = useState<RatioOption>(FREE_RATIO);
+  const [lastCropRatio, setLastCropRatio] = useState<RatioOption>(FREE_RATIO);
   const [boxSize, setBoxSize] = useState<BoxSize>(() =>
     computeBoxSize(presets.original.width, presets.original.height),
   );
   const [dimPill, setDimPill] = useState(
-    `${wallpaper.width} × ${wallpaper.height} px`,
+    `${initialWidth} × ${initialHeight} px`,
   );
   const [detectLabel, setDetectLabel] = useState("检测");
 
@@ -345,15 +429,28 @@ export function DownloadPanel({
       : dlState === "loading"
         ? 8
         : 0);
+  const canCrop = formatKey !== "original";
+  const isCropActive = canCrop && selectedRatio.w > 0 && selectedRatio.h > 0;
+  const cropFrame = computeCropFrame(boxSize, selectedRatio);
+  const outputResolution = computeCroppedResolution(
+    presets[formatKey],
+    selectedRatio,
+  );
+  const cropWarning =
+    isCropActive &&
+    selectedRatio.w > selectedRatio.h &&
+    presets[formatKey].height > presets[formatKey].width
+      ? "当前是竖图，横向比例会裁掉大量画面，建议选择原图或手机比例。"
+      : null;
 
   function rememberTimeout(timeout: number) {
     timeoutsRef.current.push(timeout);
   }
 
   function syncRatioState(nextRatio: RatioOption, nextPreset: FormatPreset) {
-    if (nextRatio.w === 0 || nextRatio.h === 0) {
-      const nextBoxSize = computeBoxSize(nextPreset.width, nextPreset.height);
+    const nextBoxSize = computeBoxSize(nextPreset.width, nextPreset.height);
 
+    if (nextRatio.w === 0 || nextRatio.h === 0) {
       setBoxSize(nextBoxSize);
       setRatio(nextRatio.label);
       setRes(nextPreset.res);
@@ -361,7 +458,6 @@ export function DownloadPanel({
       return;
     }
 
-    const nextBoxSize = computeBoxSize(nextRatio.w, nextRatio.h);
     const croppedResolution = computeCroppedResolution(nextPreset, nextRatio);
 
     setBoxSize(nextBoxSize);
@@ -389,10 +485,20 @@ export function DownloadPanel({
   }
 
   function applyFormat(nextFormatKey: FormatKey) {
-    applyPanelState(nextFormatKey, selectedRatio);
+    if (nextFormatKey === "original") {
+      applyPanelState(nextFormatKey, FREE_RATIO);
+      return;
+    }
+
+    applyPanelState(nextFormatKey, lastCropRatio);
   }
 
   function applyRatio(nextRatio: RatioOption) {
+    if (formatKey === "original") {
+      return;
+    }
+
+    setLastCropRatio(nextRatio);
     applyPanelState(formatKey, nextRatio);
   }
 
@@ -401,12 +507,13 @@ export function DownloadPanel({
   }
 
   function doDetect() {
+    if (!canCrop) {
+      return;
+    }
+
     const screenWidth = window.screen.width;
     const screenHeight = window.screen.height;
-    const nextRes = formatResolution(screenWidth, screenHeight);
 
-    setDimPill(`${screenWidth} × ${screenHeight} px`);
-    setRes(nextRes);
     setDetectLabel(`${screenWidth}×${screenHeight}`);
 
     const timeout = window.setTimeout(() => {
@@ -431,16 +538,27 @@ export function DownloadPanel({
 
     try {
       await Promise.resolve(
-        onDownload({ fmt, res, ratio }, (snapshot) => {
-          setDownloadProgress({
-            loaded: snapshot.loaded,
-            percent:
-              typeof snapshot.percent === "number"
-                ? Math.min(100, Math.max(0, snapshot.percent))
-                : null,
-            total: snapshot.total,
-          });
-        }),
+        onDownload(
+          {
+            crop: cropFrame,
+            fmt,
+            formatKey,
+            outputHeight: outputResolution.height,
+            outputWidth: outputResolution.width,
+            ratio,
+            res,
+          },
+          (snapshot) => {
+            setDownloadProgress({
+              loaded: snapshot.loaded,
+              percent:
+                typeof snapshot.percent === "number"
+                  ? Math.min(100, Math.max(0, snapshot.percent))
+                  : null,
+              total: snapshot.total,
+            });
+          },
+        ),
       );
       setDownloadProgress((current) => ({
         loaded: current?.total ?? current?.loaded ?? 0,
@@ -519,7 +637,11 @@ export function DownloadPanel({
             : parsed.res === presets["4k"].res
               ? "4k"
               : "original";
-      const nextRatio = ALL_RATIOS.find((option) => option.label === parsed.ratio) ?? FREE_RATIO;
+      const nextRatio =
+        nextFormatKey === "original"
+          ? FREE_RATIO
+          : (ALL_RATIOS.find((option) => option.label === parsed.ratio) ??
+            FREE_RATIO);
       const nextPreset = presets[nextFormatKey];
 
       setFormatKey(nextFormatKey);
@@ -527,6 +649,9 @@ export function DownloadPanel({
       setFmtLabel(nextPreset.label);
       setSize(nextPreset.size);
       setSelectedRatio(nextRatio);
+      if (nextFormatKey !== "original") {
+        setLastCropRatio(nextRatio);
+      }
       setLockOn(parsed.lockOn ?? true);
       syncRatioState(nextRatio, nextPreset);
     } catch {
@@ -551,9 +676,9 @@ export function DownloadPanel({
           borderRadius: 0,
           gridTemplateColumns: isCompact
             ? "1fr"
-            : "minmax(560px, 1.35fr) minmax(360px, 0.65fr)",
-          maxWidth: "min(96vw, 1280px)",
-          maxHeight: isCompact ? "calc(100vh - 24px)" : "calc(100vh - 48px)",
+            : "minmax(0, 1fr) minmax(400px, 440px)",
+          maxWidth: "min(96vw, 1680px)",
+          maxHeight: isCompact ? "calc(100dvh - 24px)" : "calc(100dvh - 48px)",
           overflowY: isCompact ? "auto" : "hidden",
         }}
         onClick={(event) => event.stopPropagation()}
@@ -563,7 +688,7 @@ export function DownloadPanel({
           style={{
             borderRight: isCompact ? "none" : `1.5px solid ${INK}`,
             borderBottom: isCompact ? `1.5px solid ${INK}` : "none",
-            minHeight: isCompact ? "auto" : "min(760px, calc(100vh - 48px))",
+            minHeight: isCompact ? "auto" : "min(760px, calc(100dvh - 48px))",
           }}
         >
           <div
@@ -592,7 +717,11 @@ export function DownloadPanel({
             className="flex flex-1 items-center justify-center"
             style={{
               background: PAPER_2,
-              padding: isPhone ? "36px 18px" : isCompact ? "40px 24px" : "48px 36px",
+              padding: isPhone
+                ? "36px 18px"
+                : isCompact
+                  ? "40px 24px"
+                  : "48px 36px",
             }}
           >
             <div className="relative">
@@ -616,7 +745,8 @@ export function DownloadPanel({
                   width: `${displayBoxWidth}px`,
                   height: `${displayBoxHeight}px`,
                   background:
-                    "linear-gradient(135deg, #1a2a3a, #2a4060, #3a5580, #1a2a3a)",
+                    "linear-gradient(135deg, #17120d, #2a241b, #17120d)",
+                  border: `1.5px solid ${INK}`,
                   transition:
                     "width 0.42s cubic-bezier(0.4,0,0.2,1), height 0.42s cubic-bezier(0.4,0,0.2,1)",
                 }}
@@ -624,7 +754,7 @@ export function DownloadPanel({
                 {wallpaper.previewUrl ? (
                   <img
                     alt={wallpaper.title}
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full object-contain"
                     src={wallpaper.previewUrl}
                   />
                 ) : null}
@@ -636,76 +766,88 @@ export function DownloadPanel({
                   className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2"
                   style={{ background: "rgba(255,255,255,0.08)" }}
                 />
-                {thirdsOn ? (
-                  <>
-                    <span
-                      className="absolute left-0 h-px w-full"
-                      style={{
-                        top: "33.3%",
-                        background: "rgba(245,200,66,0.4)",
-                      }}
-                    />
-                    <span
-                      className="absolute left-0 h-px w-full"
-                      style={{
-                        top: "66.6%",
-                        background: "rgba(245,200,66,0.4)",
-                      }}
-                    />
-                    <span
-                      className="absolute top-0 h-full w-px"
-                      style={{
-                        left: "33.3%",
-                        background: "rgba(245,200,66,0.4)",
-                      }}
-                    />
-                    <span
-                      className="absolute top-0 h-full w-px"
-                      style={{
-                        left: "66.6%",
-                        background: "rgba(245,200,66,0.4)",
-                      }}
-                    />
-                  </>
-                ) : null}
-                <span
-                  className="absolute inset-0"
-                  style={{ border: "1.5px solid rgba(242,237,228,0.6)" }}
-                />
-                <span
-                  className="absolute left-[-1px] top-[-1px] h-[10px] w-[10px]"
+                <div
+                  className="absolute"
                   style={{
-                    borderLeft: `2.5px solid ${RED}`,
-                    borderTop: `2.5px solid ${RED}`,
+                    border: `2px solid ${isCropActive ? RED : "rgba(242,237,228,0.72)"}`,
+                    boxShadow: isCropActive
+                      ? "0 0 0 999px rgba(10,8,4,0.38)"
+                      : "none",
+                    height: `${cropFrame.heightPercent}%`,
+                    left: `${cropFrame.leftPercent}%`,
+                    top: `${cropFrame.topPercent}%`,
+                    transition:
+                      "left 0.32s ease, top 0.32s ease, width 0.32s ease, height 0.32s ease, box-shadow 0.2s ease",
+                    width: `${cropFrame.widthPercent}%`,
                   }}
-                />
-                <span
-                  className="absolute right-[-1px] top-[-1px] h-[10px] w-[10px]"
-                  style={{
-                    borderRight: `2.5px solid ${RED}`,
-                    borderTop: `2.5px solid ${RED}`,
-                  }}
-                />
-                <span
-                  className="absolute bottom-[-1px] left-[-1px] h-[10px] w-[10px]"
-                  style={{
-                    borderBottom: `2.5px solid ${RED}`,
-                    borderLeft: `2.5px solid ${RED}`,
-                  }}
-                />
-                <span
-                  className="absolute bottom-[-1px] right-[-1px] h-[10px] w-[10px]"
-                  style={{
-                    borderBottom: `2.5px solid ${RED}`,
-                    borderRight: `2.5px solid ${RED}`,
-                  }}
-                />
+                >
+                  {thirdsOn ? (
+                    <>
+                      <span
+                        className="absolute left-0 h-px w-full"
+                        style={{
+                          top: "33.3%",
+                          background: "rgba(245,200,66,0.52)",
+                        }}
+                      />
+                      <span
+                        className="absolute left-0 h-px w-full"
+                        style={{
+                          top: "66.6%",
+                          background: "rgba(245,200,66,0.52)",
+                        }}
+                      />
+                      <span
+                        className="absolute top-0 h-full w-px"
+                        style={{
+                          left: "33.3%",
+                          background: "rgba(245,200,66,0.52)",
+                        }}
+                      />
+                      <span
+                        className="absolute top-0 h-full w-px"
+                        style={{
+                          left: "66.6%",
+                          background: "rgba(245,200,66,0.52)",
+                        }}
+                      />
+                    </>
+                  ) : null}
+                  <span
+                    className="absolute left-[-2px] top-[-2px] h-[12px] w-[12px]"
+                    style={{
+                      borderLeft: `3px solid ${RED}`,
+                      borderTop: `3px solid ${RED}`,
+                    }}
+                  />
+                  <span
+                    className="absolute right-[-2px] top-[-2px] h-[12px] w-[12px]"
+                    style={{
+                      borderRight: `3px solid ${RED}`,
+                      borderTop: `3px solid ${RED}`,
+                    }}
+                  />
+                  <span
+                    className="absolute bottom-[-2px] left-[-2px] h-[12px] w-[12px]"
+                    style={{
+                      borderBottom: `3px solid ${RED}`,
+                      borderLeft: `3px solid ${RED}`,
+                    }}
+                  />
+                  <span
+                    className="absolute bottom-[-2px] right-[-2px] h-[12px] w-[12px]"
+                    style={{
+                      borderBottom: `3px solid ${RED}`,
+                      borderRight: `3px solid ${RED}`,
+                    }}
+                  />
+                </div>
               </div>
 
               <div
                 className="absolute bottom-[-24px] right-0"
                 style={{
-                  background: RED,
+                  background: isCropActive ? RED : INK,
                   color: PAPER,
                   fontFamily: FONT_MONO,
                   fontSize: "9px",
@@ -745,7 +887,7 @@ export function DownloadPanel({
           className="flex flex-col"
           style={{
             background: PAPER,
-            minHeight: isCompact ? "auto" : "min(760px, calc(100vh - 48px))",
+            minHeight: isCompact ? "auto" : "min(760px, calc(100dvh - 48px))",
           }}
         >
           <div
@@ -834,11 +976,7 @@ export function DownloadPanel({
                 />
               </div>
               <div className="grid grid-cols-3 gap-[5px]">
-                {[
-                  ["原图", "original"],
-                  ["4K", "4k"],
-                  ["WebP", "webp"],
-                ].map(([label, key]) => {
+                {FORMAT_TABS.map(({ label, key }) => {
                   const active = formatKey === key;
 
                   return (
@@ -859,7 +997,7 @@ export function DownloadPanel({
                         padding: "10px 0",
                       }}
                       type="button"
-                      onClick={() => applyFormat(key as FormatKey)}
+                      onClick={() => applyFormat(key)}
                       onMouseEnter={(event) => {
                         if (active) {
                           return;
@@ -915,25 +1053,32 @@ export function DownloadPanel({
               <div className="mt-2 flex flex-wrap gap-1">
                 {DESKTOP_RATIOS.map((option) => {
                   const active = ratio === option.label;
+                  const disabled = !canCrop;
 
                   return (
                     <button
                       key={option.label}
+                      disabled={disabled}
                       style={{
-                        background: active ? RED : PAPER,
-                        border: `1px solid ${active ? RED : BORDER}`,
+                        background: disabled ? PAPER : active ? RED : PAPER,
+                        border: `1px solid ${disabled ? BORDER : active ? RED : BORDER}`,
                         borderRadius: 0,
-                        color: active ? PAPER : MUTED,
-                        cursor: "pointer",
+                        color: disabled
+                          ? "rgba(138,128,112,0.42)"
+                          : active
+                            ? PAPER
+                            : MUTED,
+                        cursor: disabled ? "not-allowed" : "pointer",
                         fontFamily: FONT_MONO,
                         fontSize: "9px",
                         letterSpacing: "1.5px",
+                        opacity: disabled ? 0.55 : 1,
                         padding: "5px 10px",
                       }}
                       type="button"
                       onClick={() => applyRatio(option)}
                       onMouseEnter={(event) => {
-                        if (active) {
+                        if (active || disabled) {
                           return;
                         }
 
@@ -941,7 +1086,7 @@ export function DownloadPanel({
                         event.currentTarget.style.color = INK;
                       }}
                       onMouseLeave={(event) => {
-                        if (active) {
+                        if (active || disabled) {
                           return;
                         }
 
@@ -969,25 +1114,32 @@ export function DownloadPanel({
               <div className="mt-[6px] flex flex-wrap gap-1">
                 {MOBILE_RATIOS.map((option) => {
                   const active = ratio === option.label;
+                  const disabled = !canCrop;
 
                   return (
                     <button
                       key={option.label}
+                      disabled={disabled}
                       style={{
-                        background: active ? RED : PAPER,
-                        border: `1px solid ${active ? RED : BORDER}`,
+                        background: disabled ? PAPER : active ? RED : PAPER,
+                        border: `1px solid ${disabled ? BORDER : active ? RED : BORDER}`,
                         borderRadius: 0,
-                        color: active ? PAPER : MUTED,
-                        cursor: "pointer",
+                        color: disabled
+                          ? "rgba(138,128,112,0.42)"
+                          : active
+                            ? PAPER
+                            : MUTED,
+                        cursor: disabled ? "not-allowed" : "pointer",
                         fontFamily: FONT_MONO,
                         fontSize: "9px",
                         letterSpacing: "1.5px",
+                        opacity: disabled ? 0.55 : 1,
                         padding: "5px 10px",
                       }}
                       type="button"
                       onClick={() => applyRatio(option)}
                       onMouseEnter={(event) => {
-                        if (active) {
+                        if (active || disabled) {
                           return;
                         }
 
@@ -995,7 +1147,7 @@ export function DownloadPanel({
                         event.currentTarget.style.color = INK;
                       }}
                       onMouseLeave={(event) => {
-                        if (active) {
+                        if (active || disabled) {
                           return;
                         }
 
@@ -1008,6 +1160,19 @@ export function DownloadPanel({
                   );
                 })}
               </div>
+              <p
+                className="mt-3"
+                style={{
+                  color: cropWarning ? RED : MUTED,
+                  fontSize: "11px",
+                  lineHeight: 1.7,
+                }}
+              >
+                {formatKey === "original"
+                  ? "原图会保留源文件尺寸与格式，不做裁切转换。选择 4K 或 WebP 后可裁切导出。"
+                  : (cropWarning ??
+                    "红框表示最终导出区域，框外内容不会进入裁切文件。")}
+              </p>
             </section>
 
             <section>
@@ -1042,36 +1207,43 @@ export function DownloadPanel({
                 style={{ borderBottom: "1px solid rgba(10,8,4,0.08)" }}
               >
                 <span style={{ color: "#5a5060", fontSize: "12px" }}>
-                  等比缩放锁定
+                  等比缩放锁定，默认开启
                 </span>
-                <Toggle
-                  checked={lockOn}
-                  onClick={() => setLockOn((value) => !value)}
-                />
+                <Toggle checked={lockOn} onClick={() => {}} />
               </div>
               <div className="flex items-center justify-between py-[9px]">
                 <span style={{ color: "#5a5060", fontSize: "12px" }}>
                   检测屏幕分辨率
                 </span>
                 <button
+                  disabled={!canCrop}
                   style={{
                     background: PAPER,
                     border: `1px solid ${BORDER}`,
                     borderRadius: 0,
-                    color: MUTED,
-                    cursor: "pointer",
+                    color: canCrop ? MUTED : "rgba(138,128,112,0.42)",
+                    cursor: canCrop ? "pointer" : "not-allowed",
                     fontFamily: FONT_MONO,
                     fontSize: "9px",
                     letterSpacing: "2px",
+                    opacity: canCrop ? 1 : 0.55,
                     padding: "4px 10px",
                   }}
                   type="button"
                   onClick={doDetect}
                   onMouseEnter={(event) => {
+                    if (!canCrop) {
+                      return;
+                    }
+
                     event.currentTarget.style.borderColor = MUTED;
                     event.currentTarget.style.color = INK;
                   }}
                   onMouseLeave={(event) => {
+                    if (!canCrop) {
+                      return;
+                    }
+
                     event.currentTarget.style.borderColor = BORDER;
                     event.currentTarget.style.color = MUTED;
                   }}
@@ -1089,7 +1261,7 @@ export function DownloadPanel({
             >
               {[
                 ["分辨率", res, PAPER],
-                ["格式", fmt, MUTED],
+                ["格式", getFormatDisplayName(fmt), MUTED],
                 ["大小", size, MUTED],
                 ["比例", ratio, RED],
               ].map(([key, value, color]) => (
@@ -1136,9 +1308,9 @@ export function DownloadPanel({
                     ? "#1a3a1a"
                     : dlState === "error"
                       ? "#3a1717"
-                    : dlState === "loading"
-                      ? "#1a1810"
-                      : INK,
+                      : dlState === "loading"
+                        ? "#1a1810"
+                        : INK,
                 border: "none",
                 borderRadius: 0,
                 color:
@@ -1146,9 +1318,9 @@ export function DownloadPanel({
                     ? "#6ade80"
                     : dlState === "error"
                       ? "#ff8a8a"
-                    : dlState === "loading"
-                      ? RED
-                      : PAPER,
+                      : dlState === "loading"
+                        ? RED
+                        : PAPER,
                 cursor: dlState === "idle" ? "pointer" : "default",
                 fontFamily: FONT_MONO,
                 fontSize: "10px",
@@ -1180,14 +1352,11 @@ export function DownloadPanel({
                   ? "完成 ✓"
                   : dlState === "error"
                     ? "下载失败"
-                  : "下载壁纸"}
+                    : "下载壁纸"}
             </button>
 
             {downloadProgress && dlState !== "idle" ? (
-              <div
-                className="space-y-2"
-                aria-live="polite"
-              >
+              <div className="space-y-2" aria-live="polite">
                 <div
                   className="h-[5px] overflow-hidden"
                   style={{ background: "rgba(10,8,4,0.1)" }}
