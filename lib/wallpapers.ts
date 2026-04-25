@@ -148,21 +148,39 @@ const IMPORTABLE_R2_FILE_TYPES = {
 type R2ImportableFileInfo =
   (typeof IMPORTABLE_R2_FILE_TYPES)[keyof typeof IMPORTABLE_R2_FILE_TYPES];
 
-export const presignUploadSchema = z.object({
-  filename: z.string().min(1).max(255),
-  contentType: z.enum(ALLOWED_UPLOAD_MIME_TYPES),
-  size: z.number().int().positive().max(MAX_UPLOAD_SIZE_BYTES),
-}).superRefine((value, context) => {
-  if (value.size > getUploadMaxSizeBytes(value.contentType)) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: isVideoUploadMimeType(value.contentType)
-        ? "视频超过 200MB，请压缩后再上传。"
-        : "图片超过 50MB，请压缩后再上传。",
-      path: ["size"],
-    });
-  }
-});
+export const presignUploadSchema = z
+  .preprocess(
+    (input) => {
+      if (!input || typeof input !== "object") {
+        return input;
+      }
+
+      const payload = input as Record<string, unknown>;
+
+      return {
+        ...payload,
+        contentType: payload.contentType ?? payload.fileType,
+        filename: payload.filename ?? payload.fileName,
+        size: payload.size ?? payload.fileSize,
+      };
+    },
+    z.object({
+      filename: z.string().min(1).max(255),
+      contentType: z.enum(ALLOWED_UPLOAD_MIME_TYPES),
+      size: z.number().int().positive().max(MAX_UPLOAD_SIZE_BYTES),
+    }),
+  )
+  .superRefine((value, context) => {
+    if (value.size > getUploadMaxSizeBytes(value.contentType)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: isVideoUploadMimeType(value.contentType)
+          ? "视频超过 200MB，请压缩后再上传。"
+          : "图片超过 50MB，请压缩后再上传。",
+        path: ["size"],
+      });
+    }
+  });
 
 export const createWallpaperSchema = z.object({
   title: z.string().trim().min(1).max(120),

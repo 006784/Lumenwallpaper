@@ -9,6 +9,7 @@ import {
 } from "@/lib/api";
 import { getPublicApiCacheHeaders } from "@/lib/cache";
 import { getCurrentUser, isAuthConfigured, isEditorUser } from "@/lib/auth";
+import { getWallpaperCreateErrorResponse } from "@/lib/wallpaper-create-errors";
 import {
   getCachedPublishedWallpapers,
   EXPLORE_PAGE_SIZE,
@@ -219,9 +220,17 @@ export async function POST(request: Request) {
         method: "POST",
       },
     });
-    return jsonError("Failed to create wallpaper.", {
-      status: 500,
-      code: "WALLPAPER_CREATE_FAILED",
+    const response = getWallpaperCreateErrorResponse(error);
+
+    logger.warn("wallpaper.create.failed", {
+      code: response.code,
+      creatorId: String(currentUser.id),
+      status: response.status,
+    });
+
+    return jsonError(response.message, {
+      status: response.status,
+      code: response.code,
     });
   }
 }

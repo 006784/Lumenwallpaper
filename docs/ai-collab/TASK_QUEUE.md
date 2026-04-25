@@ -6,6 +6,19 @@
 
 ## 进行中
 
+### TASK-022 · 上传 presign 兼容与创建失败分层
+
+- **状态**: ✅ codex done
+- **内容**: 补强上传链路的后端反馈，减少线上直传或创建失败时只显示泛化错误的问题
+- **Codex 完成**:
+  - `POST /api/upload/presign` 现在兼容 `filename/contentType/size` 与 `fileName/fileType/fileSize` 两套字段名，降低客户端字段不一致导致的失败
+  - presign 响应 `PresignedUploadPayload` 增加 `constraints`、`contentType`、`filename`、`diagnostics`，包含允许格式、当前格式最大体积、所需 PUT 请求头和 `/api/upload/diagnostics` 入口
+  - `POST /api/wallpapers` 与 `POST /api/openclaw/wallpapers` 现在会把常见上传创建失败拆成明确错误码：源文件路径缺失、R2 对象不存在、R2 拒绝访问、源文件格式不支持、变体生成失败、Supabase 未配置
+  - `lib/r2.ts` 增加 R2 错误识别工具，`lib/wallpaper-variants.ts` 增加 `WallpaperVariantGenerationError` 保留原始 cause
+- **给 Claude 的 UI 交接**:
+  - 上传页拿到 presign 响应后，可显示 `data.constraints.maxSizeBytes` 与 `data.diagnostics.corsDiagnosticsUrl`
+  - 创建作品失败时可根据错误码给用户更准确提示，例如 `WALLPAPER_UPLOAD_SOURCE_NOT_FOUND` 建议重新上传，`R2_ACCESS_DENIED` 建议检查部署环境变量或 R2 权限
+
 ### TASK-021 · 下载配置链路校验与后端归一
 
 - **状态**: ✅ codex done

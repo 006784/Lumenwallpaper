@@ -196,6 +196,17 @@ export interface WallpaperListPageResult {
 }
 
 export interface PresignedUploadPayload {
+  constraints: {
+    allowedContentTypes: string[];
+    maxSizeBytes: number;
+  };
+  contentType: string;
+  diagnostics: {
+    corsDiagnosticsUrl: string;
+    requiredHeaders: string[];
+    requiredMethod: "PUT";
+  };
+  filename: string;
   key: string;
   presignedUrl: string;
   publicUrl: string;

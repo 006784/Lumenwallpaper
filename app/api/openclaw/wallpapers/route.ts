@@ -13,6 +13,7 @@ import {
   toOpenClawWallpaperCollection,
   toOpenClawWallpaperPayload,
 } from "@/lib/openclaw";
+import { getWallpaperCreateErrorResponse } from "@/lib/wallpaper-create-errors";
 import {
   createWallpaperRecord,
   createWallpaperSchema,
@@ -167,14 +168,21 @@ export async function POST(request: Request) {
         method: "POST",
       },
     });
+    const response = getWallpaperCreateErrorResponse(error);
 
-    return jsonError(
-      error instanceof Error ? error.message : "Failed to create wallpaper.",
-      {
-        status: 500,
-        code: "OPENCLAW_WALLPAPER_CREATE_FAILED",
-        headers: getOpenClawPrivateHeaders(),
-      },
-    );
+    logger.warn("openclaw.wallpaper.create.failed", {
+      actor: auth.actor,
+      code: response.code,
+      status: response.status,
+    });
+
+    return jsonError(response.message, {
+      status: response.status,
+      code:
+        response.code === "WALLPAPER_CREATE_FAILED"
+          ? "OPENCLAW_WALLPAPER_CREATE_FAILED"
+          : response.code,
+      headers: getOpenClawPrivateHeaders(),
+    });
   }
 }
