@@ -15,6 +15,8 @@
   - 新增 `GET /api/upload/diagnostics`，登录后可对当前 `Origin` 生成 presigned URL 并执行 R2 CORS `OPTIONS` 预检
   - `lib/r2.ts` 新增 R2 上传 CORS 需求与诊断工具，`types/r2-diagnostics.ts` 新增显式响应类型
   - `README.md` 与 `docs/production-runbook.md` 已补最小 CORS 配置和诊断入口说明
+  - 2026-04-25 已用本地 R2 S3 凭证跑通 `lument` 桶：ListObjects、SDK Put/Get、presigned PUT、`http://localhost:3000` CORS 预检与 `img.byteify.icu` 公开下载均成功
+  - 2026-04-25 已用本地临时 session 跑通 `POST /api/upload/presign` → R2 `PUT` → 公开 URL `GET`，并修复诊断接口把 OPTIONS 响应误判为缺少 `ETag` 暴露头的 false warning
 - **给 Claude 的可选 UI 交接**:
   - 上传页如果捕获到 R2 `status 0`，可以提示用户打开 `/api/upload/diagnostics` 或在管理区展示诊断结果
   - 诊断接口返回结构见 `types/r2-diagnostics.ts`
