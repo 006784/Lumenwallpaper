@@ -114,11 +114,27 @@ export type WallpaperDownloadStatus =
   | "success"
   | "error";
 
+export type WallpaperDownloadFormat = "original" | "png" | "webp";
+
+export interface WallpaperDownloadRequestConfig {
+  format?: WallpaperDownloadFormat;
+  ratio?: string | null;
+  resolution?: string | null;
+  variant?: WallpaperVariant;
+}
+
 export interface WallpaperDownloadProgressSnapshot {
   bytesReceived: number;
   percent: number | null;
   status: WallpaperDownloadStatus;
   totalBytes: number | null;
+}
+
+export interface WallpaperDownloadResult {
+  downloadsCount: number | null;
+  filename: string | null;
+  format: WallpaperDownloadFormat | null;
+  transformed: boolean;
 }
 
 export interface WallpaperReportReceipt {

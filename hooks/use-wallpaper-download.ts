@@ -3,14 +3,11 @@
 import { useMemo, useState } from "react";
 
 import type {
+  WallpaperDownloadRequestConfig,
+  WallpaperDownloadResult,
   WallpaperDownloadProgressSnapshot,
   WallpaperDownloadStatus,
 } from "@/types/wallpaper";
-
-type DownloadResult = {
-  downloadsCount: number | null;
-  filename: string | null;
-};
 
 type UseWallpaperDownloadOptions = {
   identifier: string;
@@ -51,6 +48,32 @@ function triggerBrowserDownload(blob: Blob, filename: string | null) {
   }, 1000);
 }
 
+function buildDownloadSearchParams(config?: WallpaperDownloadRequestConfig) {
+  const params = new URLSearchParams();
+
+  if (!config) {
+    return params;
+  }
+
+  if (config.variant) {
+    params.set("variant", config.variant);
+  }
+
+  if (config.format) {
+    params.set("format", config.format);
+  }
+
+  if (config.ratio) {
+    params.set("ratio", config.ratio);
+  }
+
+  if (config.resolution) {
+    params.set("resolution", config.resolution);
+  }
+
+  return params;
+}
+
 export function useWallpaperDownload(options: UseWallpaperDownloadOptions) {
   const [downloadsCount, setDownloadsCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -71,22 +94,26 @@ export function useWallpaperDownload(options: UseWallpaperDownloadOptions) {
     };
   }, [bytesReceived, status, totalBytes]);
 
-  async function download() {
+  async function download(
+    config?: WallpaperDownloadRequestConfig,
+  ): Promise<WallpaperDownloadResult> {
     setError(null);
     setStatus("preparing");
     setBytesReceived(0);
     setTotalBytes(null);
 
-    const response = await fetch(
-      `/api/wallpapers/${encodeURIComponent(options.identifier)}/download`,
-    );
+    const searchParams = buildDownloadSearchParams(config);
+    const downloadPath = `/api/wallpapers/${encodeURIComponent(options.identifier)}/download`;
+    const queryString = searchParams.toString();
+    const requestPath =
+      queryString.length > 0 ? `${downloadPath}?${queryString}` : downloadPath;
+
+    const response = await fetch(requestPath);
 
     if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as
-        | {
-            error?: string;
-          }
-        | null;
+      const payload = (await response.json().catch(() => null)) as {
+        error?: string;
+      } | null;
 
       const nextError = payload?.error ?? "下载失败，请稍后重试。";
       setError(nextError);
@@ -105,6 +132,11 @@ export function useWallpaperDownload(options: UseWallpaperDownloadOptions) {
       response.headers.get("x-wallpaper-downloads-count") ?? "",
       10,
     );
+    const nextFormat = response.headers.get("x-wallpaper-download-format") as
+      | WallpaperDownloadResult["format"]
+      | null;
+    const transformed =
+      response.headers.get("x-wallpaper-transformed") === "true";
 
     setFilename(nextFilename);
     setTotalBytes(Number.isFinite(nextTotalBytes) ? nextTotalBytes : null);
@@ -119,10 +151,13 @@ export function useWallpaperDownload(options: UseWallpaperDownloadOptions) {
       setStatus("success");
 
       return {
-        downloadsCount:
-          Number.isFinite(nextDownloadsCount) ? nextDownloadsCount : null,
+        downloadsCount: Number.isFinite(nextDownloadsCount)
+          ? nextDownloadsCount
+          : null,
         filename: nextFilename,
-      } satisfies DownloadResult;
+        format: nextFormat,
+        transformed,
+      } satisfies WallpaperDownloadResult;
     }
 
     const reader = response.body.getReader();
@@ -159,10 +194,13 @@ export function useWallpaperDownload(options: UseWallpaperDownloadOptions) {
     setStatus("success");
 
     return {
-      downloadsCount:
-        Number.isFinite(nextDownloadsCount) ? nextDownloadsCount : null,
+      downloadsCount: Number.isFinite(nextDownloadsCount)
+        ? nextDownloadsCount
+        : null,
       filename: nextFilename,
-    } satisfies DownloadResult;
+      format: nextFormat,
+      transformed,
+    } satisfies WallpaperDownloadResult;
   }
 
   function reset() {
