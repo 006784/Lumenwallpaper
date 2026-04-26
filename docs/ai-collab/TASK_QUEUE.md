@@ -6,6 +6,23 @@
 
 ## 进行中
 
+### TASK-024 · Explore 智能筛选与排序
+
+- **状态**: ✅ codex done / ⏳ claude todo
+- **内容**: 把探索页从简单标签筛选升级成真实壁纸查找工具，支持分辨率、横竖屏、手机比例、动态/静态、颜色、风格、热度和最新筛选
+- **Codex 完成**:
+  - `GET /api/wallpapers` 已新增筛选参数：`resolution=1080p|2k|4k|5k|8k`、`minWidth`、`minHeight`、`orientation=landscape|portrait|square`、`aspect=desktop|phone|tablet|ultrawide|square`、`media=all|static|motion`、`color`、`style`
+  - `sort=downloads|hot|trending` 会归一到 `popular`，`sort=favorite|favorites|liked` 会归一到 `likes`，继续兼容 `latest|popular|likes`
+  - 旧参数 `motion=true|false` 继续兼容；新参数 `media` 优先级更高
+  - 分页响应 `filters` 已回显新筛选状态，方便 UI 渲染当前条件 chips
+  - `lib/public-wallpaper-cache.ts` 已把新筛选纳入缓存 key，并把公开壁纸缓存版本升级到 `v4`
+  - 新增 `e2e/explore-filters.spec.ts` 覆盖组合筛选、颜色回显和非法参数结构化错误
+- **给 Claude 的 UI 交接**:
+  - `components/wallpaper/explore-catalog.tsx` 可把现有筛选条升级成工具栏：分辨率、屏幕方向、设备比例、静态/动态、颜色、风格、排序
+  - URL 示例：`/explore?orientation=portrait&aspect=phone&resolution=1080p&media=static&sort=downloads`
+  - API 示例：`/api/wallpapers?withMeta=true&orientation=portrait&aspect=phone&resolution=1080p&media=static&sort=downloads&page=1`
+  - `filters` 返回字段：`aspect/category/color/featured/media/minHeight/minWidth/motion/orientation/query/resolution/sort/style/tag`
+
 ### TASK-023 · 公开页 UI/UX 二次打磨
 
 - **状态**: ✅ codex done / ⏳ claude todo

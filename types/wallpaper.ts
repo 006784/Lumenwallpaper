@@ -5,6 +5,15 @@ export type WallpaperVariant = Database["public"]["Enums"]["wallpaper_variant"];
 export type WallpaperReportStatus =
   Database["public"]["Enums"]["wallpaper_report_status"];
 export type WallpaperSort = "latest" | "popular" | "likes";
+export type WallpaperMediaFilter = "all" | "motion" | "static";
+export type WallpaperOrientationFilter = "landscape" | "portrait" | "square";
+export type WallpaperAspectFilter =
+  | "desktop"
+  | "phone"
+  | "square"
+  | "tablet"
+  | "ultrawide";
+export type WallpaperResolutionFilter = "1080p" | "2k" | "4k" | "5k" | "8k";
 export type WallpaperAiAnalysisStatus =
   | "pending"
   | "completed"
@@ -163,23 +172,39 @@ export interface WallpaperReport {
 }
 
 export interface WallpaperListOptions {
-  limit?: number;
-  offset?: number;
-  search?: string;
-  tag?: string;
-  category?: string;
+  aspect?: WallpaperAspectFilter;
+  color?: string;
   featured?: boolean;
+  limit?: number;
+  media?: WallpaperMediaFilter;
+  minHeight?: number;
+  minWidth?: number;
   motion?: boolean;
+  offset?: number;
+  orientation?: WallpaperOrientationFilter;
+  resolution?: WallpaperResolutionFilter;
+  search?: string;
   sort?: WallpaperSort;
   status?: WallpaperStatus;
+  style?: string;
+  tag?: string;
+  category?: string;
 }
 
 export interface WallpaperListFiltersSnapshot {
+  aspect: WallpaperAspectFilter | null;
   category: string | null;
+  color: string | null;
   featured: boolean;
+  media: WallpaperMediaFilter;
+  minHeight: number | null;
+  minWidth: number | null;
   motion: boolean;
+  orientation: WallpaperOrientationFilter | null;
   query: string | null;
+  resolution: WallpaperResolutionFilter | null;
   sort: WallpaperSort;
+  style: string | null;
   tag: string | null;
 }
 

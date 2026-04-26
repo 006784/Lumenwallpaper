@@ -34,6 +34,31 @@ const optionalBooleanQueryParam = z.preprocess((value) => {
   return value;
 }, z.boolean().optional());
 
+const wallpaperSortQueryParam = z.preprocess(
+  (value) => {
+    if (typeof value !== "string") {
+      return value;
+    }
+
+    const normalized = value.trim().toLowerCase();
+
+    if (!normalized || normalized === "new") {
+      return normalized || undefined;
+    }
+
+    if (["hot", "download", "downloads", "trending"].includes(normalized)) {
+      return "popular";
+    }
+
+    if (["favorite", "favorites", "liked"].includes(normalized)) {
+      return "likes";
+    }
+
+    return normalized;
+  },
+  z.enum(["popular", "likes", "latest"]).optional(),
+);
+
 function optionalIntegerQueryParam(options: { max: number; min?: number }) {
   return z.preprocess(
     (value) => {
@@ -54,6 +79,9 @@ function optionalIntegerQueryParam(options: { max: number; min?: number }) {
 }
 
 const wallpapersQuerySchema = z.object({
+  aspect: z
+    .enum(["desktop", "phone", "square", "tablet", "ultrawide"])
+    .optional(),
   category: z
     .string()
     .trim()
@@ -66,8 +94,12 @@ const wallpapersQuerySchema = z.object({
     }),
   featured: optionalBooleanQueryParam,
   limit: optionalIntegerQueryParam({ max: 100 }),
+  media: z.enum(["all", "motion", "static"]).optional(),
+  minHeight: optionalIntegerQueryParam({ max: 20000 }),
+  minWidth: optionalIntegerQueryParam({ max: 20000 }),
   motion: optionalBooleanQueryParam,
   offset: optionalIntegerQueryParam({ max: 5000, min: 0 }),
+  orientation: z.enum(["landscape", "portrait", "square"]).optional(),
   page: optionalIntegerQueryParam({ max: 1000 }),
   q: z
     .string()
@@ -75,7 +107,20 @@ const wallpapersQuerySchema = z.object({
     .max(120)
     .optional()
     .transform((value) => value || undefined),
-  sort: z.enum(["popular", "likes", "latest"]).optional(),
+  resolution: z.enum(["1080p", "2k", "4k", "5k", "8k"]).optional(),
+  sort: wallpaperSortQueryParam,
+  color: z
+    .string()
+    .trim()
+    .max(32)
+    .optional()
+    .transform((value) => value || undefined),
+  style: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .transform((value) => value || undefined),
   tag: z
     .string()
     .trim()
@@ -92,12 +137,20 @@ export async function GET(request: Request) {
       Object.fromEntries(searchParams.entries()),
     );
     const options = {
+      aspect: query.aspect,
+      color: query.color,
       limit: query.limit,
+      media: query.media,
+      minHeight: query.minHeight,
+      minWidth: query.minWidth,
       offset: query.offset,
+      orientation: query.orientation,
+      resolution: query.resolution,
       search: query.q,
       tag: query.tag,
       category: query.category,
       sort: query.sort,
+      style: query.style,
       featured: query.featured,
       motion: query.motion,
     };
@@ -110,9 +163,17 @@ export async function GET(request: Request) {
             search: options.search,
             tag: options.tag,
             category: options.category,
+            aspect: options.aspect,
+            color: options.color,
             featured: options.featured,
+            media: options.media,
+            minHeight: options.minHeight,
+            minWidth: options.minWidth,
             motion: options.motion,
+            orientation: options.orientation,
+            resolution: options.resolution,
             sort: options.sort,
+            style: options.style,
           },
           query.page ?? 1,
           query.limit ?? EXPLORE_PAGE_SIZE,

@@ -4,8 +4,12 @@ import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
 import { getCreatorPageSnapshot } from "@/lib/creators";
 import { getWallpaperDisplayTitle } from "@/lib/wallpaper-presenters";
 import type {
+  WallpaperAspectFilter,
   WallpaperListFiltersSnapshot,
   WallpaperListOptions,
+  WallpaperMediaFilter,
+  WallpaperOrientationFilter,
+  WallpaperResolutionFilter,
   WallpaperSort,
 } from "@/types/wallpaper";
 import {
@@ -16,7 +20,7 @@ import {
   listWallpapersByCreator,
 } from "@/lib/wallpapers";
 
-const PUBLIC_WALLPAPER_CACHE_VERSION = "v3";
+const PUBLIC_WALLPAPER_CACHE_VERSION = "v4";
 
 function normalizeWallpaperTags(tags: string[]) {
   return tags.map((tag) => (tag === "手动导入" ? "像素" : tag));
@@ -41,13 +45,21 @@ function serializeWallpaperListOptions(
   options: Omit<WallpaperListOptions, "status"> = {},
 ) {
   return JSON.stringify({
+    aspect: options.aspect ?? null,
     category: options.category ?? null,
+    color: options.color ?? null,
     featured: options.featured ?? null,
     limit: options.limit ?? null,
+    media: options.media ?? null,
+    minHeight: options.minHeight ?? null,
+    minWidth: options.minWidth ?? null,
     motion: options.motion ?? null,
     offset: options.offset ?? null,
+    orientation: options.orientation ?? null,
+    resolution: options.resolution ?? null,
     search: options.search ?? null,
     sort: options.sort ?? null,
+    style: options.style ?? null,
     tag: options.tag ?? null,
   });
 }
@@ -148,12 +160,30 @@ export const EXPLORE_PAGE_SIZE = 24;
 function normalizeWallpaperListFilters(
   options: Omit<WallpaperListOptions, "limit" | "offset" | "status"> = {},
 ): WallpaperListFiltersSnapshot {
+  const media =
+    options.media ??
+    (options.motion === undefined
+      ? "all"
+      : options.motion
+        ? "motion"
+        : "static");
+
   return {
+    aspect: (options.aspect ?? null) as WallpaperAspectFilter | null,
     category: options.category?.trim() || null,
+    color: options.color?.trim() || null,
     featured: options.featured ?? false,
-    motion: options.motion ?? false,
+    media: media as WallpaperMediaFilter,
+    minHeight: options.minHeight ?? null,
+    minWidth: options.minWidth ?? null,
+    motion: media === "motion",
+    orientation: (options.orientation ??
+      null) as WallpaperOrientationFilter | null,
     query: options.search?.trim() || null,
+    resolution: (options.resolution ??
+      null) as WallpaperResolutionFilter | null,
     sort: (options.sort ?? "latest") as WallpaperSort,
+    style: options.style?.trim() || null,
     tag: options.tag?.trim() || null,
   };
 }
