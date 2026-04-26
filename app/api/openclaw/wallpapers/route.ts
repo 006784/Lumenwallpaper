@@ -182,6 +182,7 @@ export async function POST(request: Request) {
         response.code === "WALLPAPER_CREATE_FAILED"
           ? "OPENCLAW_WALLPAPER_CREATE_FAILED"
           : response.code,
+      details: response.details,
       headers: getOpenClawPrivateHeaders(),
     });
   }

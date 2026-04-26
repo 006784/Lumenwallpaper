@@ -5,6 +5,20 @@ export interface LibraryCollection {
   name: string;
   isPublic: boolean;
   createdAt: string;
+  itemCount?: number;
+}
+
+export interface LibraryCollectionDetail extends LibraryCollection {
+  wallpapers: Wallpaper[];
+}
+
+export interface LibraryCollectionMutationResult {
+  collection: LibraryCollection;
+}
+
+export interface LibraryCollectionItemMutationResult {
+  collection: LibraryCollectionDetail;
+  wallpaper: Wallpaper;
 }
 
 export interface DownloadHistoryItem {

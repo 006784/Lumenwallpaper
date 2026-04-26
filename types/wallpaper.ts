@@ -14,6 +14,7 @@ export type WallpaperAspectFilter =
   | "tablet"
   | "ultrawide";
 export type WallpaperResolutionFilter = "1080p" | "2k" | "4k" | "5k" | "8k";
+export type SimilarWallpaperGroupKind = "color" | "creator" | "ratio" | "style";
 export type WallpaperAiAnalysisStatus =
   | "pending"
   | "completed"
@@ -218,6 +219,44 @@ export interface WallpaperListPageResult {
   total: number;
   page: number;
   totalPages: number;
+}
+
+export interface SimilarWallpaperGroup {
+  kind: SimilarWallpaperGroupKind;
+  label: string;
+  wallpapers: Wallpaper[];
+}
+
+export interface SimilarWallpaperSnapshot {
+  groups: SimilarWallpaperGroup[];
+  source: {
+    id: string;
+    slug: string;
+    title: string;
+  };
+}
+
+export type WallpaperDevicePresetPlatform =
+  | "android"
+  | "ipad"
+  | "iphone"
+  | "mac"
+  | "windows";
+
+export interface WallpaperDevicePreset {
+  aspectLabel: string;
+  height: number;
+  id: string;
+  label: string;
+  platform: WallpaperDevicePresetPlatform;
+  ratio: string;
+  width: number;
+}
+
+export interface WallpaperDevicePresetGroup {
+  label: string;
+  platform: WallpaperDevicePresetPlatform;
+  presets: WallpaperDevicePreset[];
 }
 
 export interface PresignedUploadPayload {

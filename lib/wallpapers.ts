@@ -45,6 +45,9 @@ import type { Database } from "@/types/database";
 import type {
   DownloadHistoryItem,
   LibraryCollection,
+  LibraryCollectionDetail,
+  LibraryCollectionItemMutationResult,
+  LibraryCollectionMutationResult,
   LibraryNotificationItem,
   LibrarySnapshot,
 } from "@/types/library";
@@ -76,6 +79,8 @@ import type {
   WallpaperReportReason,
   WallpaperReportStatus,
   WallpaperStatus,
+  SimilarWallpaperGroup,
+  SimilarWallpaperSnapshot,
 } from "@/types/wallpaper";
 
 const usersTable = "users" satisfies keyof Database["public"]["Tables"];
@@ -417,6 +422,8 @@ type WallpaperReportRow =
   Database["public"]["Tables"]["wallpaper_reports"]["Row"];
 type DownloadRow = Database["public"]["Tables"]["downloads"]["Row"];
 type CollectionRow = Database["public"]["Tables"]["collections"]["Row"];
+type CollectionItemRow =
+  Database["public"]["Tables"]["collection_items"]["Row"];
 type NotificationRow = Database["public"]["Tables"]["notifications"]["Row"];
 type IncrementWallpaperDownloadsRow =
   Database["public"]["Functions"]["increment_wallpaper_downloads"]["Returns"][number];
@@ -869,6 +876,17 @@ function mapCollection(row: CollectionRow): LibraryCollection {
   };
 }
 
+function mapCollectionDetail(
+  row: CollectionRow,
+  wallpapers: Wallpaper[],
+): LibraryCollectionDetail {
+  return {
+    ...mapCollection(row),
+    itemCount: wallpapers.length,
+    wallpapers,
+  };
+}
+
 function mapNotification(
   row: NotificationRow,
   wallpaper: Wallpaper | null,
@@ -1201,6 +1219,118 @@ function orderWallpapersByIds(
     .filter((wallpaper): wallpaper is Wallpaper => wallpaper !== null);
 }
 
+function normalizeSimilarityValue(value: string | null | undefined) {
+  return value?.trim().toLowerCase() ?? "";
+}
+
+function getSimilarityTerms(wallpaper: Wallpaper) {
+  return [
+    ...wallpaper.tags,
+    ...wallpaper.aiTags,
+    wallpaper.aiCategory ?? "",
+  ]
+    .map(normalizeSimilarityValue)
+    .filter(Boolean);
+}
+
+function countSharedSimilarityTerms(left: Wallpaper, right: Wallpaper) {
+  const leftTerms = new Set(getSimilarityTerms(left));
+
+  return getSimilarityTerms(right).filter((term) => leftTerms.has(term)).length;
+}
+
+function getPrimaryColorFamilies(wallpaper: Wallpaper) {
+  return wallpaper.colors
+    .map((color) => color.trim().replace(/^#/, "").toLowerCase())
+    .filter((color) => /^[0-9a-f]{6}$/.test(color))
+    .slice(0, 5);
+}
+
+function countSharedColors(left: Wallpaper, right: Wallpaper) {
+  const leftColors = new Set(getPrimaryColorFamilies(left));
+
+  return getPrimaryColorFamilies(right).filter((color) => leftColors.has(color))
+    .length;
+}
+
+function getWallpaperRatio(wallpaper: Wallpaper) {
+  const width =
+    wallpaper.width ??
+    wallpaper.files.find((file) => file.width && file.height)?.width ??
+    null;
+  const height =
+    wallpaper.height ??
+    wallpaper.files.find((file) => file.width && file.height)?.height ??
+    null;
+
+  if (!width || !height || width <= 0 || height <= 0) {
+    return null;
+  }
+
+  return width / height;
+}
+
+function hasSimilarRatio(left: Wallpaper, right: Wallpaper) {
+  const leftRatio = getWallpaperRatio(left);
+  const rightRatio = getWallpaperRatio(right);
+
+  if (!leftRatio || !rightRatio) {
+    return false;
+  }
+
+  return Math.abs(leftRatio - rightRatio) <= 0.12;
+}
+
+function scoreSimilarWallpaper(source: Wallpaper, candidate: Wallpaper) {
+  const sharedTerms = countSharedSimilarityTerms(source, candidate);
+  const sharedColors = countSharedColors(source, candidate);
+  const sameCreator =
+    source.creator?.username &&
+    source.creator.username === candidate.creator?.username;
+  const sameMediaKind = Boolean(source.videoUrl) === Boolean(candidate.videoUrl);
+
+  return (
+    sharedTerms * 12 +
+    sharedColors * 10 +
+    (sameCreator ? 24 : 0) +
+    (hasSimilarRatio(source, candidate) ? 14 : 0) +
+    (sameMediaKind ? 4 : 0) +
+    candidate.downloadsCount * 0.04 +
+    candidate.likesCount * 0.08
+  );
+}
+
+function rankSimilarWallpapers(source: Wallpaper, candidates: Wallpaper[]) {
+  return [...candidates]
+    .filter((candidate) => candidate.id !== source.id)
+    .map((candidate) => ({
+      candidate,
+      score: scoreSimilarWallpaper(source, candidate),
+    }))
+    .filter((item) => item.score > 0)
+    .sort((left, right) => {
+      return (
+        right.score - left.score ||
+        right.candidate.downloadsCount - left.candidate.downloadsCount ||
+        Date.parse(right.candidate.createdAt) -
+          Date.parse(left.candidate.createdAt)
+      );
+    })
+    .map((item) => withDisplayTitle(item.candidate));
+}
+
+function createSimilarGroup(
+  kind: SimilarWallpaperGroup["kind"],
+  label: string,
+  wallpapers: Wallpaper[],
+): SimilarWallpaperGroup {
+  return {
+    kind,
+    label,
+    wallpapers,
+  };
+}
+
 async function getOrCreateFavoritesCollection(userId: string | number) {
   const client = createSupabaseAdminClient();
   const normalizedUserId = toDbIdValue(userId);
@@ -1305,6 +1435,262 @@ async function syncFavoritesCollection(userId: string | number) {
   }
 
   return collection;
+}
+
+async function loadUserCollectionRow(
+  userId: string | number,
+  collectionId: string | number,
+) {
+  const client = createSupabaseAdminClient();
+  const { data, error } = await client
+    .from(collectionsTable)
+    .select("*")
+    .eq("id", toDbIdValue(collectionId))
+    .eq("user_id", toDbIdValue(userId))
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load collection: ${error.message}`);
+  }
+
+  return data;
+}
+
+function countCollectionItems(items: Pick<CollectionItemRow, "collection_id">[]) {
+  const counts = new Map<string, number>();
+
+  for (const item of items) {
+    const collectionId = String(item.collection_id);
+    counts.set(collectionId, (counts.get(collectionId) ?? 0) + 1);
+  }
+
+  return counts;
+}
+
+async function hydrateCollectionWallpapers(items: CollectionItemRow[]) {
+  const wallpaperIds = items.map((item) => item.wallpaper_id);
+
+  if (wallpaperIds.length === 0) {
+    return [] satisfies Wallpaper[];
+  }
+
+  const client = createSupabaseAdminClient();
+  const { data, error } = await client
+    .from(wallpapersTable)
+    .select("*")
+    .in("id", wallpaperIds)
+    .eq("status", "published");
+
+  if (error) {
+    throw new Error(`Failed to hydrate collection wallpapers: ${error.message}`);
+  }
+
+  return orderWallpapersByIds(
+    (await hydrateWallpapers(data ?? [])).map(withDisplayTitle),
+    wallpaperIds,
+  );
+}
+
+export async function listUserCollections(
+  userId: string | number,
+): Promise<LibraryCollection[]> {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+
+  const client = createSupabaseAdminClient();
+  const normalizedUserId = toDbIdValue(userId);
+
+  await syncFavoritesCollection(userId);
+
+  const { data: collections, error: collectionsError } = await client
+    .from(collectionsTable)
+    .select("*")
+    .eq("user_id", normalizedUserId)
+    .order("created_at", { ascending: false });
+
+  if (collectionsError) {
+    throw new Error(`Failed to list collections: ${collectionsError.message}`);
+  }
+
+  const collectionIds = (collections ?? []).map((collection) => collection.id);
+
+  if (collectionIds.length === 0) {
+    return [];
+  }
+
+  const { data: items, error: itemsError } = await client
+    .from(collectionItemsTable)
+    .select("collection_id")
+    .in("collection_id", collectionIds);
+
+  if (itemsError) {
+    throw new Error(`Failed to count collection items: ${itemsError.message}`);
+  }
+
+  const itemCounts = countCollectionItems(items ?? []);
+
+  return (collections ?? []).map((collection) => ({
+    ...mapCollection(collection),
+    itemCount: itemCounts.get(String(collection.id)) ?? 0,
+  }));
+}
+
+export async function createUserCollection(
+  userId: string | number,
+  input: {
+    isPublic?: boolean;
+    name: string;
+  },
+): Promise<LibraryCollectionMutationResult> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const client = createSupabaseAdminClient();
+  const { data, error } = await client
+    .from(collectionsTable)
+    .insert({
+      user_id: toDbIdValue(userId),
+      name: input.name.trim(),
+      is_public: input.isPublic ?? false,
+    })
+    .select("*")
+    .single();
+
+  if (error) {
+    const errorCode =
+      typeof error === "object" && error !== null && "code" in error
+        ? String(error.code)
+        : "";
+
+    if (errorCode === "23505") {
+      throw new Error("Collection name already exists.");
+    }
+
+    throw new Error(`Failed to create collection: ${error.message}`);
+  }
+
+  return {
+    collection: {
+      ...mapCollection(data),
+      itemCount: 0,
+    },
+  };
+}
+
+export async function getUserCollectionDetail(
+  userId: string | number,
+  collectionId: string | number,
+): Promise<LibraryCollectionDetail | null> {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  const collection = await loadUserCollectionRow(userId, collectionId);
+
+  if (!collection) {
+    return null;
+  }
+
+  const client = createSupabaseAdminClient();
+  const { data: items, error: itemsError } = await client
+    .from(collectionItemsTable)
+    .select("*")
+    .eq("collection_id", collection.id)
+    .order("added_at", { ascending: false });
+
+  if (itemsError) {
+    throw new Error(`Failed to load collection items: ${itemsError.message}`);
+  }
+
+  const wallpapers = await hydrateCollectionWallpapers(items ?? []);
+
+  return mapCollectionDetail(collection, wallpapers);
+}
+
+export async function addWallpaperToCollection(
+  userId: string | number,
+  collectionId: string | number,
+  wallpaperIdentifier: string,
+): Promise<LibraryCollectionItemMutationResult | null> {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  const collection = await loadUserCollectionRow(userId, collectionId);
+  const wallpaper = await getWallpaperByIdOrSlug(wallpaperIdentifier);
+
+  if (!collection || !wallpaper || wallpaper.status !== "published") {
+    return null;
+  }
+
+  const client = createSupabaseAdminClient();
+  const { error } = await client.from(collectionItemsTable).upsert(
+    {
+      collection_id: collection.id,
+      wallpaper_id: toDbIdValue(wallpaper.id),
+    },
+    {
+      onConflict: "collection_id,wallpaper_id",
+    },
+  );
+
+  if (error) {
+    throw new Error(`Failed to add wallpaper to collection: ${error.message}`);
+  }
+
+  const detail = await getUserCollectionDetail(userId, collection.id);
+
+  if (!detail) {
+    return null;
+  }
+
+  return {
+    collection: detail,
+    wallpaper: withDisplayTitle(wallpaper),
+  };
+}
+
+export async function removeWallpaperFromCollection(
+  userId: string | number,
+  collectionId: string | number,
+  wallpaperIdentifier: string,
+): Promise<LibraryCollectionItemMutationResult | null> {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  const collection = await loadUserCollectionRow(userId, collectionId);
+  const wallpaper = await getWallpaperByIdOrSlug(wallpaperIdentifier);
+
+  if (!collection || !wallpaper) {
+    return null;
+  }
+
+  const client = createSupabaseAdminClient();
+  const { error } = await client
+    .from(collectionItemsTable)
+    .delete()
+    .eq("collection_id", collection.id)
+    .eq("wallpaper_id", toDbIdValue(wallpaper.id));
+
+  if (error) {
+    throw new Error(
+      `Failed to remove wallpaper from collection: ${error.message}`,
+    );
+  }
+
+  const detail = await getUserCollectionDetail(userId, collection.id);
+
+  if (!detail) {
+    return null;
+  }
+
+  return {
+    collection: detail,
+    wallpaper: withDisplayTitle(wallpaper),
+  };
 }
 
 async function persistWallpaperAiMetadata(
@@ -2208,6 +2594,69 @@ export async function listFeaturedWallpapers(
     featured: true,
     status: "published",
   });
+}
+
+export async function getSimilarWallpapers(
+  identifier: string,
+  options: {
+    limit?: number;
+  } = {},
+): Promise<SimilarWallpaperSnapshot | null> {
+  const source = await getWallpaperByIdOrSlug(identifier);
+
+  if (!source || source.status !== "published") {
+    return null;
+  }
+
+  const perGroupLimit = Math.max(1, Math.min(options.limit ?? 6, 12));
+  const candidates = (await listPublishedWallpapers({ limit: 1000 })).filter(
+    (wallpaper) => wallpaper.id !== source.id,
+  );
+
+  const ranked = rankSimilarWallpapers(source, candidates);
+  const groups = [
+    createSimilarGroup(
+      "style",
+      "相似风格",
+      ranked
+        .filter((wallpaper) => countSharedSimilarityTerms(source, wallpaper) > 0)
+        .slice(0, perGroupLimit),
+    ),
+    createSimilarGroup(
+      "color",
+      "相似颜色",
+      ranked
+        .filter((wallpaper) => countSharedColors(source, wallpaper) > 0)
+        .slice(0, perGroupLimit),
+    ),
+    createSimilarGroup(
+      "creator",
+      "同作者",
+      ranked
+        .filter(
+          (wallpaper) =>
+            Boolean(source.creator?.username) &&
+            source.creator?.username === wallpaper.creator?.username,
+        )
+        .slice(0, perGroupLimit),
+    ),
+    createSimilarGroup(
+      "ratio",
+      "同比例",
+      ranked
+        .filter((wallpaper) => hasSimilarRatio(source, wallpaper))
+        .slice(0, perGroupLimit),
+    ),
+  ].filter((group) => group.wallpapers.length > 0);
+
+  return {
+    source: {
+      id: source.id,
+      slug: source.slug,
+      title: getWallpaperDisplayTitle(source),
+    },
+    groups,
+  };
 }
 
 export async function getWallpaperByIdOrSlug(identifier: string) {

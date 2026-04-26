@@ -14,6 +14,7 @@ import type {
 } from "@/types/wallpaper";
 import {
   getCreatorByUsername,
+  getSimilarWallpapers,
   getWallpaperByIdOrSlug,
   listFeaturedWallpapers,
   listPublishedWallpapers,
@@ -109,6 +110,27 @@ export async function getCachedWallpaperByIdentifier(identifier: string) {
   )();
 
   return wallpaper ? withDisplayTitle(wallpaper) : null;
+}
+
+export async function getCachedSimilarWallpapers(
+  identifier: string,
+  options: {
+    limit?: number;
+  } = {},
+) {
+  return unstable_cache(
+    async () => getSimilarWallpapers(identifier, options),
+    [
+      "wallpaper:similar",
+      PUBLIC_WALLPAPER_CACHE_VERSION,
+      identifier,
+      String(options.limit ?? "default"),
+    ],
+    {
+      revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
+      tags: ["wallpapers", "wallpapers:similar", `wallpaper:${identifier}`],
+    },
+  )();
 }
 
 export async function getCachedCreatorByUsername(username: string) {
