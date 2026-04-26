@@ -2,6 +2,10 @@ import { unstable_cache } from "next/cache";
 
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
 import { getCreatorPageSnapshot } from "@/lib/creators";
+import {
+  getWallpaperExploreFacets,
+  getWallpaperSeoSnapshot,
+} from "@/lib/wallpaper-discovery";
 import { getWallpaperDisplayTitle } from "@/lib/wallpaper-presenters";
 import type {
   WallpaperAspectFilter,
@@ -14,6 +18,9 @@ import type {
 } from "@/types/wallpaper";
 import {
   getCreatorByUsername,
+  getSimilarWallpapers,
+  getWallpaperMotionSnapshot,
+  getWallpaperTrustSnapshot,
   getWallpaperByIdOrSlug,
   listFeaturedWallpapers,
   listPublishedWallpapers,
@@ -109,6 +116,71 @@ export async function getCachedWallpaperByIdentifier(identifier: string) {
   )();
 
   return wallpaper ? withDisplayTitle(wallpaper) : null;
+}
+
+export async function getCachedSimilarWallpapers(
+  identifier: string,
+  options: {
+    limit?: number;
+  } = {},
+) {
+  return unstable_cache(
+    async () => getSimilarWallpapers(identifier, options),
+    [
+      "wallpaper:similar",
+      PUBLIC_WALLPAPER_CACHE_VERSION,
+      identifier,
+      String(options.limit ?? "default"),
+    ],
+    {
+      revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
+      tags: ["wallpapers", "wallpapers:similar", `wallpaper:${identifier}`],
+    },
+  )();
+}
+
+export async function getCachedWallpaperMotionSnapshot(identifier: string) {
+  return unstable_cache(
+    async () => getWallpaperMotionSnapshot(identifier),
+    ["wallpaper:motion", PUBLIC_WALLPAPER_CACHE_VERSION, identifier],
+    {
+      revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
+      tags: ["wallpapers", "wallpapers:motion", `wallpaper:${identifier}`],
+    },
+  )();
+}
+
+export async function getCachedWallpaperTrustSnapshot(identifier: string) {
+  return unstable_cache(
+    async () => getWallpaperTrustSnapshot(identifier),
+    ["wallpaper:trust", PUBLIC_WALLPAPER_CACHE_VERSION, identifier],
+    {
+      revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
+      tags: ["wallpapers", "wallpapers:trust", `wallpaper:${identifier}`],
+    },
+  )();
+}
+
+export async function getCachedWallpaperExploreFacets() {
+  return unstable_cache(
+    async () => getWallpaperExploreFacets(),
+    ["wallpapers:facets", PUBLIC_WALLPAPER_CACHE_VERSION],
+    {
+      revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
+      tags: ["wallpapers", "wallpapers:explore", "wallpapers:facets"],
+    },
+  )();
+}
+
+export async function getCachedWallpaperSeoSnapshot(identifier: string) {
+  return unstable_cache(
+    async () => getWallpaperSeoSnapshot(identifier),
+    ["wallpaper:seo", PUBLIC_WALLPAPER_CACHE_VERSION, identifier],
+    {
+      revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
+      tags: ["wallpapers", "wallpapers:seo", `wallpaper:${identifier}`],
+    },
+  )();
 }
 
 export async function getCachedCreatorByUsername(username: string) {

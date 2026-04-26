@@ -6,6 +6,58 @@
 
 ## 进行中
 
+### TASK-025 · 发现连续浏览、设备预设与合集 API
+
+- **状态**: ✅ codex done / ⏳ claude todo
+- **内容**: 为“像找壁纸工具一样连续浏览”补齐后端能力：相似推荐、多设备下载预设、收藏夹/合集，以及上传错误产品化响应
+- **Codex 完成**:
+  - 新增 `GET /api/wallpapers/[id]/similar?limit=6`，按相似风格、相似颜色、同作者、同比例返回分组推荐；`id` 支持壁纸 id 或 slug
+  - 新增 `GET /api/wallpapers/download-presets`，返回 iPhone、iPad、Mac、Windows、Android 常见下载裁切预设
+  - 新增 `GET/POST /api/library/collections`：列出当前用户合集、创建合集
+  - 新增 `GET /api/library/collections/[id]`：返回合集详情与壁纸列表
+  - 新增 `POST/DELETE /api/library/collections/[id]/items`：把壁纸加入/移出指定合集，body 支持 `wallpaperId`，也兼容 `wallpaperSlug` / `id`
+  - `lib/wallpaper-create-errors.ts` 的上传创建失败响应新增 `details.title/description/actionLabel/actionHref/retryable/troubleshooting`，前端可以显示短提示 + 操作入口
+  - 新增 `e2e/wallpaper-discovery-library.spec.ts` 覆盖相似推荐、设备预设和合集鉴权错误
+- **给 Claude 的 UI 交接**:
+  - 详情页在主图下方或右栏低优先级位置接入 `/api/wallpapers/${slug}/similar?limit=6`，按 `groups[].kind` 分区展示“相似风格 / 相似颜色 / 同作者 / 同比例”
+  - 下载配置面板可以把 `/api/wallpapers/download-presets` 渲染成“一键：iPhone / 桌面 / WebP 小体积”等普通用户入口，高级裁切继续折叠在后面
+  - Library 页面可从 `/api/library/collections` 接入多合集；收藏按钮旁可增加“加入合集”入口
+  - 上传页遇到 `jsonError.details` 时优先展示 `details.title` 与 `details.description`，按钮使用 `details.actionLabel/actionHref`；不要直接把 R2/CORS 长技术句展示成主错误
+  - 动态壁纸 UI 可继续用 `GET /api/wallpapers?media=motion`，卡片层增加 poster、悬停静音预览、视频格式标识与“下载视频 / 下载封面”两个入口
+  - SEO / 分享卡片、详情页“图片优先”、版权与举报信任感属于公开页 UI/metadata 层；建议在 `app/(public)` 和相关组件里接入现有 report API 与 metadata 生成
+
+### TASK-026 · 动态壁纸体验与版权信任 API
+
+- **状态**: ✅ codex done / ⏳ claude todo
+- **内容**: 给动态壁纸卡片、详情页播放预览、封面下载，以及版权/举报信任模块补齐公开数据契约
+- **Codex 完成**:
+  - 新增 `GET /api/wallpapers/[id]/motion`，返回 `isMotion`、静音播放配置、视频资产和封面资产；`id` 支持壁纸 id 或 slug
+  - 新增 `GET /api/wallpapers/[id]/trust`，返回创作者归属、授权确认状态、举报入口、举报原因和累计举报信息
+  - `getWallpaperDownloadFileByVariant()` 已修正动态壁纸分支：`variant=original` 下载原视频，`preview/thumb/4k` 下载动态封面，支持 UI 分成“下载视频 / 下载封面”
+  - `types/wallpaper.ts` 新增 `WallpaperMotionSnapshot`、`WallpaperMotionAsset`、`WallpaperTrustSnapshot`
+  - `e2e/wallpaper-discovery-library.spec.ts` 已覆盖动态资产接口和信任信息接口
+- **给 Claude 的 UI 交接**:
+  - 动态卡片 hover 时可调用 `/api/wallpapers/${slug}/motion`，使用 `playback.previewUrl` 静音播放，`playback.posterUrl` 做加载前封面
+  - 动态详情页下载区建议拆成两个主入口：`assets.video.downloadUrl` 下载原视频，`assets.posters[0].downloadUrl` 下载封面；封面没有时隐藏封面入口
+  - 详情页版权信任模块可调用 `/api/wallpapers/${slug}/trust`，展示 `license.statement`、`attribution.username`、`report.endpoint` 和 `report.reasons`
+  - 举报弹层提交仍走现有 `POST /api/wallpapers/[id]/report`；提交后可以用 `report.message` 做信任说明文案
+
+### TASK-027 · Explore Facets 与壁纸 SEO 分享卡片 API
+
+- **状态**: ✅ codex done / ⏳ claude todo
+- **内容**: 为 Explore 真实筛选工具栏和详情页 SEO / 分享卡片补齐公开数据契约
+- **Codex 完成**:
+  - 新增 `GET /api/wallpapers/facets`，返回筛选工具栏所需的分辨率、方向、比例、媒体类型、颜色、风格、标签、分类、排序选项及数量
+  - 新增 `GET /api/wallpapers/[id]/seo`，返回详情页 canonical URL、SEO 标题描述、关键词、OG / Twitter 分享卡片和 `ImageObject` JSON-LD
+  - 新增 `lib/wallpaper-discovery.ts` 聚合公开壁纸 facets 和 SEO 数据，缓存接入 `lib/public-wallpaper-cache.ts`
+  - `types/wallpaper.ts` 新增 `WallpaperExploreFacetsSnapshot`、`WallpaperExploreFacetOption`、`WallpaperSeoSnapshot`
+  - `e2e/explore-filters.spec.ts` 覆盖 facets 契约；`e2e/wallpaper-discovery-library.spec.ts` 覆盖 SEO 契约
+- **给 Claude 的 UI 交接**:
+  - Explore 工具栏可先请求 `/api/wallpapers/facets` 渲染筛选项，显示 `count`，颜色项使用 `swatch`
+  - 筛选点击仍然拼接到现有 `/explore?...` 与 `/api/wallpapers?withMeta=true...` 参数，不需要新增 UI 状态协议
+  - 详情页 metadata 可改用 `/api/wallpapers/${slug}/seo` 或直接复用同名数据层；分享卡片优先使用 `openGraph.images[0]`
+  - 页面内分享按钮可读取 `canonicalUrl`、`title`、`description`，结构化数据可使用 `jsonLd`
+
 ### TASK-024 · Explore 智能筛选与排序
 
 - **状态**: ✅ codex done / ⏳ claude todo

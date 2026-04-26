@@ -14,6 +14,7 @@ export type WallpaperAspectFilter =
   | "tablet"
   | "ultrawide";
 export type WallpaperResolutionFilter = "1080p" | "2k" | "4k" | "5k" | "8k";
+export type SimilarWallpaperGroupKind = "color" | "creator" | "ratio" | "style";
 export type WallpaperAiAnalysisStatus =
   | "pending"
   | "completed"
@@ -218,6 +219,166 @@ export interface WallpaperListPageResult {
   total: number;
   page: number;
   totalPages: number;
+}
+
+export interface SimilarWallpaperGroup {
+  kind: SimilarWallpaperGroupKind;
+  label: string;
+  wallpapers: Wallpaper[];
+}
+
+export interface SimilarWallpaperSnapshot {
+  groups: SimilarWallpaperGroup[];
+  source: {
+    id: string;
+    slug: string;
+    title: string;
+  };
+}
+
+export type WallpaperMotionAssetKind = "poster" | "video";
+
+export interface WallpaperMotionAsset {
+  contentType: string | null;
+  downloadUrl: string;
+  height: number | null;
+  kind: WallpaperMotionAssetKind;
+  sizeBytes: number | null;
+  url: string;
+  variant: WallpaperVariant;
+  width: number | null;
+}
+
+export interface WallpaperMotionSnapshot {
+  assets: {
+    posters: WallpaperMotionAsset[];
+    video: WallpaperMotionAsset | null;
+  };
+  isMotion: boolean;
+  playback: {
+    muted: true;
+    posterUrl: string | null;
+    previewUrl: string | null;
+  };
+  source: {
+    id: string;
+    slug: string;
+    title: string;
+  };
+}
+
+export interface WallpaperTrustSnapshot {
+  attribution: {
+    creatorId: string | null;
+    creatorUrl: string | null;
+    username: string | null;
+  };
+  license: {
+    confirmed: boolean;
+    confirmedAt: string | null;
+    statement: string;
+    version: string | null;
+  };
+  report: {
+    endpoint: string;
+    lastReportedAt: string | null;
+    message: string;
+    reasons: WallpaperReportReason[];
+    reportsCount: number;
+  };
+  source: {
+    id: string;
+    slug: string;
+    title: string;
+  };
+}
+
+export interface WallpaperExploreFacetOption {
+  count: number;
+  description?: string;
+  label: string;
+  swatch?: string;
+  value: string;
+}
+
+export interface WallpaperExploreFacetsSnapshot {
+  filters: {
+    aspect: WallpaperExploreFacetOption[];
+    category: WallpaperExploreFacetOption[];
+    color: WallpaperExploreFacetOption[];
+    media: WallpaperExploreFacetOption[];
+    orientation: WallpaperExploreFacetOption[];
+    resolution: WallpaperExploreFacetOption[];
+    sort: WallpaperExploreFacetOption[];
+    style: WallpaperExploreFacetOption[];
+    tag: WallpaperExploreFacetOption[];
+  };
+  generatedAt: string;
+  totals: {
+    all: number;
+    motion: number;
+    static: number;
+  };
+}
+
+export interface WallpaperSeoSnapshot {
+  canonicalUrl: string;
+  description: string;
+  image: {
+    alt: string;
+    height: number | null;
+    url: string | null;
+    width: number | null;
+  };
+  jsonLd: Record<string, unknown>;
+  keywords: string[];
+  openGraph: {
+    description: string;
+    images: Array<{
+      alt: string;
+      height: number | null;
+      url: string;
+      width: number | null;
+    }>;
+    title: string;
+    type: "article";
+    url: string;
+  };
+  source: {
+    id: string;
+    slug: string;
+    title: string;
+  };
+  title: string;
+  twitter: {
+    card: "summary_large_image";
+    description: string;
+    image: string | null;
+    title: string;
+  };
+}
+
+export type WallpaperDevicePresetPlatform =
+  | "android"
+  | "ipad"
+  | "iphone"
+  | "mac"
+  | "windows";
+
+export interface WallpaperDevicePreset {
+  aspectLabel: string;
+  height: number;
+  id: string;
+  label: string;
+  platform: WallpaperDevicePresetPlatform;
+  ratio: string;
+  width: number;
+}
+
+export interface WallpaperDevicePresetGroup {
+  label: string;
+  platform: WallpaperDevicePresetPlatform;
+  presets: WallpaperDevicePreset[];
 }
 
 export interface PresignedUploadPayload {

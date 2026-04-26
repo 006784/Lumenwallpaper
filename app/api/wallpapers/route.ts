@@ -292,6 +292,7 @@ export async function POST(request: Request) {
     return jsonError(response.message, {
       status: response.status,
       code: response.code,
+      details: response.details,
     });
   }
 }

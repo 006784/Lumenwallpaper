@@ -122,7 +122,7 @@ function getWallpaperFileByPriority(
   })[0];
 }
 
-function isVideoWallpaperFile(file: WallpaperFile) {
+export function isVideoWallpaperFile(file: WallpaperFile) {
   return (
     file.format?.startsWith("video/") ||
     /\.(mp4|webm|mov)$/i.test(file.url) ||
@@ -223,11 +223,20 @@ export function getWallpaperCoverSources(
 export function getWallpaperDownloadFile(wallpaper: Pick<Wallpaper, "files">) {
   const includesVideo = wallpaper.files.some((file) => isVideoWallpaperFile(file));
 
+  if (includesVideo) {
+    return (
+      getWallpaperFileByPriority(
+        {
+          files: wallpaper.files.filter(isVideoWallpaperFile),
+        },
+        RECOMMENDED_VIDEO_DOWNLOAD_PRIORITY,
+      ) ?? getWallpaperFileByPriority(wallpaper, RECOMMENDED_VIDEO_DOWNLOAD_PRIORITY)
+    );
+  }
+
   return getWallpaperFileByPriority(
     wallpaper,
-    includesVideo
-      ? RECOMMENDED_VIDEO_DOWNLOAD_PRIORITY
-      : RECOMMENDED_IMAGE_DOWNLOAD_PRIORITY,
+    RECOMMENDED_IMAGE_DOWNLOAD_PRIORITY,
   );
 }
 
@@ -242,7 +251,13 @@ export function getWallpaperDownloadFileByVariant(
       return false;
     }
 
-    return includeVideo ? isVideoWallpaperFile(file) : !isVideoWallpaperFile(file);
+    if (includeVideo) {
+      return variant === "original"
+        ? isVideoWallpaperFile(file)
+        : !isVideoWallpaperFile(file);
+    }
+
+    return !isVideoWallpaperFile(file);
   });
 }
 
