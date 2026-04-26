@@ -236,6 +236,63 @@ export interface SimilarWallpaperSnapshot {
   };
 }
 
+export type WallpaperMotionAssetKind = "poster" | "video";
+
+export interface WallpaperMotionAsset {
+  contentType: string | null;
+  downloadUrl: string;
+  height: number | null;
+  kind: WallpaperMotionAssetKind;
+  sizeBytes: number | null;
+  url: string;
+  variant: WallpaperVariant;
+  width: number | null;
+}
+
+export interface WallpaperMotionSnapshot {
+  assets: {
+    posters: WallpaperMotionAsset[];
+    video: WallpaperMotionAsset | null;
+  };
+  isMotion: boolean;
+  playback: {
+    muted: true;
+    posterUrl: string | null;
+    previewUrl: string | null;
+  };
+  source: {
+    id: string;
+    slug: string;
+    title: string;
+  };
+}
+
+export interface WallpaperTrustSnapshot {
+  attribution: {
+    creatorId: string | null;
+    creatorUrl: string | null;
+    username: string | null;
+  };
+  license: {
+    confirmed: boolean;
+    confirmedAt: string | null;
+    statement: string;
+    version: string | null;
+  };
+  report: {
+    endpoint: string;
+    lastReportedAt: string | null;
+    message: string;
+    reasons: WallpaperReportReason[];
+    reportsCount: number;
+  };
+  source: {
+    id: string;
+    slug: string;
+    title: string;
+  };
+}
+
 export type WallpaperDevicePresetPlatform =
   | "android"
   | "ipad"

@@ -26,6 +26,22 @@
   - 动态壁纸 UI 可继续用 `GET /api/wallpapers?media=motion`，卡片层增加 poster、悬停静音预览、视频格式标识与“下载视频 / 下载封面”两个入口
   - SEO / 分享卡片、详情页“图片优先”、版权与举报信任感属于公开页 UI/metadata 层；建议在 `app/(public)` 和相关组件里接入现有 report API 与 metadata 生成
 
+### TASK-026 · 动态壁纸体验与版权信任 API
+
+- **状态**: ✅ codex done / ⏳ claude todo
+- **内容**: 给动态壁纸卡片、详情页播放预览、封面下载，以及版权/举报信任模块补齐公开数据契约
+- **Codex 完成**:
+  - 新增 `GET /api/wallpapers/[id]/motion`，返回 `isMotion`、静音播放配置、视频资产和封面资产；`id` 支持壁纸 id 或 slug
+  - 新增 `GET /api/wallpapers/[id]/trust`，返回创作者归属、授权确认状态、举报入口、举报原因和累计举报信息
+  - `getWallpaperDownloadFileByVariant()` 已修正动态壁纸分支：`variant=original` 下载原视频，`preview/thumb/4k` 下载动态封面，支持 UI 分成“下载视频 / 下载封面”
+  - `types/wallpaper.ts` 新增 `WallpaperMotionSnapshot`、`WallpaperMotionAsset`、`WallpaperTrustSnapshot`
+  - `e2e/wallpaper-discovery-library.spec.ts` 已覆盖动态资产接口和信任信息接口
+- **给 Claude 的 UI 交接**:
+  - 动态卡片 hover 时可调用 `/api/wallpapers/${slug}/motion`，使用 `playback.previewUrl` 静音播放，`playback.posterUrl` 做加载前封面
+  - 动态详情页下载区建议拆成两个主入口：`assets.video.downloadUrl` 下载原视频，`assets.posters[0].downloadUrl` 下载封面；封面没有时隐藏封面入口
+  - 详情页版权信任模块可调用 `/api/wallpapers/${slug}/trust`，展示 `license.statement`、`attribution.username`、`report.endpoint` 和 `report.reasons`
+  - 举报弹层提交仍走现有 `POST /api/wallpapers/[id]/report`；提交后可以用 `report.message` 做信任说明文案
+
 ### TASK-024 · Explore 智能筛选与排序
 
 - **状态**: ✅ codex done / ⏳ claude todo

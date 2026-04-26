@@ -41,6 +41,10 @@ import {
   createFallbackWallpaperAssetUrl,
   createFallbackWallpaperStoragePath,
 } from "@/lib/fallback-wallpaper-assets";
+import {
+  getWallpaperPreviewUrl,
+  isVideoWallpaperFile,
+} from "@/lib/wallpaper-presenters";
 import type { Database } from "@/types/database";
 import type {
   DownloadHistoryItem,
@@ -81,6 +85,9 @@ import type {
   WallpaperStatus,
   SimilarWallpaperGroup,
   SimilarWallpaperSnapshot,
+  WallpaperMotionAsset,
+  WallpaperMotionSnapshot,
+  WallpaperTrustSnapshot,
 } from "@/types/wallpaper";
 
 const usersTable = "users" satisfies keyof Database["public"]["Tables"];
@@ -121,6 +128,13 @@ const DEFAULT_MANUAL_IMPORT_CREATOR_USERNAME = "Lumen";
 const DEFAULT_MANUAL_IMPORT_CREATOR_BIO = "由 Lumen 手动导入与整理的壁纸作者。";
 const DEFAULT_R2_IMPORT_SCAN_LIMIT = 24;
 const GENERATED_R2_PREFIXES = ["compressed/", "thumbnails/", "previews/"] as const;
+const PUBLIC_REPORT_REASONS: WallpaperReportReason[] = [
+  "copyright",
+  "sensitive",
+  "spam",
+  "misleading",
+  "other",
+];
 
 const IMPORTABLE_R2_FILE_TYPES = {
   jpg: {
@@ -1329,6 +1343,61 @@ function createSimilarGroup(
     label,
     wallpapers,
   };
+}
+
+function getWallpaperDownloadPath(
+  wallpaper: Pick<Wallpaper, "slug">,
+  variant: WallpaperFile["variant"],
+) {
+  return `/api/wallpapers/${encodeURIComponent(wallpaper.slug)}/download?variant=${encodeURIComponent(variant)}`;
+}
+
+function toMotionAsset(
+  wallpaper: Pick<Wallpaper, "slug">,
+  file: WallpaperFile,
+  kind: WallpaperMotionAsset["kind"],
+): WallpaperMotionAsset {
+  return {
+    contentType: file.format,
+    downloadUrl: getWallpaperDownloadPath(wallpaper, file.variant),
+    height: file.height,
+    kind,
+    sizeBytes: file.size,
+    url: file.url,
+    variant: file.variant,
+    width: file.width,
+  };
+}
+
+function sortMotionPosterFiles(files: WallpaperFile[]) {
+  const priority: WallpaperFile["variant"][] = [
+    "preview",
+    "thumb",
+    "4k",
+    "original",
+  ];
+
+  return [...files].sort((left, right) => {
+    return (
+      priority.indexOf(left.variant) - priority.indexOf(right.variant) ||
+      (right.width ?? 0) * (right.height ?? 0) -
+        (left.width ?? 0) * (left.height ?? 0)
+    );
+  });
+}
+
+function getWallpaperMotionVideoFile(wallpaper: Wallpaper) {
+  return (
+    wallpaper.files.find(
+      (file) => file.variant === "original" && isVideoWallpaperFile(file),
+    ) ?? wallpaper.files.find(isVideoWallpaperFile) ?? null
+  );
+}
+
+function getWallpaperPosterFiles(wallpaper: Wallpaper) {
+  return sortMotionPosterFiles(
+    wallpaper.files.filter((file) => !isVideoWallpaperFile(file)),
+  );
 }
 
 async function getOrCreateFavoritesCollection(userId: string | number) {
@@ -2656,6 +2725,101 @@ export async function getSimilarWallpapers(
       title: getWallpaperDisplayTitle(source),
     },
     groups,
+  };
+}
+
+export async function getWallpaperMotionSnapshot(
+  identifier: string,
+): Promise<WallpaperMotionSnapshot | null> {
+  const wallpaper = await getWallpaperByIdOrSlug(identifier);
+
+  if (!wallpaper || wallpaper.status !== "published") {
+    return null;
+  }
+
+  const videoFile = getWallpaperMotionVideoFile(wallpaper);
+  const posterFiles = getWallpaperPosterFiles(wallpaper);
+  const posterAssets = posterFiles.map((file) =>
+    toMotionAsset(wallpaper, file, "poster"),
+  );
+  const fallbackVideoAsset =
+    wallpaper.videoUrl && !videoFile
+      ? ({
+          contentType: null,
+          downloadUrl: wallpaper.videoUrl,
+          height: wallpaper.height,
+          kind: "video",
+          sizeBytes: null,
+          url: wallpaper.videoUrl,
+          variant: "original",
+          width: wallpaper.width,
+        } satisfies WallpaperMotionAsset)
+      : null;
+  const videoAsset = videoFile
+    ? toMotionAsset(wallpaper, videoFile, "video")
+    : fallbackVideoAsset;
+  const posterUrl =
+    posterAssets[0]?.url ?? getWallpaperPreviewUrl(wallpaper, "large") ?? null;
+
+  return {
+    assets: {
+      posters: posterAssets,
+      video: videoAsset,
+    },
+    isMotion: Boolean(wallpaper.videoUrl || videoAsset),
+    playback: {
+      muted: true,
+      posterUrl,
+      previewUrl: videoAsset?.url ?? wallpaper.videoUrl ?? posterUrl,
+    },
+    source: {
+      id: wallpaper.id,
+      slug: wallpaper.slug,
+      title: getWallpaperDisplayTitle(wallpaper),
+    },
+  };
+}
+
+export async function getWallpaperTrustSnapshot(
+  identifier: string,
+): Promise<WallpaperTrustSnapshot | null> {
+  const wallpaper = await getWallpaperByIdOrSlug(identifier);
+
+  if (!wallpaper || wallpaper.status !== "published") {
+    return null;
+  }
+
+  const creatorUsername = wallpaper.creator?.username ?? null;
+
+  return {
+    attribution: {
+      creatorId: wallpaper.creator?.id ?? null,
+      creatorUrl: creatorUsername
+        ? `/creator/${encodeURIComponent(creatorUsername)}`
+        : null,
+      username: creatorUsername,
+    },
+    license: {
+      confirmed: Boolean(wallpaper.licenseConfirmedAt),
+      confirmedAt: wallpaper.licenseConfirmedAt,
+      statement: wallpaper.licenseConfirmedAt
+        ? "上传者已确认拥有该作品的上传、展示与分发授权。"
+        : "这张壁纸缺少完整授权确认，请在下载和二次使用前谨慎核验来源。",
+      version: wallpaper.licenseVersion,
+    },
+    report: {
+      endpoint: `/api/wallpapers/${encodeURIComponent(wallpaper.slug)}/report`,
+      lastReportedAt: wallpaper.lastReportedAt,
+      message:
+        "如果你认为这张壁纸涉及侵权、敏感内容、误导信息或垃圾内容，可以提交举报；Lumen 会记录处理状态并保留创作者归属。",
+      reasons: PUBLIC_REPORT_REASONS,
+      reportsCount: wallpaper.reportsCount,
+    },
+    source: {
+      id: wallpaper.id,
+      slug: wallpaper.slug,
+      title: getWallpaperDisplayTitle(wallpaper),
+    },
   };
 }
 
