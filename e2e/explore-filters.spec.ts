@@ -73,6 +73,53 @@ function expectPortraitPhone1080p(wallpaper: WallpaperApiItem) {
 }
 
 test.describe("探索页智能筛选 API", () => {
+  test("筛选工具栏 facets 返回可用维度和数量", async ({ request }) => {
+    const response = await request.get("/api/wallpapers/facets");
+
+    expect(response.ok()).toBe(true);
+
+    const payload = (await response.json()) as {
+      data: {
+        filters: {
+          aspect: Array<{ count: number; value: string }>;
+          category: Array<{ count: number; value: string }>;
+          color: Array<{ count: number; swatch?: string; value: string }>;
+          media: Array<{ count: number; value: string }>;
+          orientation: Array<{ count: number; value: string }>;
+          resolution: Array<{ count: number; value: string }>;
+          sort: Array<{ count: number; value: string }>;
+          style: Array<{ count: number; value: string }>;
+          tag: Array<{ count: number; value: string }>;
+        };
+        totals: {
+          all: number;
+          motion: number;
+          static: number;
+        };
+      };
+    };
+
+    expect(payload.data.totals.all).toBeGreaterThanOrEqual(0);
+    expect(payload.data.totals.static + payload.data.totals.motion).toBe(
+      payload.data.totals.all,
+    );
+    expect(payload.data.filters.media.map((item) => item.value)).toEqual(
+      expect.arrayContaining(["all", "static", "motion"]),
+    );
+    expect(payload.data.filters.resolution.map((item) => item.value)).toEqual(
+      expect.arrayContaining(["1080p", "2k", "4k", "5k", "8k"]),
+    );
+    expect(payload.data.filters.orientation.map((item) => item.value)).toEqual(
+      expect.arrayContaining(["landscape", "portrait", "square"]),
+    );
+
+    for (const group of Object.values(payload.data.filters)) {
+      for (const option of group) {
+        expect(option.count).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
   test("支持分辨率、方向、手机比例、媒体类型和排序组合", async ({
     request,
   }) => {

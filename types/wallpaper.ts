@@ -293,6 +293,71 @@ export interface WallpaperTrustSnapshot {
   };
 }
 
+export interface WallpaperExploreFacetOption {
+  count: number;
+  description?: string;
+  label: string;
+  swatch?: string;
+  value: string;
+}
+
+export interface WallpaperExploreFacetsSnapshot {
+  filters: {
+    aspect: WallpaperExploreFacetOption[];
+    category: WallpaperExploreFacetOption[];
+    color: WallpaperExploreFacetOption[];
+    media: WallpaperExploreFacetOption[];
+    orientation: WallpaperExploreFacetOption[];
+    resolution: WallpaperExploreFacetOption[];
+    sort: WallpaperExploreFacetOption[];
+    style: WallpaperExploreFacetOption[];
+    tag: WallpaperExploreFacetOption[];
+  };
+  generatedAt: string;
+  totals: {
+    all: number;
+    motion: number;
+    static: number;
+  };
+}
+
+export interface WallpaperSeoSnapshot {
+  canonicalUrl: string;
+  description: string;
+  image: {
+    alt: string;
+    height: number | null;
+    url: string | null;
+    width: number | null;
+  };
+  jsonLd: Record<string, unknown>;
+  keywords: string[];
+  openGraph: {
+    description: string;
+    images: Array<{
+      alt: string;
+      height: number | null;
+      url: string;
+      width: number | null;
+    }>;
+    title: string;
+    type: "article";
+    url: string;
+  };
+  source: {
+    id: string;
+    slug: string;
+    title: string;
+  };
+  title: string;
+  twitter: {
+    card: "summary_large_image";
+    description: string;
+    image: string | null;
+    title: string;
+  };
+}
+
 export type WallpaperDevicePresetPlatform =
   | "android"
   | "ipad"

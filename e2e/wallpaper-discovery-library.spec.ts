@@ -202,4 +202,54 @@ test.describe("壁纸发现与收藏 API", () => {
       expect.arrayContaining(["copyright", "sensitive", "spam", "misleading", "other"]),
     );
   });
+
+  test("SEO 接口返回分享卡片与结构化数据", async ({ request }) => {
+    const seedResponse = await request.get("/api/wallpapers?limit=1");
+    expect(seedResponse.ok()).toBe(true);
+
+    const seedPayload = (await seedResponse.json()) as {
+      data: WallpaperApiItem[];
+    };
+    const seed = seedPayload.data[0];
+
+    test.skip(!seed, "当前环境没有公开壁纸，跳过 SEO 信息断言");
+
+    const response = await request.get(
+      `/api/wallpapers/${encodeURIComponent(seed.slug)}/seo`,
+    );
+
+    expect(response.ok()).toBe(true);
+
+    const payload = (await response.json()) as {
+      data: {
+        canonicalUrl: string;
+        description: string;
+        jsonLd: Record<string, unknown>;
+        keywords: string[];
+        openGraph: {
+          description: string;
+          images: Array<{ url: string }>;
+          title: string;
+          type: string;
+          url: string;
+        };
+        source: WallpaperApiItem;
+        title: string;
+        twitter: {
+          card: string;
+          title: string;
+        };
+      };
+    };
+
+    expect(payload.data.source.slug).toBe(seed.slug);
+    expect(payload.data.title).toContain("Lumen");
+    expect(payload.data.description.length).toBeGreaterThan(0);
+    expect(payload.data.canonicalUrl).toContain(`/wallpaper/${seed.slug}`);
+    expect(payload.data.openGraph.type).toBe("article");
+    expect(payload.data.openGraph.url).toBe(payload.data.canonicalUrl);
+    expect(payload.data.twitter.card).toBe("summary_large_image");
+    expect(payload.data.keywords).toContain("Lumen");
+    expect(payload.data.jsonLd["@type"]).toBe("ImageObject");
+  });
 });

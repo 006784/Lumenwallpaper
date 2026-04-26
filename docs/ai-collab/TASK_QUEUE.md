@@ -42,6 +42,22 @@
   - 详情页版权信任模块可调用 `/api/wallpapers/${slug}/trust`，展示 `license.statement`、`attribution.username`、`report.endpoint` 和 `report.reasons`
   - 举报弹层提交仍走现有 `POST /api/wallpapers/[id]/report`；提交后可以用 `report.message` 做信任说明文案
 
+### TASK-027 · Explore Facets 与壁纸 SEO 分享卡片 API
+
+- **状态**: ✅ codex done / ⏳ claude todo
+- **内容**: 为 Explore 真实筛选工具栏和详情页 SEO / 分享卡片补齐公开数据契约
+- **Codex 完成**:
+  - 新增 `GET /api/wallpapers/facets`，返回筛选工具栏所需的分辨率、方向、比例、媒体类型、颜色、风格、标签、分类、排序选项及数量
+  - 新增 `GET /api/wallpapers/[id]/seo`，返回详情页 canonical URL、SEO 标题描述、关键词、OG / Twitter 分享卡片和 `ImageObject` JSON-LD
+  - 新增 `lib/wallpaper-discovery.ts` 聚合公开壁纸 facets 和 SEO 数据，缓存接入 `lib/public-wallpaper-cache.ts`
+  - `types/wallpaper.ts` 新增 `WallpaperExploreFacetsSnapshot`、`WallpaperExploreFacetOption`、`WallpaperSeoSnapshot`
+  - `e2e/explore-filters.spec.ts` 覆盖 facets 契约；`e2e/wallpaper-discovery-library.spec.ts` 覆盖 SEO 契约
+- **给 Claude 的 UI 交接**:
+  - Explore 工具栏可先请求 `/api/wallpapers/facets` 渲染筛选项，显示 `count`，颜色项使用 `swatch`
+  - 筛选点击仍然拼接到现有 `/explore?...` 与 `/api/wallpapers?withMeta=true...` 参数，不需要新增 UI 状态协议
+  - 详情页 metadata 可改用 `/api/wallpapers/${slug}/seo` 或直接复用同名数据层；分享卡片优先使用 `openGraph.images[0]`
+  - 页面内分享按钮可读取 `canonicalUrl`、`title`、`description`，结构化数据可使用 `jsonLd`
+
 ### TASK-024 · Explore 智能筛选与排序
 
 - **状态**: ✅ codex done / ⏳ claude todo

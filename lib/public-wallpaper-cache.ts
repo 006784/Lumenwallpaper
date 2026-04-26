@@ -2,6 +2,10 @@ import { unstable_cache } from "next/cache";
 
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
 import { getCreatorPageSnapshot } from "@/lib/creators";
+import {
+  getWallpaperExploreFacets,
+  getWallpaperSeoSnapshot,
+} from "@/lib/wallpaper-discovery";
 import { getWallpaperDisplayTitle } from "@/lib/wallpaper-presenters";
 import type {
   WallpaperAspectFilter,
@@ -153,6 +157,28 @@ export async function getCachedWallpaperTrustSnapshot(identifier: string) {
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
       tags: ["wallpapers", "wallpapers:trust", `wallpaper:${identifier}`],
+    },
+  )();
+}
+
+export async function getCachedWallpaperExploreFacets() {
+  return unstable_cache(
+    async () => getWallpaperExploreFacets(),
+    ["wallpapers:facets", PUBLIC_WALLPAPER_CACHE_VERSION],
+    {
+      revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
+      tags: ["wallpapers", "wallpapers:explore", "wallpapers:facets"],
+    },
+  )();
+}
+
+export async function getCachedWallpaperSeoSnapshot(identifier: string) {
+  return unstable_cache(
+    async () => getWallpaperSeoSnapshot(identifier),
+    ["wallpaper:seo", PUBLIC_WALLPAPER_CACHE_VERSION, identifier],
+    {
+      revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
+      tags: ["wallpapers", "wallpapers:seo", `wallpaper:${identifier}`],
     },
   )();
 }
