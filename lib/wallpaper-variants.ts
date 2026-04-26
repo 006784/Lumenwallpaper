@@ -37,6 +37,13 @@ type VariantSpec = {
   quality: number;
 };
 
+export class WallpaperVariantGenerationError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = "WallpaperVariantGenerationError";
+  }
+}
+
 const VARIANT_SPECS: VariantSpec[] = [
   {
     variant: "4k",
@@ -181,10 +188,13 @@ export async function generateWallpaperVariantFiles(
       await deleteR2Objects(createdVariantPaths);
     }
 
-    throw new Error(
+    throw new WallpaperVariantGenerationError(
       error instanceof Error
         ? `Failed to generate wallpaper variants: ${error.message}`
         : "Failed to generate wallpaper variants.",
+      {
+        cause: error,
+      },
     );
   }
 }

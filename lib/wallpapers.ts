@@ -4,7 +4,17 @@ import { z } from "zod";
 import { moodCards } from "@/lib/data/home";
 import { extractWallpaperColorsFromStoragePath } from "@/lib/wallpaper-colors";
 import { revalidateWallpaperPublicData } from "@/lib/revalidate";
-import { matchesExploreCategory, sortWallpapers } from "@/lib/explore";
+import {
+  matchesExploreCategory,
+  matchesWallpaperAspect,
+  matchesWallpaperColor,
+  matchesWallpaperMedia,
+  matchesWallpaperMinimumDimensions,
+  matchesWallpaperOrientation,
+  matchesWallpaperResolution,
+  matchesWallpaperStyle,
+  sortWallpapers,
+} from "@/lib/explore";
 import {
   ALLOWED_UPLOAD_MIME_TYPES,
   deleteR2Objects,
@@ -148,21 +158,39 @@ const IMPORTABLE_R2_FILE_TYPES = {
 type R2ImportableFileInfo =
   (typeof IMPORTABLE_R2_FILE_TYPES)[keyof typeof IMPORTABLE_R2_FILE_TYPES];
 
-export const presignUploadSchema = z.object({
-  filename: z.string().min(1).max(255),
-  contentType: z.enum(ALLOWED_UPLOAD_MIME_TYPES),
-  size: z.number().int().positive().max(MAX_UPLOAD_SIZE_BYTES),
-}).superRefine((value, context) => {
-  if (value.size > getUploadMaxSizeBytes(value.contentType)) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: isVideoUploadMimeType(value.contentType)
-        ? "视频超过 200MB，请压缩后再上传。"
-        : "图片超过 50MB，请压缩后再上传。",
-      path: ["size"],
-    });
-  }
-});
+export const presignUploadSchema = z
+  .preprocess(
+    (input) => {
+      if (!input || typeof input !== "object") {
+        return input;
+      }
+
+      const payload = input as Record<string, unknown>;
+
+      return {
+        ...payload,
+        contentType: payload.contentType ?? payload.fileType,
+        filename: payload.filename ?? payload.fileName,
+        size: payload.size ?? payload.fileSize,
+      };
+    },
+    z.object({
+      filename: z.string().min(1).max(255),
+      contentType: z.enum(ALLOWED_UPLOAD_MIME_TYPES),
+      size: z.number().int().positive().max(MAX_UPLOAD_SIZE_BYTES),
+    }),
+  )
+  .superRefine((value, context) => {
+    if (value.size > getUploadMaxSizeBytes(value.contentType)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: isVideoUploadMimeType(value.contentType)
+          ? "视频超过 200MB，请压缩后再上传。"
+          : "图片超过 50MB，请压缩后再上传。",
+        path: ["size"],
+      });
+    }
+  });
 
 export const createWallpaperSchema = z.object({
   title: z.string().trim().min(1).max(120),
@@ -1082,17 +1110,6 @@ function wallpaperMatchesTag(
   );
 }
 
-function wallpaperMatchesMotion(
-  wallpaper: Pick<Wallpaper, "videoUrl">,
-  motion: boolean | undefined,
-) {
-  if (motion === undefined) {
-    return true;
-  }
-
-  return motion ? Boolean(wallpaper.videoUrl) : !wallpaper.videoUrl;
-}
-
 function wallpaperMatchesSearch(
   wallpaper: Pick<
     Wallpaper,
@@ -1127,7 +1144,20 @@ function filterWallpapers(
   wallpapers: Wallpaper[],
   options: Pick<
     WallpaperListOptions,
-    "category" | "featured" | "motion" | "search" | "sort" | "tag"
+    | "aspect"
+    | "category"
+    | "color"
+    | "featured"
+    | "media"
+    | "minHeight"
+    | "minWidth"
+    | "motion"
+    | "orientation"
+    | "resolution"
+    | "search"
+    | "sort"
+    | "style"
+    | "tag"
   >,
 ) {
   const filteredWallpapers = wallpapers.filter((wallpaper) => {
@@ -1136,7 +1166,19 @@ function filterWallpapers(
 
     return (
       matchesFeatured &&
-      wallpaperMatchesMotion(wallpaper, options.motion) &&
+      matchesWallpaperMedia(wallpaper, {
+        media: options.media,
+        motion: options.motion,
+      }) &&
+      matchesWallpaperOrientation(wallpaper, options.orientation) &&
+      matchesWallpaperAspect(wallpaper, options.aspect) &&
+      matchesWallpaperResolution(wallpaper, options.resolution) &&
+      matchesWallpaperMinimumDimensions(wallpaper, {
+        minHeight: options.minHeight,
+        minWidth: options.minWidth,
+      }) &&
+      matchesWallpaperColor(wallpaper, options.color) &&
+      matchesWallpaperStyle(wallpaper, options.style) &&
       wallpaperMatchesTag(wallpaper, options.tag) &&
       matchesExploreCategory(wallpaper, options.category) &&
       wallpaperMatchesSearch(wallpaper, options.search)
@@ -2063,12 +2105,20 @@ export async function listWallpapers(options: WallpaperListOptions = {}) {
         return wallpaper.status === (options.status ?? "published");
       }),
       {
+        aspect: options.aspect,
         search: options.search,
         tag: options.tag,
         category: options.category,
+        color: options.color,
         featured: options.featured,
+        media: options.media,
+        minHeight: options.minHeight,
+        minWidth: options.minWidth,
         motion: options.motion,
+        orientation: options.orientation,
+        resolution: options.resolution,
         sort: options.sort,
+        style: options.style,
       },
     );
 
@@ -2117,12 +2167,20 @@ export async function listWallpapers(options: WallpaperListOptions = {}) {
     }
 
     const wallpapers = filterWallpapers(await hydrateWallpapers(data ?? []), {
+      aspect: options.aspect,
       search: options.search,
       tag: options.tag,
       category: options.category,
+      color: options.color,
       featured: options.featured,
+      media: options.media,
+      minHeight: options.minHeight,
+      minWidth: options.minWidth,
       motion: options.motion,
+      orientation: options.orientation,
+      resolution: options.resolution,
       sort: options.sort,
+      style: options.style,
     });
 
     const offset = options.offset ?? 0;

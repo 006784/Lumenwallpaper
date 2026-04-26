@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition } from "react";
 
 import {
   DownloadPanel,
+  type DownloadPanelConfig,
   type DownloadProgressCallback,
 } from "@/components/wallpaper/DownloadPanel";
 import { WallpaperReportPanel } from "@/components/wallpaper/wallpaper-report-panel";
@@ -96,11 +97,9 @@ export function WallpaperDetailSidebar({
     return `${value >= 10 || unitIndex === 0 ? value.toFixed(0) : value.toFixed(1)} ${units[unitIndex]}`;
   }
 
-  function resolveDownloadVariant(config: {
-    fmt: string;
-    res: string;
-    ratio: string;
-  }): WallpaperVariant {
+  function resolveDownloadVariant(
+    config: DownloadPanelConfig,
+  ): WallpaperVariant {
     const hasVideo = downloadOptions.some((option) =>
       option.format?.startsWith("video/"),
     );
@@ -114,7 +113,7 @@ export function WallpaperDetailSidebar({
       );
     }
 
-    if (config.fmt === "WEBP") {
+    if (config.formatKey === "webp" || config.fmt === "WEBP") {
       return (
         downloadOptions.find(
           (option) =>
@@ -139,11 +138,24 @@ export function WallpaperDetailSidebar({
       );
     }
 
-    if (
-      config.res === "3840 × 2160" &&
-      downloadOptions.some((option) => option.variant === "4k")
-    ) {
-      return "4k";
+    if (config.formatKey === "4k") {
+      return (
+        downloadOptions.find((option) => option.variant === "4k")?.variant ??
+        downloadOptions.find((option) => option.variant === "original")
+          ?.variant ??
+        downloadOptions[0]?.variant ??
+        "original"
+      );
+    }
+
+    if (config.formatKey === "original") {
+      return (
+        downloadOptions.find((option) => option.variant === "original")
+          ?.variant ??
+        downloadOptions.find((option) => option.variant === "4k")?.variant ??
+        downloadOptions[0]?.variant ??
+        "original"
+      );
     }
 
     return (
@@ -157,29 +169,30 @@ export function WallpaperDetailSidebar({
 
   async function handleDownloadVariant(
     variant: WallpaperVariant,
-    config: {
-      fmt: string;
-      res: string;
-      ratio: string;
-    },
+    config: DownloadPanelConfig,
     onProgress: DownloadProgressCallback,
   ) {
     setFeedback(null);
+
+    const outputResolution =
+      config.outputWidth > 0 && config.outputHeight > 0
+        ? `${Math.round(config.outputWidth)} × ${Math.round(config.outputHeight)}`
+        : config.res;
 
     const params = new URLSearchParams();
     params.set("variant", variant);
     params.set("format", config.fmt.toLowerCase());
     params.set("ratio", config.ratio);
-    params.set("resolution", config.res);
+    params.set("resolution", outputResolution);
 
     const response = await fetch(
       `/api/wallpapers/${encodeURIComponent(identifier)}/download?${params.toString()}`,
     );
 
     if (!response.ok || !response.body) {
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null;
+      const payload = (await response.json().catch(() => null)) as {
+        error?: string;
+      } | null;
 
       throw new Error(payload?.error ?? "下载失败，请稍后重试。");
     }
@@ -248,11 +261,7 @@ export function WallpaperDetailSidebar({
   }
 
   async function handleDownload(
-    config: {
-      fmt: string;
-      res: string;
-      ratio: string;
-    },
+    config: DownloadPanelConfig,
     onProgress: DownloadProgressCallback,
   ) {
     const variant = resolveDownloadVariant(config);
@@ -321,8 +330,7 @@ export function WallpaperDetailSidebar({
       | ApiFailure;
 
     if (!response.ok || !("data" in payload)) {
-      const message =
-        "error" in payload ? payload.error : "收藏状态更新失败。";
+      const message = "error" in payload ? payload.error : "收藏状态更新失败。";
       const code = "code" in payload ? payload.code : "UNKNOWN_ERROR";
 
       throw new Error(`${code}:${message}`);
@@ -338,7 +346,10 @@ export function WallpaperDetailSidebar({
 
     startTransition(() => {
       void toggleFavorite().catch((error: unknown) => {
-        if (error instanceof Error && error.message.startsWith("AUTH_REQUIRED:")) {
+        if (
+          error instanceof Error &&
+          error.message.startsWith("AUTH_REQUIRED:")
+        ) {
           window.location.href = loginHref;
           return;
         }
@@ -364,19 +375,27 @@ export function WallpaperDetailSidebar({
     <>
       <div className="mt-8 grid gap-3 border-t border-ink/10 pt-8 text-sm text-muted sm:grid-cols-2">
         <p>
-          <span className="mr-2 uppercase tracking-[0.18em] text-ink">slug</span>
+          <span className="mr-2 uppercase tracking-[0.18em] text-ink">
+            slug
+          </span>
           {slug}
         </p>
         <p>
-          <span className="mr-2 uppercase tracking-[0.18em] text-ink">尺寸</span>
+          <span className="mr-2 uppercase tracking-[0.18em] text-ink">
+            尺寸
+          </span>
           {width && height ? `${width} × ${height}` : "未记录"}
         </p>
         <p>
-          <span className="mr-2 uppercase tracking-[0.18em] text-ink">下载</span>
+          <span className="mr-2 uppercase tracking-[0.18em] text-ink">
+            下载
+          </span>
           {downloadsCount}
         </p>
         <p>
-          <span className="mr-2 uppercase tracking-[0.18em] text-ink">收藏</span>
+          <span className="mr-2 uppercase tracking-[0.18em] text-ink">
+            收藏
+          </span>
           {likesCount}
         </p>
         {creatorUsername ? (
@@ -385,7 +404,7 @@ export function WallpaperDetailSidebar({
               创作者
             </span>
             <Link
-              className="underline decoration-ink/40 underline-offset-4 transition hover:text-ink hover:decoration-ink focus-visible:outline-none focus-visible:decoration-ink"
+              className="underline decoration-ink/40 underline-offset-4 transition hover:text-ink hover:decoration-ink focus-visible:decoration-ink focus-visible:outline-none"
               href={`/creator/${creatorUsername}`}
             >
               @{creatorUsername}
@@ -401,7 +420,7 @@ export function WallpaperDetailSidebar({
               {tags.map((tag) => (
                 <Link
                   key={tag}
-                  className="border-frame border-ink/20 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:border-ink focus-visible:text-ink"
+                  className="border-frame border-ink/20 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:border-ink hover:text-ink focus-visible:border-ink focus-visible:text-ink focus-visible:outline-none"
                   href={`/explore?tag=${encodeURIComponent(tag)}`}
                 >
                   {tag}
@@ -418,7 +437,7 @@ export function WallpaperDetailSidebar({
                 {aiTags.slice(0, 8).map((tag) => (
                   <Link
                     key={tag}
-                    className="border border-ink/10 bg-paper/50 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted/70 transition hover:border-ink/30 hover:text-muted focus-visible:outline-none focus-visible:border-ink/40"
+                    className="border border-ink/10 bg-paper/50 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted/70 transition hover:border-ink/30 hover:text-muted focus-visible:border-ink/40 focus-visible:outline-none"
                     href={`/explore?tag=${encodeURIComponent(tag)}`}
                   >
                     {tag}
@@ -445,7 +464,7 @@ export function WallpaperDetailSidebar({
                   title={hex}
                 >
                   <span
-                    className="h-3.5 w-3.5 shrink-0 rounded-full border border-ink/12"
+                    className="border-ink/12 h-3.5 w-3.5 shrink-0 rounded-full border"
                     style={{ backgroundColor: hex }}
                   />
                   <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-muted/70">
@@ -459,7 +478,7 @@ export function WallpaperDetailSidebar({
       ) : null}
 
       {aiCaption ? (
-        <div className="mt-6 border border-ink/8 bg-paper/40 px-4 py-4">
+        <div className="border-ink/8 mt-6 border bg-paper/40 px-4 py-4">
           <p className="mb-2 text-[9px] uppercase tracking-[0.3em] text-muted/50">
             AI 描述
           </p>
@@ -472,7 +491,8 @@ export function WallpaperDetailSidebar({
           <div className="space-y-3 border border-ink/10 bg-paper/55 p-4 sm:p-5">
             <div className="rounded-none border border-ink/10 bg-paper/70 px-4 py-3">
               <p className="text-xs leading-6 text-muted">
-                进入暗房导出面板后，可切换原图、4K 与 WebP，选择裁切比例并缓存常用下载配置。
+                进入暗房导出面板后，可切换原图、4K 与
+                WebP，选择裁切比例并缓存常用下载配置。
               </p>
             </div>
             <button
@@ -491,7 +511,9 @@ export function WallpaperDetailSidebar({
                 当前可下载 {downloadOptions.length} 档 · 最高{" "}
                 {downloadOptions.find((option) => option.variant === "4k")
                   ? "4K"
-                  : downloadOptions.some((option) => option.variant === "original")
+                  : downloadOptions.some(
+                        (option) => option.variant === "original",
+                      )
                     ? "原图"
                     : formatFileSize(downloadOptions[0]?.sizeBytes ?? null)}
               </p>
@@ -511,7 +533,7 @@ export function WallpaperDetailSidebar({
                     : "加入收藏"
             }
             className={cn(
-              "inline-flex min-h-[48px] w-full justify-center border-frame px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] transition disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none sm:w-auto",
+              "inline-flex min-h-[48px] w-full justify-center border-frame px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] transition focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto",
               isFavorited && !isPending
                 ? "border-gold bg-gold/10 text-ink hover:bg-gold/20"
                 : "border-ink bg-transparent text-ink hover:bg-ink hover:text-paper focus-visible:bg-ink focus-visible:text-paper",

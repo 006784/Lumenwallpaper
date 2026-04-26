@@ -80,6 +80,53 @@ export function getR2ObjectUrl(path: string) {
   return new URL(path.replace(/^\/+/, ""), normalizedBase).toString();
 }
 
+export function getR2ErrorStatus(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return null;
+  }
+
+  const metadata = "$metadata" in error ? error.$metadata : null;
+
+  if (!metadata || typeof metadata !== "object") {
+    return null;
+  }
+
+  const statusCode =
+    "httpStatusCode" in metadata ? metadata.httpStatusCode : null;
+
+  return typeof statusCode === "number" ? statusCode : null;
+}
+
+export function getR2ErrorName(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return null;
+  }
+
+  const name = "name" in error ? error.name : null;
+
+  return typeof name === "string" ? name : null;
+}
+
+export function isR2NotFoundError(error: unknown) {
+  const name = getR2ErrorName(error);
+
+  return (
+    getR2ErrorStatus(error) === 404 ||
+    name === "NoSuchKey" ||
+    name === "NotFound"
+  );
+}
+
+export function isR2AccessDeniedError(error: unknown) {
+  const name = getR2ErrorName(error);
+
+  return (
+    getR2ErrorStatus(error) === 403 ||
+    name === "AccessDenied" ||
+    name === "Forbidden"
+  );
+}
+
 function normalizeCorsList(value: string | null) {
   if (!value) {
     return [];
@@ -544,14 +591,26 @@ export async function createPresignedUpload(
   const presignedUrl = await getSignedUrl(client, command, {
     expiresIn: PRESIGNED_UPLOAD_EXPIRY_SECONDS,
   });
+  const headers = {
+    "Content-Type": contentType,
+  };
 
   return {
+    constraints: {
+      allowedContentTypes: [...ALLOWED_UPLOAD_MIME_TYPES],
+      maxSizeBytes: getUploadMaxSizeBytes(contentType),
+    },
+    contentType,
+    diagnostics: {
+      corsDiagnosticsUrl: "/api/upload/diagnostics",
+      requiredHeaders: Object.keys(headers),
+      requiredMethod: "PUT",
+    },
+    filename,
     key,
     presignedUrl,
     publicUrl: getR2ObjectUrl(key),
-    headers: {
-      "Content-Type": contentType,
-    },
+    headers,
     method: "PUT",
     expiresIn: PRESIGNED_UPLOAD_EXPIRY_SECONDS,
   };
