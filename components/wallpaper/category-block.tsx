@@ -22,7 +22,7 @@ export function CategoryBlock({
 }: CategoryBlockProps) {
   return (
     <Link
-      className="group relative flex min-w-[110px] shrink-0 overflow-hidden border-r-frame border-ink p-0 last:border-r-0 md:min-w-[140px] [transition:flex_550ms_cubic-bezier(0.4,0,0.2,1)]"
+      className="group relative flex min-w-[110px] shrink-0 overflow-hidden p-0 md:min-w-[140px] [transition:flex_550ms_cubic-bezier(0.4,0,0.2,1)]"
       href={category.href}
       onBlur={onBlur}
       onFocus={onFocus}
@@ -62,7 +62,7 @@ export function CategoryBlock({
         </span>
       </div>
 
-      <div className="absolute bottom-3 right-3 flex h-7 w-7 items-center justify-center rounded-full border border-paper/40 text-xs text-paper opacity-0 transition group-hover:opacity-100">
+      <div className="glass-control absolute bottom-3 right-3 flex h-7 w-7 items-center justify-center text-xs opacity-0 transition group-hover:opacity-100">
         ↗
       </div>
     </Link>

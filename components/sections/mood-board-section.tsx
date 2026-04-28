@@ -14,7 +14,7 @@ type MoodBoardSectionProps = {
 
 export function MoodBoardSection({ cards }: MoodBoardSectionProps) {
   return (
-    <section className="border-b-frame border-ink bg-[linear-gradient(180deg,rgba(255,255,255,0.42),rgba(232,224,210,0.22))] dark:bg-paper pt-14 sm:pt-16 md:pt-section">
+    <section className="pt-14 sm:pt-16 md:pt-section">
       <Reveal className="px-5 pb-7 sm:px-6 md:px-10">
         <SectionHeading
           eyebrow="01 — 情绪版"

@@ -131,7 +131,7 @@ function ExploreSummary({
   totalPages: number;
 }) {
   return (
-    <div className="grid gap-2 border border-ink/10 bg-paper/70 px-4 py-4 text-[10px] uppercase tracking-[0.2em] text-muted sm:max-w-[18rem]">
+    <div className="glass-surface-soft grid gap-2 px-4 py-4 text-[10px] uppercase tracking-[0.2em] text-muted sm:max-w-[18rem]">
       <span>
         共 {total} 件 · 第 {page}/{totalPages} 页
       </span>
@@ -149,14 +149,14 @@ function ExploreSummary({
 
 function ExploreCardSkeleton() {
   return (
-    <div className="overflow-hidden border-frame border-ink bg-paper">
-      <div className="aspect-[4/5] animate-pulse border-b-frame border-ink bg-ink/5" />
+    <div className="glass-surface-soft overflow-hidden p-3">
+      <div className="aspect-[4/5] animate-pulse rounded-[22px] bg-ink/5" />
       <div className="space-y-3 px-3.5 py-3.5 sm:px-4 sm:py-4">
-        <div className="h-5 animate-pulse bg-ink/5" />
-        <div className="h-3 w-1/2 animate-pulse bg-ink/5" />
+        <div className="h-5 animate-pulse rounded-full bg-ink/5" />
+        <div className="h-3 w-1/2 animate-pulse rounded-full bg-ink/5" />
         <div className="flex gap-2">
-          <span className="h-6 w-16 animate-pulse border border-ink/10 bg-ink/5" />
-          <span className="h-6 w-12 animate-pulse border border-ink/10 bg-ink/5" />
+          <span className="h-6 w-16 animate-pulse rounded-full bg-ink/5" />
+          <span className="h-6 w-12 animate-pulse rounded-full bg-ink/5" />
         </div>
       </div>
     </div>
@@ -173,16 +173,14 @@ export function ExploreCatalogLoading({
     : "按关键词、标签、分类、动态壁纸和热度筛选壁纸目录。结果优先读取真实数据，并兼容 AI 标签与人工标签。";
 
   return (
-    <section className="relative overflow-hidden border-b-frame border-ink px-5 py-8 sm:px-6 md:px-10 md:py-12">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_16%,rgba(245,200,66,0.12),transparent_18%),radial-gradient(circle_at_88%_14%,rgba(212,43,43,0.08),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.14),transparent_40%)]" />
-
+    <section className="glass-panel-grid relative overflow-hidden px-5 pb-8 pt-24 sm:px-6 md:px-10 md:pb-12 md:pt-28">
       <div className="relative mx-auto max-w-7xl">
         <p className="mb-3 text-[10px] uppercase tracking-[0.35em] text-red">
           Explore
         </p>
-        <div className="flex flex-col gap-5 border-b border-ink/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-5 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-4xl">
-            <h1 className="font-display text-[clamp(2rem,5vw,3.6rem)] leading-tight tracking-normal">
+            <h1 className="font-body text-[clamp(2rem,5vw,3.6rem)] font-semibold leading-tight tracking-normal">
               {heading}
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">
@@ -300,16 +298,14 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
     : "按关键词、标签、分类、动态壁纸和热度筛选壁纸目录。结果优先读取真实数据，并兼容 AI 标签与人工标签。";
 
   return (
-    <section className="relative overflow-hidden border-b-frame border-ink px-5 py-8 sm:px-6 md:px-10 md:py-12">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_16%,rgba(245,200,66,0.12),transparent_18%),radial-gradient(circle_at_88%_14%,rgba(212,43,43,0.08),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.14),transparent_40%)]" />
-
+    <section className="glass-panel-grid relative overflow-hidden px-5 pb-8 pt-24 sm:px-6 md:px-10 md:pb-12 md:pt-28">
       <div className="relative mx-auto max-w-7xl">
         <p className="mb-3 text-[10px] uppercase tracking-[0.35em] text-red">
           Explore
         </p>
-        <div className="flex flex-col gap-5 border-b border-ink/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-5 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-4xl">
-            <h1 className="font-display text-[clamp(2rem,5vw,3.6rem)] leading-tight tracking-normal">
+            <h1 className="font-body text-[clamp(2rem,5vw,3.6rem)] font-semibold leading-tight tracking-normal">
               {heading}
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">
@@ -330,26 +326,26 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
 
         <form
           action={category ? `/explore/${category.slug}` : "/explore"}
-          className="bg-paper/78 mt-6 grid gap-3 border-frame border-ink p-3 lg:grid-cols-[1.2fr_0.8fr_auto]"
+          className="glass-surface-soft mt-6 grid gap-3 p-3 lg:grid-cols-[1.2fr_0.8fr_auto]"
           key={`${category?.slug ?? "all"}:${query}:${tag ?? ""}:${sort}:${featuredOnly}:${motionOnly}`}
           method="get"
         >
           <input
-            className="min-w-0 border border-ink/10 bg-transparent px-4 py-3 font-display text-[20px] italic outline-none placeholder:text-muted transition focus:border-ink focus:bg-paper/60"
+            className="glass-field min-w-0 px-4 py-3 text-[18px] outline-none placeholder:text-muted transition"
             defaultValue={query}
             name="q"
             placeholder="搜索标题、描述、AI 标签或创作者…"
             type="text"
           />
           <input
-            className="min-w-0 border border-ink/10 bg-transparent px-4 py-3 font-mono text-[11px] uppercase tracking-[0.2em] outline-none placeholder:text-muted transition focus:border-ink focus:bg-paper/60"
+            className="glass-field min-w-0 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.2em] outline-none placeholder:text-muted transition"
             defaultValue={tag}
             name="tag"
             placeholder="标签，如 自然 / 赛博 / 晨雾"
             type="text"
           />
           <button
-            className="border border-ink bg-ink px-5 py-3 font-mono text-[12px] uppercase tracking-[0.22em] text-paper transition hover:bg-red focus-visible:outline-none focus-visible:bg-red"
+            className="glass-primary px-5 py-3 font-mono text-[12px] uppercase tracking-[0.22em] focus-visible:outline-none"
             type="submit"
           >
             搜索目录
@@ -389,7 +385,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             ].map((topic) => (
               <Link
                 key={topic}
-                className="border border-ink/10 bg-paper/50 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:border-ink hover:text-ink"
+                className="glass-chip px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:text-ink"
                 href={buildExploreHref(category?.slug, {
                   tag: topic,
                   sort,
@@ -407,8 +403,8 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
           <Link
             className={
               category
-                ? "border-frame border-ink bg-transparent px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-ink transition hover:bg-ink hover:text-paper"
-                : "border-frame border-ink bg-ink px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-paper"
+                ? "glass-chip px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-ink transition hover:text-red"
+                : "glass-chip-active px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
             }
             href={buildExploreHref(undefined, {
               q: query || undefined,
@@ -428,8 +424,8 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                 key={item.slug}
                 className={
                   isActive
-                    ? "border-frame border-ink bg-ink px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-paper"
-                    : "border-frame border-ink bg-transparent px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-ink transition hover:bg-ink hover:text-paper"
+                    ? "glass-chip-active px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
+                    : "glass-chip px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-ink transition hover:text-red"
                 }
                 href={buildExploreHref(item.slug, {
                   q: query || undefined,
@@ -454,8 +450,8 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                 key={item.value}
                 className={
                   isActive
-                    ? "border border-gold/20 bg-gold/10 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-gold"
-                    : "border border-ink/10 bg-paper/60 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:border-ink hover:text-ink"
+                    ? "glass-chip-active px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
+                    : "glass-chip px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-ink"
                 }
                 href={buildExploreHref(category?.slug, {
                   q: query || undefined,
@@ -473,8 +469,8 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
           <Link
             className={
               motionOnly
-                ? "border border-gold/20 bg-gold/10 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-gold"
-                : "border border-ink/10 bg-paper/60 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:border-ink hover:text-ink"
+                ? "glass-chip-active px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
+                : "glass-chip px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-ink"
             }
             href={buildExploreHref(category?.slug, {
               q: query || undefined,
@@ -489,8 +485,8 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
           <Link
             className={
               featuredOnly
-                ? "border border-red/20 bg-red/10 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-red"
-                : "border border-ink/10 bg-paper/60 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:border-ink hover:text-ink"
+                ? "glass-chip-active px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
+                : "glass-chip px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-ink"
             }
             href={buildExploreHref(category?.slug, {
               q: query || undefined,
@@ -511,7 +507,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             </span>
             {query ? (
               <Link
-                className="inline-flex items-center gap-2 border border-ink/20 bg-paper/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:border-red hover:text-red"
+                className="glass-chip inline-flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:text-red"
                 href={buildExploreHref(category?.slug, {
                   tag,
                   sort,
@@ -528,7 +524,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             ) : null}
             {tag ? (
               <Link
-                className="inline-flex items-center gap-2 border border-ink/20 bg-paper/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:border-red hover:text-red"
+                className="glass-chip inline-flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:text-red"
                 href={buildExploreHref(category?.slug, {
                   q: query || undefined,
                   sort,
@@ -545,7 +541,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             ) : null}
             {category ? (
               <Link
-                className="inline-flex items-center gap-2 border border-ink/20 bg-paper/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:border-red hover:text-red"
+                className="glass-chip inline-flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-ink transition hover:text-red"
                 href={buildExploreHref(undefined, {
                   q: query || undefined,
                   tag,
@@ -563,7 +559,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             ) : null}
             {featuredOnly ? (
               <Link
-                className="inline-flex items-center gap-2 border border-red/20 bg-red/5 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-red transition hover:bg-red/10"
+                className="glass-chip-active inline-flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em]"
                 href={buildExploreHref(category?.slug, {
                   q: query || undefined,
                   tag,
@@ -581,7 +577,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             ) : null}
             {motionOnly ? (
               <Link
-                className="inline-flex items-center gap-2 border border-gold/20 bg-gold/5 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-gold transition hover:bg-gold/10"
+                className="glass-chip-active inline-flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em]"
                 href={buildExploreHref(category?.slug, {
                   q: query || undefined,
                   tag,
@@ -607,7 +603,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
         ) : null}
 
         {error ? (
-          <div className="mt-10 flex flex-col items-center gap-6 border-frame border-ink px-6 py-16 text-center">
+          <div className="glass-surface mt-10 flex flex-col items-center gap-6 px-6 py-16 text-center">
             <span className="select-none font-mono text-[40px] leading-none text-red/30">
               [!]
             </span>
@@ -620,7 +616,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
               </p>
             </div>
             <button
-              className="border-frame border-ink px-5 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper"
+              className="glass-control px-5 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition"
               onClick={() => {
                 setRetryNonce((value) => value + 1);
               }}
@@ -650,13 +646,13 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             </div>
 
             {totalPages > 1 ? (
-              <div className="mt-12 flex items-center justify-between border-t border-ink/10 pt-8">
+              <div className="mt-12 flex items-center justify-between pt-8">
                 <Link
                   aria-disabled={page <= 1}
                   className={
                     !hasPreviousPage
-                      ? "pointer-events-none border border-ink/10 px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/25"
-                      : "border-frame border-ink px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper"
+                      ? "glass-chip pointer-events-none px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/25"
+                      : "glass-control px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition"
                   }
                   href={buildExploreHref(category?.slug, {
                     q: query || undefined,
@@ -690,8 +686,8 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                         key={pageNum}
                         className={
                           pageNum === currentPage
-                            ? "flex h-9 w-9 items-center justify-center border-frame border-ink bg-ink font-mono text-[10px] text-paper"
-                            : "flex h-9 w-9 items-center justify-center border border-ink/10 font-mono text-[10px] text-muted transition hover:border-ink hover:text-ink"
+                            ? "glass-chip-active flex h-9 w-9 items-center justify-center font-mono text-[10px]"
+                            : "glass-chip flex h-9 w-9 items-center justify-center font-mono text-[10px] text-muted transition hover:text-ink"
                         }
                         href={buildExploreHref(category?.slug, {
                           q: query || undefined,
@@ -712,8 +708,8 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                   aria-disabled={!hasNextPage}
                   className={
                     !hasNextPage
-                      ? "pointer-events-none border border-ink/10 px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/25"
-                      : "border-frame border-ink px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper"
+                      ? "glass-chip pointer-events-none px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/25"
+                      : "glass-control px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition"
                   }
                   href={buildExploreHref(category?.slug, {
                     q: query || undefined,
@@ -730,7 +726,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             ) : null}
           </>
         ) : (
-          <div className="mt-10 flex flex-col items-center gap-6 border-frame border-ink px-6 py-16 text-center">
+          <div className="glass-surface mt-10 flex flex-col items-center gap-6 px-6 py-16 text-center">
             <span className="select-none font-mono text-[40px] leading-none text-ink/10">
               [ ]
             </span>
@@ -743,7 +739,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
               </p>
             </div>
             <Link
-              className="border-frame border-ink px-5 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper"
+              className="glass-control px-5 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition"
               href={buildExploreHref(undefined, {})}
             >
               清空筛选

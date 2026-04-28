@@ -39,21 +39,21 @@ export function DownloadHistoryList({ items }: DownloadHistoryListProps) {
         return (
           <Link
             key={item.id}
-            className="group grid gap-4 border-frame border-ink bg-paper/75 p-4 transition duration-card hover:-translate-y-0.5 hover:shadow-paper md:grid-cols-[120px_1fr]"
+            className="glass-surface-soft group grid gap-4 p-4 transition duration-card hover:-translate-y-0.5 md:grid-cols-[120px_1fr]"
             href={`/wallpaper/${item.wallpaper.slug}`}
           >
             <div
-              className="aspect-[3/4] border-frame border-ink"
+              className="aspect-[3/4] rounded-[20px]"
               style={artworkStyle}
             />
 
             <div className="flex flex-col justify-between gap-4">
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="font-display text-[28px] leading-none italic text-ink">
+                  <p className="font-body text-[24px] font-semibold leading-none text-ink">
                     {displayTitle}
                   </p>
-                  <span className="border border-ink/10 bg-paper px-3 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+                  <span className="glass-chip px-3 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
                     {item.variant ?? "original"}
                   </span>
                 </div>

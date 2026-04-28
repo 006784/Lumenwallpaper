@@ -60,15 +60,13 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
         );
 
   return (
-    <section className="relative overflow-hidden border-b-frame border-ink px-4 py-16 md:px-10 md:py-24">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(245,200,66,0.16),transparent_18%),radial-gradient(circle_at_84%_20%,rgba(212,43,43,0.06),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.16),transparent_42%)]" />
-
+    <section className="glass-panel-grid relative overflow-hidden px-4 pb-16 pt-24 md:px-10 md:pb-24 md:pt-28">
       <div className="relative mx-auto max-w-7xl">
         <Reveal y={18} duration={0.55}>
           <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
             Library
           </p>
-          <h1 className="max-w-4xl font-display text-[clamp(2.5rem,7vw,5rem)] leading-[0.94] tracking-[-0.05em]">
+          <h1 className="max-w-4xl font-body text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02]">
             你的收藏与下载记录
           </h1>
           <p className="mt-6 max-w-3xl text-sm leading-7 text-muted md:text-base">
@@ -76,19 +74,19 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3 text-[10px] uppercase tracking-[0.24em] text-muted">
-            <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+            <span className="glass-chip px-3 py-2">
               @{currentUser.username}
             </span>
-            <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+            <span className="glass-chip px-3 py-2">
               收藏 {library.favorites.length}
             </span>
-            <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+            <span className="glass-chip px-3 py-2">
               下载记录 {library.downloadHistory.length}
             </span>
-            <span className="border border-gold/20 bg-gold/5 px-3 py-2 text-gold">
+            <span className="glass-chip px-3 py-2 text-red">
               未读通知 {library.unreadNotificationsCount}
             </span>
-            <span className="border border-red/20 bg-red/5 px-3 py-2 text-red">
+            <span className="glass-chip-active px-3 py-2">
               {library.collection?.name ?? "个人库"}
             </span>
           </div>
@@ -96,12 +94,12 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
         <div className="mt-14 grid gap-14">
           <section>
-            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-ink/10 pb-4">
+            <div className="flex flex-wrap items-end justify-between gap-4 pb-4">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.32em] text-red">
                   通知中心
                 </p>
-                <h2 className="mt-2 font-display text-[34px] italic leading-none">
+                <h2 className="mt-2 font-body text-[32px] font-semibold leading-none">
                   审核与系统动态
                 </h2>
               </div>
@@ -114,8 +112,8 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
               <Link
                 className={`border px-3 py-2 transition ${
                   notificationKindFilter === "all"
-                    ? "border-ink bg-ink text-paper"
-                    : "border-ink/15 bg-paper text-muted hover:bg-ink hover:text-paper"
+                    ? "glass-chip-active"
+                    : "glass-chip text-muted hover:text-ink"
                 }`}
                 href="/library"
               >
@@ -126,8 +124,8 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
                   key={kind}
                   className={`border px-3 py-2 transition ${
                     notificationKindFilter === kind
-                      ? "border-ink bg-ink text-paper"
-                      : "border-ink/15 bg-paper text-muted hover:bg-ink hover:text-paper"
+                      ? "glass-chip-active"
+                      : "glass-chip text-muted hover:text-ink"
                   }`}
                   href={`/library?kind=${encodeURIComponent(kind)}`}
                 >
@@ -141,19 +139,19 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
                 <NotificationList items={filteredNotifications} />
               </div>
             ) : (
-              <div className="mt-8 border-frame border-ink bg-paper/65 px-6 py-12 text-sm leading-7 text-muted">
+              <div className="glass-surface-soft mt-8 px-6 py-12 text-sm leading-7 text-muted">
                 当前筛选条件下还没有通知。等审核结果或系统提醒出现后，这里会自动开始累计。
               </div>
             )}
           </section>
 
           <section>
-            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-ink/10 pb-4">
+            <div className="flex flex-wrap items-end justify-between gap-4 pb-4">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.32em] text-red">
                   收藏夹
                 </p>
-                <h2 className="mt-2 font-display text-[34px] italic leading-none">
+                <h2 className="mt-2 font-body text-[32px] font-semibold leading-none">
                   你想留下来的画面
                 </h2>
               </div>
@@ -169,19 +167,19 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
                 ))}
               </div>
             ) : (
-              <div className="mt-8 border-frame border-ink bg-paper/65 px-6 py-12 text-sm leading-7 text-muted">
+              <div className="glass-surface-soft mt-8 px-6 py-12 text-sm leading-7 text-muted">
                 你还没有收藏任何壁纸。去任意详情页点一下&ldquo;加入收藏&rdquo;，这里就会立刻出现。
               </div>
             )}
           </section>
 
           <section>
-            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-ink/10 pb-4">
+            <div className="flex flex-wrap items-end justify-between gap-4 pb-4">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.32em] text-red">
                   下载历史
                 </p>
-                <h2 className="mt-2 font-display text-[34px] italic leading-none">
+                <h2 className="mt-2 font-body text-[32px] font-semibold leading-none">
                   你最近带走的作品
                 </h2>
               </div>
@@ -195,7 +193,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
                 <DownloadHistoryList items={library.downloadHistory} />
               </div>
             ) : (
-              <div className="mt-8 border-frame border-ink bg-paper/65 px-6 py-12 text-sm leading-7 text-muted">
+              <div className="glass-surface-soft mt-8 px-6 py-12 text-sm leading-7 text-muted">
                 还没有下载记录。等你第一次下载原图之后，这里会自动开始累计。
               </div>
             )}

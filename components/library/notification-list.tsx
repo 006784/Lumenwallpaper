@@ -115,7 +115,7 @@ export function NotificationList({ items }: NotificationListProps) {
       {unreadCount > 0 ? (
         <div className="flex justify-end">
           <button
-            className="inline-flex border border-red/20 bg-red/5 px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-red transition hover:bg-red hover:text-paper disabled:cursor-not-allowed disabled:opacity-50"
+            className="glass-chip-active inline-flex px-3 py-2 text-[10px] uppercase tracking-[0.22em] transition disabled:cursor-not-allowed disabled:opacity-50"
             disabled={busyId === "all"}
             onClick={() => void markAllAsRead()}
             type="button"
@@ -127,13 +127,13 @@ export function NotificationList({ items }: NotificationListProps) {
       {notifications.map((item) => (
         <article
           key={item.id}
-          className={`grid gap-4 border-frame border-ink px-4 py-4 transition duration-card md:grid-cols-[1fr_auto] ${
-            item.readAt ? "bg-paper/60" : "bg-red/5"
+          className={`glass-surface-soft grid gap-4 px-4 py-4 transition duration-card md:grid-cols-[1fr_auto] ${
+            item.readAt ? "" : "ring-1 ring-red/20"
           }`}
         >
           <div>
             <div className="flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-[0.22em]">
-              <span className="border border-ink/10 bg-paper px-3 py-2 text-muted">
+              <span className="glass-chip px-3 py-2 text-muted">
                 {item.kind.replace(/_/g, " ")}
               </span>
               <span className="text-muted">{formatCreatedAt(item.createdAt)}</span>
@@ -143,7 +143,7 @@ export function NotificationList({ items }: NotificationListProps) {
                 <span className="text-red">未读</span>
               )}
             </div>
-            <p className="mt-3 font-display text-[28px] italic leading-none text-ink">
+            <p className="mt-3 font-body text-[24px] font-semibold leading-none text-ink">
               {item.title}
             </p>
             <p className="mt-3 text-sm leading-6 text-muted">{item.body}</p>
@@ -152,7 +152,7 @@ export function NotificationList({ items }: NotificationListProps) {
           <div className="flex flex-wrap items-center gap-3 md:justify-end">
             {item.href ? (
               <Link
-                className="inline-flex border border-ink/15 bg-paper px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-muted transition hover:bg-ink hover:text-paper"
+                className="glass-chip inline-flex px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-muted transition hover:text-ink"
                 href={item.href}
               >
                 查看详情
@@ -160,7 +160,7 @@ export function NotificationList({ items }: NotificationListProps) {
             ) : null}
             {!item.readAt ? (
               <button
-                className="inline-flex border border-red/20 bg-red/5 px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-red transition hover:bg-red hover:text-paper disabled:cursor-not-allowed disabled:opacity-50"
+                className="glass-chip-active inline-flex px-3 py-2 text-[10px] uppercase tracking-[0.22em] transition disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={busyId === item.id}
                 onClick={() => void markAsRead(item.id)}
                 type="button"

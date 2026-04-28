@@ -12,7 +12,7 @@ export function SectionHeading({ eyebrow, hint, title }: SectionHeadingProps) {
           <span className="h-px w-6 bg-current opacity-40" />
           {eyebrow}
         </p>
-        <div className="font-display text-[clamp(1.95rem,8vw,4rem)] leading-[0.96] tracking-[-0.05em]">
+        <div className="font-body text-[clamp(1.95rem,8vw,4rem)] font-semibold leading-[1.02]">
           {title}
         </div>
       </div>

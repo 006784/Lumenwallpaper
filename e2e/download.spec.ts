@@ -81,15 +81,29 @@ test.describe("壁纸浏览与下载", () => {
     const ratioButton = page.getByRole("button", { name: "9:16" }).first();
     await ratioButton.click();
 
-    const webpBackground = await webpButton.evaluate((node) => {
-      return window.getComputedStyle(node).backgroundColor;
+    const webpStyles = await webpButton.evaluate((node) => {
+      const styles = window.getComputedStyle(node);
+      return {
+        backgroundImage: styles.backgroundImage,
+        borderRadius: styles.borderRadius,
+        color: styles.color,
+      };
     });
-    const ratioBackground = await ratioButton.evaluate((node) => {
-      return window.getComputedStyle(node).backgroundColor;
+    const ratioStyles = await ratioButton.evaluate((node) => {
+      const styles = window.getComputedStyle(node);
+      return {
+        backgroundImage: styles.backgroundImage,
+        borderRadius: styles.borderRadius,
+        color: styles.color,
+      };
     });
 
-    expect(webpBackground).toBe("rgb(10, 8, 4)");
-    expect(ratioBackground).toBe("rgb(212, 43, 43)");
+    expect(webpStyles.backgroundImage).toContain("linear-gradient");
+    expect(webpStyles.color).toBe("rgb(255, 255, 255)");
+    expect(Number.parseFloat(webpStyles.borderRadius)).toBeGreaterThan(10);
+    expect(ratioStyles.backgroundImage).toContain("linear-gradient");
+    expect(ratioStyles.color).toBe("rgb(255, 255, 255)");
+    expect(Number.parseFloat(ratioStyles.borderRadius)).toBeGreaterThan(10);
     await expect(page.getByText("下载壁纸")).toBeVisible();
   });
 
@@ -175,16 +189,16 @@ test.describe("壁纸浏览与下载", () => {
     await expect
       .poll(async () => {
         return webpButton.evaluate((node) => {
-          return window.getComputedStyle(node).backgroundColor;
+          return window.getComputedStyle(node).backgroundImage;
         });
       })
-      .toBe("rgb(10, 8, 4)");
+      .toContain("linear-gradient");
     await expect
       .poll(async () => {
         return ratioButton.evaluate((node) => {
-          return window.getComputedStyle(node).backgroundColor;
+          return window.getComputedStyle(node).backgroundImage;
         });
       })
-      .toBe("rgb(212, 43, 43)");
+      .toContain("linear-gradient");
   });
 });

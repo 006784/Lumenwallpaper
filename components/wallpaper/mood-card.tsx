@@ -43,7 +43,7 @@ export function MoodCard({ card }: MoodCardProps) {
     <Link
       ref={ref}
       className={cn(
-        "group relative block shrink-0 overflow-hidden border-frame border-ink bg-paper dark:bg-paper2 shadow-[0_4px_20px_rgba(10,8,4,0.08)] transition-shadow duration-card will-change-transform hover:shadow-paper",
+        "glass-surface-soft group relative block shrink-0 overflow-hidden p-3 transition-shadow duration-card will-change-transform",
         SHAPE_CLASSES[card.shape],
       )}
       href={card.href}
@@ -51,7 +51,7 @@ export function MoodCard({ card }: MoodCardProps) {
       onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
     >
-      <div className="absolute inset-0 transition-transform duration-card ease-out group-hover:scale-[1.06]">
+      <div className="absolute inset-3 overflow-hidden rounded-[22px] transition-transform duration-card ease-out group-hover:scale-[1.04]">
         <WallpaperCoverImage
           alt={card.name}
           sources={card.coverSources}
@@ -59,7 +59,7 @@ export function MoodCard({ card }: MoodCardProps) {
           sizes="(max-width: 640px) 50vw, 25vw"
           src={card.previewUrl}
         />
-        <div className="absolute inset-0 bg-[rgba(10,8,4,0.12)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(23,79,80,0.16))]" />
       </div>
 
       {card.videoUrl ? (
@@ -69,23 +69,23 @@ export function MoodCard({ card }: MoodCardProps) {
         />
       ) : null}
 
-      <div className="absolute left-3 top-3 font-mono text-xs tracking-[0.2em] text-paper/55">
+      <div className="glass-chip absolute left-5 top-5 px-2 py-1 font-mono text-xs tracking-[0.2em] text-ink/70">
         {card.number}
       </div>
 
       {card.videoUrl ? (
-        <div className="absolute left-3 top-10 border border-paper/20 bg-black/35 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.22em] text-paper/70 backdrop-blur-sm">
+        <div className="glass-chip absolute left-5 top-14 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.22em] text-ink backdrop-blur-sm">
           Motion
         </div>
       ) : null}
 
-      <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center border-frame border-ink bg-paper text-sm opacity-100 transition-[background-color,opacity] duration-hover hover:bg-gold md:opacity-0 md:group-hover:opacity-100">
+      <div className="glass-control absolute right-5 top-5 flex h-9 w-9 items-center justify-center text-sm opacity-100 transition-[background-color,opacity] duration-hover md:opacity-0 md:group-hover:opacity-100">
         ↓
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-4 pb-4 pt-8 md:translate-y-[110%] md:transition-transform md:duration-info md:ease-[var(--ease-film)] md:group-hover:translate-y-0">
-        <p className="font-display text-[20px] italic text-paper">{card.name}</p>
-        <p className="mt-1 text-[9px] uppercase tracking-[0.28em] text-paper/65">
+      <div className="absolute inset-x-3 bottom-3 rounded-[20px] bg-white/72 px-4 pb-4 pt-5 shadow-[0_12px_24px_rgba(37,58,62,0.12)] backdrop-blur md:translate-y-[112%] md:transition-transform md:duration-info md:ease-[var(--ease-film)] md:group-hover:translate-y-0">
+        <p className="font-body text-[18px] font-semibold text-ink">{card.name}</p>
+        <p className="mt-1 text-[9px] uppercase tracking-[0.28em] text-muted">
           {card.meta}
         </p>
         {card.aiTags && card.aiTags.length > 0 ? (
@@ -93,7 +93,7 @@ export function MoodCard({ card }: MoodCardProps) {
             {card.aiTags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="border border-paper/20 px-1.5 py-0.5 text-[7px] uppercase tracking-[0.22em] text-paper/45"
+                className="glass-chip px-1.5 py-0.5 text-[7px] uppercase tracking-[0.22em] text-muted"
               >
                 {tag}
               </span>

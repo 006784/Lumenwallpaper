@@ -41,7 +41,7 @@ export function MobileNav({
       <button
         aria-expanded={isOpen}
         aria-label={isOpen ? "关闭菜单" : "打开菜单"}
-        className="relative flex h-10 w-10 flex-col items-center justify-center gap-[5px] md:hidden"
+        className="glass-control relative flex h-10 w-10 flex-col items-center justify-center gap-[5px] md:hidden"
         type="button"
         onClick={() => setIsOpen((v) => !v)}
       >
@@ -72,21 +72,21 @@ export function MobileNav({
           onClick={() => setIsOpen(false)}
         >
           {/* 半透明遮罩 */}
-          <div className="absolute inset-0 bg-ink/30 dark:bg-black/55 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-ink/20 backdrop-blur-md dark:bg-black/45" />
 
           {/* 菜单主体 */}
           <nav
-            className="absolute inset-x-0 top-nav border-b border-ink bg-paper shadow-[0_12px_40px_rgba(10,8,4,0.18)]"
+            className="glass-surface absolute inset-x-3 top-[86px] overflow-hidden px-2 py-2"
             onClick={(e) => e.stopPropagation()}
           >
             {/* 主导航 */}
-            <div className="border-b border-ink/10 px-5 py-4">
+            <div className="px-3 py-3">
               {navLinks.map((link, i) => (
                 <Link
                   key={link.label}
                   className={cn(
-                    "flex items-center justify-between py-4 text-[13px] uppercase tracking-[0.22em] text-ink transition hover:text-red",
-                    i > 0 && "border-t border-ink/8",
+                    "flex items-center justify-between rounded-2xl px-3 py-4 text-[13px] uppercase tracking-[0.18em] text-ink transition hover:bg-white/45 hover:text-red",
+                    i > 0 && "border-t border-ink/5",
                   )}
                   href={link.href}
                   onClick={handleLinkClick}
@@ -98,7 +98,7 @@ export function MobileNav({
             </div>
 
             {/* 账号区 */}
-            <div className="px-5 py-4">
+            <div className="border-t border-white/55 px-3 py-4">
               {currentUsername ? (
                 <div className="space-y-3">
                   <Link
@@ -140,7 +140,7 @@ export function MobileNav({
                     </span>
                     <form action="/api/auth/signout" className="ml-auto" method="post">
                       <button
-                        className="border border-ink/20 px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-muted transition hover:border-ink hover:text-ink"
+                      className="glass-control px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-muted transition hover:text-ink"
                         type="submit"
                       >
                         退出

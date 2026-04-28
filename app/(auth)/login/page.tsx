@@ -34,13 +34,12 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <section className="relative overflow-hidden border-b-frame border-ink px-4 py-16 md:px-10 md:py-24">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_18%,rgba(245,200,66,0.18),transparent_18%),radial-gradient(circle_at_86%_24%,rgba(212,43,43,0.08),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.2),transparent_42%)]" />
+    <section className="glass-panel-grid relative overflow-hidden px-4 pb-16 pt-24 md:px-10 md:pb-24 md:pt-28">
       <div className="relative mx-auto max-w-7xl">
         <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
           Auth
         </p>
-        <h1 className="max-w-3xl font-display text-[clamp(2.4rem,7vw,5rem)] leading-[0.94] tracking-[-0.05em]">
+        <h1 className="max-w-3xl font-body text-[clamp(2.4rem,7vw,5rem)] font-semibold leading-[1.02]">
           用邮箱接回你的 Lumen 身份
         </h1>
         <p className="mt-6 max-w-3xl text-sm leading-7 text-muted md:text-base">
@@ -48,14 +47,14 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
         </p>
 
         <div className="mt-8 flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.24em] text-muted">
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+          <span className="glass-chip px-3 py-2">
             一次性链接
           </span>
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+          <span className="glass-chip px-3 py-2">
             HttpOnly Session
           </span>
           {redirectPath !== "/" ? (
-            <span className="border border-red/20 bg-red/5 px-3 py-2 text-red">
+            <span className="glass-chip-active px-3 py-2">
               登录后将返回 {redirectPath}
             </span>
           ) : null}

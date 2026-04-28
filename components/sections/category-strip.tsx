@@ -13,9 +13,9 @@ export function CategoryStrip() {
   return (
     <section
       ref={ref}
-      className="scrollbar-none cursor-grab overflow-x-auto border-b-frame border-ink"
+      className="scrollbar-none cursor-grab overflow-x-auto px-4 py-4 md:px-10"
     >
-      <div className="flex w-max min-w-full">
+      <div className="glass-surface flex w-max min-w-full overflow-hidden">
         {categories.map((category, index) => (
           <CategoryBlock
             key={category.label}

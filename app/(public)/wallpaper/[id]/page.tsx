@@ -154,8 +154,8 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
 
   return (
     <>
-      <section className="border-b-frame border-ink px-5 py-8 sm:px-6 md:px-10 md:py-12">
-        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
+      <section className="glass-panel-grid px-5 pb-8 pt-24 sm:px-6 md:px-10 md:pb-12 md:pt-28">
+        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.14fr_0.86fr] lg:gap-10">
           {wallpaper.videoUrl ? (
             <WallpaperVideoPlayer
               posterUrl={posterUrl}
@@ -165,13 +165,13 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
           ) : (
             <div
               aria-label={displayTitle}
-              className="relative h-[min(74vh,820px)] min-h-[420px] w-full overflow-hidden border-frame border-ink bg-paper/65 lg:sticky lg:top-24"
+              className="glass-surface relative h-[min(74vh,820px)] min-h-[420px] w-full overflow-hidden p-3 lg:sticky lg:top-24"
               role="img"
             >
               <WallpaperCoverImage
                 alt={displayTitle}
                 gradient={gradientKey}
-                imageClassName="!object-contain bg-paper/70"
+                imageClassName="!object-contain rounded-[24px] bg-white/45"
                 loading="eager"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 sources={coverSources}
@@ -179,11 +179,11 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
               />
             </div>
           )}
-          <div>
+          <div className="glass-surface-soft self-start px-5 py-6 md:px-7 md:py-7">
             <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
               Wallpaper Detail
             </p>
-            <h1 className="font-display text-[clamp(2.1rem,5vw,3.8rem)] leading-[1.02] tracking-normal">
+            <h1 className="font-body text-[clamp(2.1rem,5vw,3.8rem)] font-semibold leading-[1.02] tracking-normal">
               {displayTitle}
             </h1>
 
@@ -216,19 +216,19 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
       </section>
 
       {relatedWallpapers.length > 0 ? (
-        <section className="border-b-frame border-ink bg-paper/45 px-5 py-10 sm:px-6 md:px-10 md:py-14">
+        <section className="px-5 py-10 sm:px-6 md:px-10 md:py-14">
           <div className="mx-auto max-w-6xl">
             <div className="mb-8 flex items-baseline justify-between gap-4">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.35em] text-red">
                   {relatedTag ? `更多 #${relatedTag}` : "热门推荐"}
                 </p>
-                <h2 className="mt-3 font-display text-[clamp(1.7rem,3vw,2.6rem)] leading-tight tracking-normal">
+                <h2 className="mt-3 font-body text-[clamp(1.7rem,3vw,2.6rem)] font-semibold leading-tight tracking-normal">
                   你可能也喜欢
                 </h2>
               </div>
               <a
-                className="shrink-0 text-[10px] uppercase tracking-[0.28em] text-muted underline-offset-4 transition hover:text-ink hover:underline"
+                className="glass-control shrink-0 px-4 py-2 text-[10px] uppercase tracking-[0.28em] text-muted transition hover:text-ink"
                 href={relatedTag ? `/explore?tag=${encodeURIComponent(relatedTag)}` : "/explore"}
               >
                 查看全部 ↗

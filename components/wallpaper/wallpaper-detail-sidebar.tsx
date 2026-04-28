@@ -373,7 +373,7 @@ export function WallpaperDetailSidebar({
 
   return (
     <>
-      <div className="mt-8 grid gap-3 border-t border-ink/10 pt-8 text-sm text-muted sm:grid-cols-2">
+      <div className="mt-8 grid gap-3 text-sm text-muted sm:grid-cols-2">
         <p>
           <span className="mr-2 uppercase tracking-[0.18em] text-ink">
             slug
@@ -420,7 +420,7 @@ export function WallpaperDetailSidebar({
               {tags.map((tag) => (
                 <Link
                   key={tag}
-                  className="border-frame border-ink/20 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:border-ink hover:text-ink focus-visible:border-ink focus-visible:text-ink focus-visible:outline-none"
+                  className="glass-chip px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:text-ink focus-visible:text-ink focus-visible:outline-none"
                   href={`/explore?tag=${encodeURIComponent(tag)}`}
                 >
                   {tag}
@@ -437,7 +437,7 @@ export function WallpaperDetailSidebar({
                 {aiTags.slice(0, 8).map((tag) => (
                   <Link
                     key={tag}
-                    className="border border-ink/10 bg-paper/50 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted/70 transition hover:border-ink/30 hover:text-muted focus-visible:border-ink/40 focus-visible:outline-none"
+                    className="glass-chip px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted/70 transition hover:text-muted focus-visible:outline-none"
                     href={`/explore?tag=${encodeURIComponent(tag)}`}
                   >
                     {tag}
@@ -460,7 +460,7 @@ export function WallpaperDetailSidebar({
               return (
                 <div
                   key={color}
-                  className="flex items-center gap-2 border border-ink/10 bg-paper/60 px-2.5 py-1.5"
+                  className="glass-chip flex items-center gap-2 px-2.5 py-1.5"
                   title={hex}
                 >
                   <span
@@ -478,7 +478,7 @@ export function WallpaperDetailSidebar({
       ) : null}
 
       {aiCaption ? (
-        <div className="border-ink/8 mt-6 border bg-paper/40 px-4 py-4">
+        <div className="glass-surface-soft mt-6 px-4 py-4">
           <p className="mb-2 text-[9px] uppercase tracking-[0.3em] text-muted/50">
             AI 描述
           </p>
@@ -488,8 +488,8 @@ export function WallpaperDetailSidebar({
 
       <div className="mt-10 space-y-4">
         {canDownload ? (
-          <div className="space-y-3 border border-ink/10 bg-paper/55 p-4 sm:p-5">
-            <div className="rounded-none border border-ink/10 bg-paper/70 px-4 py-3">
+          <div className="glass-surface-soft space-y-3 p-4 sm:p-5">
+            <div className="rounded-[18px] bg-white/45 px-4 py-3 shadow-[inset_4px_4px_10px_rgba(37,58,62,0.08),inset_-4px_-4px_10px_rgba(255,255,255,0.86)]">
               <p className="text-xs leading-6 text-muted">
                 进入暗房导出面板后，可切换原图、4K 与
                 WebP，选择裁切比例并缓存常用下载配置。
@@ -497,7 +497,7 @@ export function WallpaperDetailSidebar({
             </div>
             <button
               data-download-ready={isClientReady ? "true" : "false"}
-              className="inline-flex min-h-[48px] w-full justify-center border-frame border-ink bg-ink px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-paper transition hover:bg-red"
+              className="glass-primary inline-flex min-h-[48px] w-full justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em]"
               type="button"
               onClick={() => {
                 setFeedback(null);
@@ -533,10 +533,10 @@ export function WallpaperDetailSidebar({
                     : "加入收藏"
             }
             className={cn(
-              "inline-flex min-h-[48px] w-full justify-center border-frame px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] transition focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto",
+              "inline-flex min-h-[48px] w-full justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] transition focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto",
               isFavorited && !isPending
-                ? "border-gold bg-gold/10 text-ink hover:bg-gold/20"
-                : "border-ink bg-transparent text-ink hover:bg-ink hover:text-paper focus-visible:bg-ink focus-visible:text-paper",
+                ? "glass-chip-active"
+                : "glass-control text-ink",
             )}
             disabled={isPending}
             onClick={handleFavoriteClick}
@@ -551,14 +551,14 @@ export function WallpaperDetailSidebar({
                   : "加入收藏"}
           </button>
           <Link
-            className="inline-flex min-h-[48px] w-full justify-center border-frame border-ink bg-transparent px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper sm:w-auto"
+            className="glass-control inline-flex min-h-[48px] w-full justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition sm:w-auto"
             href="/explore"
           >
             返回探索
           </Link>
           {didHydrateAuthState && isSignedIn ? (
             <Link
-              className="inline-flex min-h-[48px] w-full justify-center border-frame border-ink bg-transparent px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper sm:w-auto"
+              className="glass-control inline-flex min-h-[48px] w-full justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition sm:w-auto"
               href="/library"
             >
               查看个人库

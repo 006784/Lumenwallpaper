@@ -29,12 +29,12 @@ export default function VerifyPage({ searchParams }: VerifyPageProps) {
     : null;
 
   return (
-    <section className="border-b-frame border-ink px-4 py-16 md:px-10 md:py-24">
-      <div className="mx-auto max-w-3xl border-frame border-ink bg-paper px-6 py-8 md:px-8 md:py-10">
+    <section className="glass-panel-grid px-4 py-24 md:px-10 md:py-28">
+      <div className="glass-surface mx-auto max-w-3xl px-6 py-8 md:px-8 md:py-10">
         <p className="text-[10px] uppercase tracking-[0.35em] text-red">
           Verify
         </p>
-        <h1 className="mt-4 font-display text-[clamp(2.2rem,6vw,4.2rem)] leading-[0.94] tracking-[-0.05em]">
+        <h1 className="mt-4 font-body text-[clamp(2.2rem,6vw,4.2rem)] font-semibold leading-[1.02]">
           {errorMessage ? "这个登录请求没有成功完成" : "登录链接已经发出"}
         </h1>
         <p className="mt-6 text-sm leading-7 text-muted md:text-base">
@@ -47,13 +47,13 @@ export default function VerifyPage({ searchParams }: VerifyPageProps) {
 
         <div className="mt-10 flex flex-wrap gap-3">
           <Link
-            className="inline-flex border-frame border-ink bg-ink px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-paper transition hover:bg-red"
+            className="glass-primary inline-flex px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em]"
             href="/login"
           >
             重新发送链接
           </Link>
           <Link
-            className="inline-flex border-frame border-ink bg-transparent px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper"
+            className="glass-control inline-flex px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition"
             href="/"
           >
             返回首页

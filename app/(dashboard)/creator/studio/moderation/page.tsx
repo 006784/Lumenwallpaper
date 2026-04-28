@@ -163,14 +163,12 @@ export default async function CreatorStudioModerationPage({
   const counts = await getWallpaperReportCounts();
 
   return (
-    <section className="relative overflow-hidden border-b-frame border-ink px-4 py-16 md:px-10 md:py-24">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_16%,rgba(245,200,66,0.12),transparent_18%),radial-gradient(circle_at_84%_18%,rgba(212,43,43,0.08),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.12),transparent_42%)]" />
-
+    <section className="glass-panel-grid relative overflow-hidden px-4 pb-16 pt-24 md:px-10 md:pb-24 md:pt-28">
       <div className="relative mx-auto max-w-7xl">
         <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
           Moderation Desk
         </p>
-        <h1 className="max-w-4xl font-display text-[clamp(2.5rem,7vw,5rem)] leading-[0.94] tracking-[-0.05em]">
+        <h1 className="max-w-4xl font-body text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02]">
           处理版权、敏感内容与误导性举报
         </h1>
         <p className="mt-6 max-w-3xl text-sm leading-7 text-muted md:text-base">
@@ -178,37 +176,37 @@ export default async function CreatorStudioModerationPage({
         </p>
 
         <div className="mt-8 flex flex-wrap gap-3 text-[10px] uppercase tracking-[0.24em] text-muted">
-          <span className="border border-red/20 bg-red/5 px-3 py-2 text-red">
+          <span className="glass-chip-active px-3 py-2">
             @{currentUser.username}
           </span>
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+          <span className="glass-chip px-3 py-2">
             Showing {reports.length}
           </span>
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+          <span className="glass-chip px-3 py-2">
             Editor Allowlist
           </span>
-          <span className="border border-gold/20 bg-gold/5 px-3 py-2 text-gold">
+          <span className="glass-chip px-3 py-2 text-red">
             Review Notes Enabled
           </span>
         </div>
 
         <form className="mt-8 grid gap-3 md:grid-cols-[1fr_240px_180px_auto]" method="get">
           <input
-            className="w-full border-frame border-ink bg-paper px-4 py-3 text-sm outline-none transition placeholder:text-muted/75 focus:border-red"
+            className="glass-field w-full px-4 py-3 text-sm outline-none transition placeholder:text-muted/75"
             defaultValue={searchQuery}
             name="q"
             placeholder="搜索标题、举报说明、举报邮箱"
             type="search"
           />
           <input
-            className="w-full border-frame border-ink bg-paper px-4 py-3 text-sm outline-none transition placeholder:text-muted/75 focus:border-red"
+            className="glass-field w-full px-4 py-3 text-sm outline-none transition placeholder:text-muted/75"
             defaultValue={creatorQuery}
             name="creator"
             placeholder="按创作者用户名过滤"
             type="search"
           />
           <select
-            className="w-full border-frame border-ink bg-paper px-4 py-3 text-sm outline-none transition focus:border-red"
+            className="glass-field w-full px-4 py-3 text-sm outline-none transition"
             defaultValue={reasonFilter}
             name="reason"
           >
@@ -220,7 +218,7 @@ export default async function CreatorStudioModerationPage({
           </select>
           <input name="status" type="hidden" value={statusFilter} />
           <button
-            className="inline-flex min-h-[48px] items-center justify-center border-frame border-ink bg-ink px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-paper transition hover:bg-red"
+            className="glass-primary inline-flex min-h-[48px] items-center justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em]"
             type="submit"
           >
             应用筛选
@@ -238,12 +236,12 @@ export default async function CreatorStudioModerationPage({
           ].map(([label, value, tone]) => (
             <div
               key={label}
-              className="border-frame border-ink bg-paper/72 px-4 py-4"
+              className="glass-surface-soft px-4 py-4"
             >
               <p className="text-[10px] uppercase tracking-[0.24em] text-muted">
                 {label}
               </p>
-              <p className={`mt-3 font-display text-[34px] italic ${tone}`}>
+              <p className={`mt-3 font-body text-[30px] font-semibold ${tone}`}>
                 {value}
               </p>
             </div>
@@ -280,8 +278,8 @@ export default async function CreatorStudioModerationPage({
                 key={filter.value}
                 className={`border px-3 py-2 transition ${
                   isActive
-                    ? "border-ink bg-ink text-paper"
-                    : "border-ink/15 bg-paper text-muted hover:bg-ink hover:text-paper"
+                    ? "glass-chip-active"
+                    : "glass-chip text-muted hover:text-ink"
                 }`}
                 href={href}
               >

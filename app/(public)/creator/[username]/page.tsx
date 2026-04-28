@@ -69,11 +69,11 @@ export async function generateStaticParams() {
 
 function StatCell({ value, label }: { value: string | number; label: string }) {
   return (
-    <div className="border-r border-paper/10 px-6 py-5 last:border-r-0 first:pl-0">
-      <p className="font-mono text-[28px] leading-none tracking-[-0.04em] text-paper">
+    <div className="px-6 py-5 first:pl-0">
+      <p className="font-mono text-[28px] leading-none text-ink">
         {value}
       </p>
-      <p className="mt-1 text-[9px] uppercase tracking-[0.3em] text-paper/40">
+      <p className="mt-1 text-[9px] uppercase tracking-[0.3em] text-muted">
         {label}
       </p>
     </div>
@@ -98,13 +98,13 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
   return (
     <>
       {/* ── 创作者头部（暗色） ── */}
-      <section className="border-b-frame border-ink bg-ink px-4 pb-12 pt-16 md:px-10 md:pt-20">
-        <div className="mx-auto max-w-6xl">
+      <section className="glass-panel-grid px-4 pb-12 pt-24 md:px-10 md:pt-28">
+        <div className="glass-surface mx-auto max-w-6xl px-5 py-8 md:px-8 md:py-10">
           <Reveal y={16} duration={0.5}>
             {/* 面包屑 */}
-            <div className="mb-8 flex items-center gap-2 text-[10px] uppercase tracking-[0.28em] text-paper/30">
+            <div className="mb-8 flex items-center gap-2 text-[10px] uppercase tracking-[0.28em] text-muted">
               <Link
-                className="transition hover:text-paper/60"
+                className="transition hover:text-ink"
                 href="/explore"
               >
                 探索
@@ -122,7 +122,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
             {/* 头像 + 名字 */}
             <div className="flex flex-col gap-6 md:flex-row md:items-end md:gap-10">
               {/* 头像 */}
-              <div className="relative h-20 w-20 shrink-0 overflow-hidden border border-paper/20 md:h-24 md:w-24">
+              <div className="glass-control relative h-20 w-20 shrink-0 overflow-hidden md:h-24 md:w-24">
                 {creator.avatarUrl ? (
                   <Image
                     src={creator.avatarUrl}
@@ -132,7 +132,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
                     sizes="96px"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-paper/5 font-display text-[36px] italic text-paper/40">
+                  <div className="flex h-full w-full items-center justify-center bg-white/45 font-body text-[36px] font-semibold text-ink/50">
                     {creator.username.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -140,22 +140,22 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
 
               {/* 名字 + bio */}
               <div className="flex-1">
-                <h1 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] italic leading-[0.92] tracking-[-0.05em] text-paper">
+                <h1 className="font-body text-[clamp(2.4rem,6vw,4.8rem)] font-semibold leading-[1.02] text-ink">
                   @{creator.username}
                 </h1>
                 {creator.bio ? (
-                  <p className="mt-4 max-w-2xl text-sm leading-7 text-paper/55">
+                  <p className="mt-4 max-w-2xl text-sm leading-7 text-muted">
                     {creator.bio}
                   </p>
                 ) : null}
-                <p className="mt-3 text-[10px] uppercase tracking-[0.28em] text-paper/25">
+                <p className="mt-3 text-[10px] uppercase tracking-[0.28em] text-muted">
                   自 {joinYear} 年加入
                 </p>
               </div>
             </div>
 
             {/* 统计横条 */}
-            <div className="mt-10 flex flex-wrap border-t border-paper/10 pt-2">
+            <div className="mt-10 flex flex-wrap pt-2">
               <StatCell value={formatCount(stats.totalWallpapers)} label="作品数" />
               <StatCell value={formatCount(stats.totalDownloads)} label="总下载" />
               <StatCell value={formatCount(stats.totalLikes)} label="获赞" />
@@ -195,8 +195,8 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
             </Reveal>
           ) : (
             <Reveal y={12} duration={0.5}>
-              <div className="border-frame border-ink bg-paper/40 px-8 py-16 text-center">
-                <p className="font-display text-[22px] italic text-muted">
+              <div className="glass-surface-soft px-8 py-16 text-center">
+                <p className="font-body text-[22px] font-semibold text-muted">
                   暂无公开作品
                 </p>
                 <p className="mt-3 text-[11px] uppercase tracking-[0.28em] text-muted/60">

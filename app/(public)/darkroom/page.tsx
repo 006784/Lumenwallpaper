@@ -22,16 +22,14 @@ export default async function DarkroomPage() {
   });
 
   return (
-    <section className="relative overflow-hidden border-b-frame border-ink px-4 py-16 md:px-10 md:py-24">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_16%,rgba(212,43,43,0.08),transparent_18%),radial-gradient(circle_at_82%_14%,rgba(10,8,4,0.12),transparent_18%),linear-gradient(180deg,rgba(255,255,255,0.08),transparent_48%)]" />
-
+    <section className="glass-panel-grid relative overflow-hidden px-4 pb-16 pt-24 md:px-10 md:pb-24 md:pt-28">
       <div className="relative mx-auto max-w-7xl">
         <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
           Darkroom
         </p>
-        <div className="grid gap-8 border-b border-ink/10 pb-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="grid gap-8 pb-8 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
-            <h1 className="font-display text-[clamp(2.5rem,7vw,5rem)] leading-[0.94] tracking-[-0.05em]">
+            <h1 className="font-body text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02]">
               编辑挑出的暗室精选
             </h1>
             <p className="mt-6 max-w-3xl text-sm leading-7 text-muted md:text-base">
@@ -39,7 +37,7 @@ export default async function DarkroomPage() {
               `featured` 的壁纸，并按热度排序。
             </p>
           </div>
-          <div className="grid gap-2 border border-ink/10 bg-paper/70 px-4 py-4 text-[10px] uppercase tracking-[0.22em] text-muted">
+          <div className="glass-surface-soft grid gap-2 px-4 py-4 text-[10px] uppercase tracking-[0.22em] text-muted">
             <span>Curated by editor flag</span>
             <span>排序依据：下载热度</span>
             <span>当前精选 {wallpapers.length}</span>
@@ -53,7 +51,7 @@ export default async function DarkroomPage() {
             ))}
           </div>
         ) : (
-          <div className="mt-10 border-frame border-ink px-6 py-12 text-sm leading-7 text-muted">
+          <div className="glass-surface-soft mt-10 px-6 py-12 text-sm leading-7 text-muted">
             还没有任何精选作品。你可以先在管理台把一张作品标记为
             featured，这里就会自动出现。
           </div>
