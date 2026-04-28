@@ -18,7 +18,7 @@ export function SearchSection() {
   }
 
   return (
-    <section className="border-b border-ink/10 px-4 py-14 md:px-10 md:py-20">
+    <section className="px-4 py-14 md:px-10 md:py-20">
       <Reveal className="mx-auto grid max-w-[1500px] gap-8 lg:grid-cols-[0.76fr_1.24fr]">
         <div className="space-y-5">
           <p className="text-[11px] uppercase text-red">Discovery console</p>
@@ -30,7 +30,7 @@ export function SearchSection() {
           </p>
         </div>
 
-        <div className="bg-paper/78 border border-ink p-3 shadow-[10px_10px_0_0_rgba(10,8,4,0.06)] dark:bg-paper2 dark:shadow-none">
+        <div className="glass-surface p-3">
           <form
             action="/explore"
             className="grid gap-3 md:grid-cols-[1fr_auto]"
@@ -42,13 +42,13 @@ export function SearchSection() {
             <input
               ref={inputRef}
               id="discovery-search"
-              className="min-h-[58px] min-w-0 border border-ink/10 bg-paper px-4 text-base outline-none transition placeholder:text-muted/70 focus:border-ink dark:bg-paper/5"
+              className="glass-field min-h-[58px] min-w-0 px-4 text-base outline-none transition placeholder:text-muted/70"
               name="q"
               placeholder="例如：安静的森林、深色办公桌面、蓝色极简..."
               type="search"
             />
             <button
-              className="min-h-[58px] border border-ink bg-ink px-6 text-[12px] uppercase text-paper transition hover:bg-red focus-visible:bg-red"
+              className="glass-primary min-h-[58px] px-6 text-[12px] uppercase"
               type="submit"
             >
               搜索目录
@@ -60,7 +60,7 @@ export function SearchSection() {
               <Link
                 key={tag}
                 className={cn(
-                  "border border-ink/20 px-3 py-2 text-[11px] uppercase text-muted transition hover:border-ink hover:bg-ink hover:text-paper focus-visible:bg-ink focus-visible:text-paper",
+                  "glass-chip px-3 py-2 text-[11px] uppercase text-muted transition hover:text-ink",
                   tag === "全部"
                     ? "bg-transparent text-ink"
                     : "bg-transparent text-ink",
@@ -78,7 +78,7 @@ export function SearchSection() {
           </div>
 
           <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div className="border border-ink/10 bg-paper/60 p-4 dark:bg-paper/5">
+            <div className="glass-surface-soft p-4">
               <p className="text-[10px] uppercase text-muted">分类</p>
               <div className="mt-3 grid gap-2">
                 {EXPLORE_CATEGORIES.slice(0, 4).map((category) => (
@@ -97,7 +97,7 @@ export function SearchSection() {
             {EXPLORE_SORT_OPTIONS.map((option) => (
               <Link
                 key={option.value}
-                className="border border-ink/10 bg-paper/60 p-4 transition hover:border-ink hover:bg-ink hover:text-paper dark:bg-paper/5"
+                className="glass-surface-soft p-4 transition hover:-translate-y-0.5"
                 href={`/explore?sort=${option.value}`}
                 title={option.description}
               >

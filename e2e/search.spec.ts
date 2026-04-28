@@ -40,21 +40,22 @@ test.describe("搜索与过滤", () => {
     }
   });
 
-  test("首页搜索区：标签按钮点击状态切换", async ({ page }) => {
+  test("首页搜索区：标签入口跳转到探索页", async ({ page }) => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    // 滚动到搜索区
-    await page.locator('section:has(input[name="q"])').scrollIntoViewIfNeeded();
+    const searchSection = page
+      .locator("section")
+      .filter({ hasText: "Discovery console" })
+      .first();
+    await searchSection.scrollIntoViewIfNeeded();
 
-    const tags = page.locator('button[type="button"]');
+    const tags = searchSection.locator("a[href^='/explore']");
     const tagCount = await tags.count();
     if (tagCount > 1) {
-      // 点击第二个标签
       await tags.nth(1).click();
-      // 该标签应变为激活态（bg-ink text-paper）
-      const classList = await tags.nth(1).getAttribute("class");
-      expect(classList).toContain("bg-ink");
+      await page.waitForURL(/\/explore/, { timeout: 8_000 });
+      expect(page.url()).toContain("/explore");
     }
   });
 

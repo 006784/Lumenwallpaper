@@ -44,14 +44,12 @@ export default async function CreatorStudioManagePage() {
   });
 
   return (
-    <section className="relative overflow-hidden border-b-frame border-ink px-4 py-16 md:px-10 md:py-24">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_16%,rgba(245,200,66,0.16),transparent_18%),radial-gradient(circle_at_82%_16%,rgba(212,43,43,0.06),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.16),transparent_42%)]" />
-
+    <section className="glass-panel-grid relative overflow-hidden px-4 pb-16 pt-24 md:px-10 md:pb-24 md:pt-28">
       <div className="relative mx-auto max-w-7xl">
         <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
           Creator Studio
         </p>
-        <h1 className="max-w-4xl font-display text-[clamp(2.5rem,7vw,5rem)] leading-[0.94] tracking-[-0.05em]">
+        <h1 className="max-w-4xl font-body text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02]">
           管理你已经发布的作品
         </h1>
         <p className="mt-6 max-w-3xl text-sm leading-7 text-muted md:text-base">
@@ -61,31 +59,31 @@ export default async function CreatorStudioManagePage() {
         </p>
 
         <div className="mt-8 flex flex-wrap gap-3 text-[10px] uppercase tracking-[0.24em] text-muted">
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+          <span className="glass-chip px-3 py-2">
             @{currentUser.username}
           </span>
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+          <span className="glass-chip px-3 py-2">
             作品 {wallpapers.length}
           </span>
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+          <span className="glass-chip px-3 py-2">
             可编辑元数据
           </span>
-          <span className="border border-gold/20 bg-gold/5 px-3 py-2 text-gold">
+          <span className="glass-chip px-3 py-2 text-red">
             AI Fallback Ready
           </span>
-          <span className="border border-red/20 bg-red/5 px-3 py-2 text-red">
+          <span className="glass-chip-active px-3 py-2">
             Delete Protected
           </span>
           {isEditor ? (
             <>
               <Link
-                className="border border-gold/20 bg-gold/5 px-3 py-2 text-gold transition hover:bg-gold hover:text-ink"
+                className="glass-chip px-3 py-2 text-red transition hover:text-ink"
                 href="/creator/studio/moderation"
               >
                 打开审核台
               </Link>
               <Link
-                className="border border-ink/10 bg-paper/70 px-3 py-2 transition hover:border-ink hover:text-ink"
+                className="glass-chip px-3 py-2 transition hover:text-ink"
                 href="/creator/studio/import"
               >
                 打开 R2 导入台

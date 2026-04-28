@@ -12,7 +12,7 @@ type DarkroomCardProps = {
 export function DarkroomCard({ item }: DarkroomCardProps) {
   return (
     <Link
-      className="group relative block h-full overflow-hidden bg-black"
+      className="group relative block h-full overflow-hidden rounded-[24px] bg-black"
       href={item.href}
     >
       <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.05]">
@@ -36,12 +36,12 @@ export function DarkroomCard({ item }: DarkroomCardProps) {
 
       <div className="absolute left-3 top-3 z-10 flex flex-wrap items-center gap-2">
         {item.badge ? (
-          <span className="bg-gold px-2 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink">
+          <span className="glass-chip-active px-2 py-1 font-mono text-[10px] uppercase tracking-[0.2em]">
             {item.badge}
           </span>
         ) : null}
         {item.videoUrl ? (
-          <span className="border border-paper/20 bg-paper/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-paper/70 backdrop-blur-sm">
+          <span className="glass-chip px-2 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink backdrop-blur-sm">
             Motion
           </span>
         ) : null}
@@ -59,7 +59,7 @@ export function DarkroomCard({ item }: DarkroomCardProps) {
       <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-5 pt-10">
         <p
           className={cn(
-            "font-display italic text-paper transition-[letter-spacing] duration-300",
+            "font-body font-semibold text-paper transition-[letter-spacing] duration-300",
             item.featured
               ? "text-[24px] group-hover:tracking-[0.01em]"
               : "text-[18px] group-hover:tracking-[0.005em]",

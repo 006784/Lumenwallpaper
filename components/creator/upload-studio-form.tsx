@@ -472,8 +472,8 @@ function getQueueItemStatusClassName(item: UploadQueueItem) {
   }
 
   return item.info.kind === "video"
-    ? "border-paper/15 bg-paper/8 text-paper/70"
-    : "border-ink/10 bg-paper/70 text-muted";
+    ? "glass-chip text-muted"
+    : "glass-chip text-muted";
 }
 
 function getProgressLabel(progress: UploadProgressState, item: UploadQueueItem | null) {
@@ -496,7 +496,7 @@ export function UploadStudioForm({
   creatorUsername,
 }: UploadStudioFormProps) {
   const fieldClassName =
-    "w-full border-frame border-ink bg-paper/78 px-4 py-3 text-sm outline-none transition placeholder:text-muted/75 focus:border-red focus:bg-paper";
+    "glass-field w-full px-4 py-3 text-sm outline-none transition placeholder:text-muted/75";
   const inputRef = useRef<HTMLInputElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const [uploadItems, setUploadItems] = useState<UploadQueueItem[]>([]);
@@ -539,10 +539,10 @@ export function UploadStudioForm({
   }[state.kind];
 
   const statusClassName = {
-    idle: "border-paper/15 bg-paper/5 text-paper/70",
-    submitting: "border-gold/30 bg-gold/10 text-gold",
-    success: "border-[#6be3a5]/30 bg-[#6be3a5]/10 text-[#6be3a5]",
-    error: "border-red/30 bg-red/10 text-red",
+    idle: "glass-chip text-muted",
+    submitting: "glass-chip-active",
+    success: "glass-chip text-[#238c58]",
+    error: "glass-chip-active",
   }[state.kind];
 
   const workflowSteps = [
@@ -1076,17 +1076,17 @@ export function UploadStudioForm({
 
   return (
     <form
-      className="bg-paper/78 relative space-y-7 overflow-hidden border-frame border-ink px-4 py-4 shadow-[14px_14px_0_0_rgba(10,8,4,0.06)] backdrop-blur sm:px-5 sm:py-5 md:space-y-8 md:px-7 md:py-7 xl:px-8 xl:py-8"
+      className="glass-surface relative space-y-7 overflow-hidden px-4 py-4 sm:px-5 sm:py-5 md:space-y-8 md:px-7 md:py-7 xl:px-8 xl:py-8"
       onSubmit={handleSubmit}
     >
-      <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-gold via-red to-transparent" />
+      <div className="absolute inset-x-10 top-0 h-[3px] rounded-full bg-red/75" />
 
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-ink/10 pb-6">
+      <div className="flex flex-wrap items-start justify-between gap-4 pb-6">
         <div className="max-w-3xl">
           <p className="text-[10px] uppercase tracking-[0.3em] text-red">
             Creator Studio
           </p>
-          <h2 className="mt-3 font-display text-[clamp(2.2rem,4.6vw,4rem)] leading-[0.96] tracking-[-0.05em] text-ink">
+          <h2 className="mt-3 font-body text-[clamp(2.2rem,4.6vw,4rem)] font-semibold leading-[1.02] text-ink">
             一次加入多张作品，也把动态壁纸一起收进来。
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-muted md:text-[15px]">
@@ -1096,13 +1096,13 @@ export function UploadStudioForm({
         </div>
 
         <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.22em] text-muted">
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+          <span className="glass-chip px-3 py-2">
             Multi Upload
           </span>
-          <span className="border border-ink/10 bg-paper/70 px-3 py-2">
+          <span className="glass-chip px-3 py-2">
             Image + Video
           </span>
-          <span className="border border-gold/25 bg-gold/10 px-3 py-2 text-gold">
+          <span className="glass-chip-active px-3 py-2">
             {statusLabel}
           </span>
         </div>
@@ -1113,10 +1113,10 @@ export function UploadStudioForm({
           <div
             key={step.number}
             className={cn(
-              "border-frame border-ink px-4 py-4 transition",
+              "glass-surface-soft px-4 py-4 transition",
               step.isActive
-                ? "bg-[linear-gradient(180deg,rgba(245,200,66,0.14),rgba(242,237,228,0.76))] shadow-[8px_8px_0_0_rgba(245,200,66,0.08)]"
-                : "bg-paper/48 shadow-[6px_6px_0_0_rgba(10,8,4,0.04)]",
+                ? "ring-1 ring-red/20"
+                : "",
             )}
           >
             <div className="flex items-center justify-between gap-3">
@@ -1135,7 +1135,7 @@ export function UploadStudioForm({
                 )}
               />
             </div>
-            <p className="mt-3 font-display text-[1.85rem] leading-none tracking-[-0.04em] text-ink">
+            <p className="mt-3 font-body text-[1.55rem] font-semibold leading-none text-ink">
               {step.label}
             </p>
             <p className="mt-3 text-sm leading-6 text-muted">{step.description}</p>
@@ -1144,13 +1144,13 @@ export function UploadStudioForm({
       </div>
 
       <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_340px]">
-        <section className="space-y-5 border-frame border-ink bg-paper/60 px-4 py-4 shadow-[8px_8px_0_0_rgba(10,8,4,0.04)] md:px-5 md:py-5">
+        <section className="glass-surface-soft space-y-5 px-4 py-4 md:px-5 md:py-5">
           <div
             className={cn(
-              "relative overflow-hidden border-frame border-ink bg-[linear-gradient(135deg,rgba(255,255,255,0.72),rgba(249,247,241,0.92))] transition",
+              "glass-surface-soft relative overflow-hidden transition",
               isDragActive
-                ? "border-red bg-[linear-gradient(135deg,rgba(212,43,43,0.08),rgba(255,255,255,0.88))] shadow-[0_0_0_3px_rgba(212,43,43,0.08)]"
-                : "shadow-[8px_8px_0_0_rgba(10,8,4,0.04)]",
+                ? "ring-2 ring-red/25"
+                : "",
             )}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
@@ -1158,7 +1158,7 @@ export function UploadStudioForm({
           >
             {activeItem ? (
               <div className="grid gap-6 p-4 xl:grid-cols-[minmax(250px,320px)_1fr] xl:p-6">
-                <div className="relative aspect-[4/5] overflow-hidden border border-ink/12 bg-paper shadow-[8px_8px_0_0_rgba(10,8,4,0.05)]">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] bg-white/45 shadow-[inset_5px_5px_12px_rgba(40,62,66,0.08),inset_-6px_-6px_12px_rgba(255,255,255,0.88)]">
                   {activeItem.info.kind === "video" ? (
                     <video
                       autoPlay
@@ -1184,10 +1184,10 @@ export function UploadStudioForm({
                 <div className="flex flex-col justify-between gap-6">
                   <div>
                     <div className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-muted">
-                      <span className="border border-ink/10 bg-paper/80 px-3 py-2">
+                      <span className="glass-chip px-3 py-2">
                         当前编辑
                       </span>
-                      <span className="border border-ink/10 bg-paper/80 px-3 py-2">
+                      <span className="glass-chip px-3 py-2">
                         {activeItem.info.kind === "video" ? "动态壁纸" : "静态壁纸"}
                       </span>
                       <span
@@ -1199,7 +1199,7 @@ export function UploadStudioForm({
                         {getQueueItemStatusLabel(activeItem)}
                       </span>
                     </div>
-                    <p className="mt-4 font-display text-[clamp(1.9rem,3vw,2.8rem)] leading-[1.02] tracking-[-0.04em] text-ink">
+                    <p className="mt-4 font-body text-[clamp(1.9rem,3vw,2.8rem)] font-semibold leading-[1.02] text-ink">
                       {activeItem.info.name}
                     </p>
                     <p className="mt-4 max-w-2xl text-sm leading-7 text-muted">
@@ -1210,20 +1210,20 @@ export function UploadStudioForm({
                   </div>
 
                   <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.22em]">
-                    <span className="border border-ink/10 bg-paper/80 px-3 py-2 text-muted">
+                    <span className="glass-chip px-3 py-2 text-muted">
                       {activeItem.info.extension}
                     </span>
-                    <span className="border border-ink/10 bg-paper/80 px-3 py-2 text-muted">
+                    <span className="glass-chip px-3 py-2 text-muted">
                       {activeItem.info.sizeLabel}
                     </span>
-                    <span className="border border-ink/10 bg-paper/80 px-3 py-2 text-muted">
+                    <span className="glass-chip px-3 py-2 text-muted">
                       {formatDimensions(activeItem.info.width, activeItem.info.height)}
                     </span>
-                    <span className="border border-ink/10 bg-paper/80 px-3 py-2 text-muted">
+                    <span className="glass-chip px-3 py-2 text-muted">
                       {getOrientationLabel(activeItem.info.width, activeItem.info.height)}
                     </span>
                     {activeItem.info.kind === "video" ? (
-                      <span className="border border-ink/10 bg-paper/80 px-3 py-2 text-muted">
+                      <span className="glass-chip px-3 py-2 text-muted">
                         {formatDuration(activeItem.info.durationSeconds)}
                       </span>
                     ) : null}
@@ -1231,14 +1231,14 @@ export function UploadStudioForm({
 
                   <div className="flex flex-wrap gap-3 pt-1">
                     <button
-                      className="inline-flex min-h-[42px] items-center justify-center border-frame border-ink bg-ink px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-paper transition hover:bg-red"
+                      className="glass-primary inline-flex min-h-[42px] items-center justify-center px-4 py-2 text-[10px] uppercase tracking-[0.22em]"
                       onClick={openFilePicker}
                       type="button"
                     >
                       追加更多文件
                     </button>
                     <button
-                      className="inline-flex min-h-[42px] items-center justify-center border-frame border-ink bg-paper px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper"
+                      className="glass-control inline-flex min-h-[42px] items-center justify-center px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-ink transition"
                       onClick={() => removeQueueItem(activeItem.id)}
                       type="button"
                     >
@@ -1249,14 +1249,14 @@ export function UploadStudioForm({
               </div>
             ) : (
               <div className="relative overflow-hidden px-5 py-7 md:px-6 md:py-8">
-                <div className="pointer-events-none absolute right-[-20px] top-[-30px] text-[120px] leading-none tracking-[-0.08em] text-ink/4">
+                <div className="pointer-events-none absolute right-[-20px] top-[-30px] text-[120px] leading-none text-ink/4">
                   MIX
                 </div>
                 <div className="relative max-w-xl">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-ink/12 bg-paper text-[28px] text-ink/55 shadow-[6px_6px_0_0_rgba(10,8,4,0.05)]">
+                  <div className="glass-control flex h-14 w-14 items-center justify-center text-[28px] text-ink/70">
                     +
                   </div>
-                  <p className="mt-5 font-display text-[clamp(2.1rem,4vw,3rem)] leading-[0.96] tracking-[-0.05em]">
+                  <p className="mt-5 font-body text-[clamp(2.1rem,4vw,3rem)] font-semibold leading-[1.02]">
                     一次选择多张图片，也支持视频。
                   </p>
                   <p className="mt-4 max-w-lg text-sm leading-7 text-muted">
@@ -1270,10 +1270,7 @@ export function UploadStudioForm({
                       "支持多选",
                       "视频可上传",
                     ].map((item) => (
-                      <span
-                        key={item}
-                        className="border border-ink/10 bg-paper/80 px-3 py-2 text-muted"
-                      >
+                      <span key={item} className="glass-chip px-3 py-2 text-muted">
                         {item}
                       </span>
                     ))}
@@ -1285,7 +1282,7 @@ export function UploadStudioForm({
 
           <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <button
-              className="inline-flex min-h-[48px] w-full items-center justify-center border-frame border-ink bg-ink px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-paper shadow-[8px_8px_0_0_rgba(10,8,4,0.08)] transition hover:-translate-y-0.5 hover:border-red hover:bg-red hover:shadow-[10px_10px_0_0_rgba(212,43,43,0.15)] sm:w-auto"
+              className="glass-primary inline-flex min-h-[48px] w-full items-center justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] sm:w-auto"
               onClick={openFilePicker}
               type="button"
             >
@@ -1323,10 +1320,10 @@ export function UploadStudioForm({
                   <button
                     key={item.id}
                     className={cn(
-                      "relative overflow-hidden border-frame border-ink p-3 text-left transition",
+                      "relative overflow-hidden p-3 text-left transition",
                       item.id === activeItem?.id
-                        ? "bg-ink text-paper shadow-[10px_10px_0_0_rgba(10,8,4,0.12)]"
-                        : "bg-paper/70 shadow-[6px_6px_0_0_rgba(10,8,4,0.04)] hover:-translate-y-0.5",
+                        ? "glass-chip-active"
+                        : "glass-surface-soft hover:-translate-y-0.5",
                     )}
                     onClick={() => setActiveItemId(item.id)}
                     type="button"
@@ -1343,7 +1340,7 @@ export function UploadStudioForm({
                         </p>
                         <p
                           className={cn(
-                            "mt-2 line-clamp-2 font-display text-[1.45rem] leading-none tracking-[-0.04em]",
+                            "mt-2 line-clamp-2 font-body text-[1.25rem] font-semibold leading-none",
                             item.id === activeItem?.id ? "text-paper" : "text-ink",
                           )}
                         >
@@ -1421,13 +1418,13 @@ export function UploadStudioForm({
           </div>
         </section>
 
-        <aside className="self-start space-y-4 border-frame border-ink bg-[#17120d] px-4 py-4 text-paper shadow-[10px_10px_0_0_rgba(10,8,4,0.12)] md:px-5 md:py-5 2xl:sticky 2xl:top-24">
-          <div className="flex items-center justify-between gap-3 border-b border-paper/10 pb-4">
+        <aside className="glass-surface-soft self-start space-y-4 px-4 py-4 text-ink md:px-5 md:py-5 2xl:sticky 2xl:top-24">
+          <div className="flex items-center justify-between gap-3 border-b border-ink/10 pb-4">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.28em] text-gold">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-red">
                 发布摘要
               </p>
-              <p className="mt-2 text-sm leading-6 text-paper/70">
+              <p className="mt-2 text-sm leading-6 text-muted">
                 右侧只保留进度、账号和队列完成度。
               </p>
             </div>
@@ -1441,22 +1438,22 @@ export function UploadStudioForm({
             </p>
           </div>
 
-          <div className="space-y-3 border border-paper/12 bg-paper/6 px-4 py-4">
+          <div className="space-y-3 rounded-[22px] bg-white/45 px-4 py-4 shadow-[inset_5px_5px_12px_rgba(40,62,66,0.08),inset_-6px_-6px_12px_rgba(255,255,255,0.88)]">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-paper/50">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-muted">
                 当前进度
               </p>
-              <p className="text-[10px] uppercase tracking-[0.28em] text-gold">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-red">
                 {activeItem ? activeItem.progress.percent : 0}%
               </p>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-paper/10">
+            <div className="h-2 overflow-hidden rounded-full bg-white/60 shadow-[inset_3px_3px_8px_rgba(40,62,66,0.1),inset_-3px_-3px_8px_rgba(255,255,255,0.9)]">
               <div
-                className="h-full bg-gradient-to-r from-gold via-red to-paper transition-[width] duration-300"
+                className="h-full bg-red transition-[width] duration-300"
                 style={{ width: `${activeItem ? activeItem.progress.percent : 0}%` }}
               />
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] text-paper/60">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] text-muted">
               <span>{getProgressLabel(activeItem?.progress ?? {
                 bytesSent: 0,
                 percent: 0,
@@ -1476,7 +1473,7 @@ export function UploadStudioForm({
               <p
                 className={cn(
                   "text-xs leading-6",
-                  activeItem.status === "error" ? "text-red-200" : "text-paper/55",
+                  activeItem.status === "error" ? "text-red" : "text-muted",
                 )}
               >
                 {activeItem.message}
@@ -1484,26 +1481,26 @@ export function UploadStudioForm({
             ) : null}
           </div>
 
-          <div className="grid gap-4 border-t border-paper/10 pt-5">
+          <div className="grid gap-4 border-t border-ink/10 pt-5">
             <div>
-              <label className="mb-2 block text-[10px] uppercase tracking-[0.25em] text-paper/50">
+              <label className="mb-2 block text-[10px] uppercase tracking-[0.25em] text-muted">
                 当前创作者
               </label>
-              <div className="w-full border border-paper/12 bg-paper/5 px-4 py-3 text-sm shadow-[4px_4px_0_0_rgba(0,0,0,0.1)]">
+              <div className="glass-field w-full px-4 py-3 text-sm">
                 @{creatorUsername}
               </div>
             </div>
             <div>
-              <label className="mb-2 block text-[10px] uppercase tracking-[0.25em] text-paper/50">
+              <label className="mb-2 block text-[10px] uppercase tracking-[0.25em] text-muted">
                 登录邮箱
               </label>
-              <div className="w-full border border-paper/12 bg-paper/5 px-4 py-3 text-sm shadow-[4px_4px_0_0_rgba(0,0,0,0.1)]">
+              <div className="glass-field w-full px-4 py-3 text-sm">
                 {creatorEmail}
               </div>
             </div>
           </div>
 
-          <div className="grid gap-3 border-t border-paper/10 pt-5 sm:grid-cols-2 2xl:grid-cols-1">
+          <div className="grid gap-3 border-t border-ink/10 pt-5 sm:grid-cols-2 2xl:grid-cols-1">
             {[
               ["队列", `${uploadItems.length} 项`],
               ["标题完成", `${completedMetadataCount}/${uploadItems.length || 0}`],
@@ -1513,41 +1510,41 @@ export function UploadStudioForm({
             ].map(([label, value]) => (
               <div
                 key={label}
-                className="border border-paper/10 bg-paper/5 px-4 py-4"
+                className="glass-surface-soft px-4 py-4"
               >
-                <p className="text-[10px] uppercase tracking-[0.24em] text-paper/45">
+                <p className="text-[10px] uppercase tracking-[0.24em] text-muted">
                   {label}
                 </p>
-                <p className="mt-3 font-display text-[24px] italic text-paper">
+                <p className="mt-3 font-body text-[22px] font-semibold text-ink">
                   {value}
                 </p>
               </div>
             ))}
           </div>
 
-          <div className="space-y-2 border-t border-paper/10 pt-5 text-[11px] uppercase tracking-[0.2em] text-paper/45">
+          <div className="space-y-2 border-t border-ink/10 pt-5 text-[11px] uppercase tracking-[0.2em] text-muted">
             <p>图片：JPG / PNG / WEBP</p>
             <p>视频：MP4 / WEBM / MOV</p>
             <p>流程：Presign → 直传 R2 → 写入 Supabase</p>
           </div>
 
           {activeItem?.wallpaper ? (
-            <div className="space-y-3 border border-paper/15 bg-paper/5 px-4 py-4">
-              <p className="font-display text-[28px] italic">
+            <div className="glass-surface-soft space-y-3 px-4 py-4">
+              <p className="font-body text-[24px] font-semibold">
                 {activeItem.wallpaper.title}
               </p>
-              <p className="text-[10px] uppercase tracking-[0.25em] text-paper/55">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-muted">
                 slug: {activeItem.wallpaper.slug}
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
-                  className="inline-flex border border-paper/30 px-4 py-2 text-[10px] uppercase tracking-[0.22em] transition hover:border-paper hover:text-gold"
+                  className="glass-control inline-flex px-4 py-2 text-[10px] uppercase tracking-[0.22em] transition"
                   href={`/wallpaper/${activeItem.wallpaper.slug}`}
                 >
                   查看详情页
                 </a>
                 <a
-                  className="inline-flex border border-paper/20 px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-paper/70 transition hover:border-paper hover:text-paper"
+                  className="glass-control inline-flex px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-muted transition"
                   href="/creator/studio/manage"
                 >
                   前往管理台
@@ -1559,17 +1556,17 @@ export function UploadStudioForm({
       </div>
 
       {activeItem ? (
-        <div className="space-y-6 border-t border-ink/10 pt-8">
+        <div className="space-y-6 pt-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-[10px] uppercase tracking-[0.28em] text-red">
                 编辑当前项
               </p>
-              <p className="mt-2 font-display text-[clamp(1.9rem,4vw,3rem)] leading-[0.98] tracking-[-0.04em] text-ink">
+              <p className="mt-2 font-body text-[clamp(1.9rem,4vw,3rem)] font-semibold leading-[1.02] text-ink">
                 {activeItem.info.kind === "video" ? "当前正在编辑动态壁纸" : "当前正在编辑静态壁纸"}
               </p>
             </div>
-            <p className="border border-ink/10 bg-paper/70 px-3 py-2 text-[10px] uppercase tracking-[0.24em] text-muted">
+            <p className="glass-chip px-3 py-2 text-[10px] uppercase tracking-[0.24em] text-muted">
               {activeItem.info.name}
             </p>
           </div>
@@ -1640,7 +1637,7 @@ export function UploadStudioForm({
                   activeTags.map((tag) => (
                     <span
                       key={tag}
-                      className="border border-ink/10 bg-paper/80 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-muted"
+                      className="glass-chip px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-muted"
                     >
                       {tag}
                     </span>
@@ -1722,7 +1719,7 @@ export function UploadStudioForm({
                   return (
                     <span
                       key={color}
-                      className="inline-flex items-center gap-2 border border-ink/10 bg-paper/80 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-muted"
+                      className="glass-chip inline-flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-muted"
                     >
                       <span
                         className="h-3 w-3 rounded-full border border-ink/15"
@@ -1740,7 +1737,7 @@ export function UploadStudioForm({
             </div>
           </div>
 
-          <label className="flex items-start gap-3 border-frame border-ink bg-paper/60 px-4 py-4 text-sm leading-6 text-muted">
+          <label className="glass-surface-soft flex items-start gap-3 px-4 py-4 text-sm leading-6 text-muted">
             <input
               checked={activeItem.licenseAccepted}
               className="mt-1 h-4 w-4 shrink-0 accent-ink"
@@ -1765,7 +1762,7 @@ export function UploadStudioForm({
 
       <div className="space-y-3 border-t border-ink/10 pt-8">
         <button
-          className="inline-flex min-h-[52px] w-full items-center justify-center border-frame border-ink bg-ink px-5 py-3 font-mono text-[12px] uppercase tracking-[0.24em] text-paper shadow-[8px_8px_0_0_rgba(10,8,4,0.08)] transition hover:-translate-y-0.5 hover:bg-red hover:shadow-[10px_10px_0_0_rgba(212,43,43,0.15)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="glass-primary inline-flex min-h-[52px] w-full items-center justify-center px-5 py-3 font-mono text-[12px] uppercase tracking-[0.24em] disabled:cursor-not-allowed disabled:opacity-60"
           disabled={!canPublish}
           type="submit"
         >

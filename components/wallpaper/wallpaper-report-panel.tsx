@@ -120,7 +120,7 @@ export function WallpaperReportPanel({
   }
 
   return (
-    <div className="mt-8 border-t border-ink/10 pt-8">
+    <div className="glass-surface-soft mt-8 px-4 py-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[10px] uppercase tracking-[0.25em] text-red">
@@ -131,7 +131,7 @@ export function WallpaperReportPanel({
           </p>
         </div>
         <button
-          className="inline-flex border-frame border-ink bg-transparent px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper"
+          className="glass-control inline-flex px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition"
           onClick={() => {
             setFeedback(null);
             setIsOpen((current) => !current);
@@ -144,7 +144,7 @@ export function WallpaperReportPanel({
 
       {isOpen ? (
         <form
-          className="mt-5 space-y-4 border-frame border-ink bg-paper/70 px-4 py-4"
+          className="mt-5 space-y-4 rounded-[22px] bg-white/42 px-4 py-4 shadow-[inset_5px_5px_12px_rgba(40,62,66,0.08),inset_-6px_-6px_12px_rgba(255,255,255,0.9)]"
           onSubmit={handleSubmit}
         >
           <div>
@@ -155,7 +155,7 @@ export function WallpaperReportPanel({
               问题类型
             </label>
             <select
-              className="w-full border-frame border-ink bg-paper px-4 py-3 text-sm outline-none transition focus:border-red"
+              className="glass-field w-full px-4 py-3 text-sm outline-none transition"
               defaultValue="copyright"
               id="report-reason"
               name="reason"
@@ -186,7 +186,7 @@ export function WallpaperReportPanel({
               补充说明
             </label>
             <textarea
-              className="min-h-[120px] w-full border-frame border-ink bg-paper px-4 py-3 text-sm outline-none transition placeholder:text-muted/75 focus:border-red"
+              className="glass-field min-h-[120px] w-full px-4 py-3 text-sm outline-none transition placeholder:text-muted/75"
               id="report-details"
               maxLength={1000}
               name="details"
@@ -203,7 +203,7 @@ export function WallpaperReportPanel({
                 联系邮箱（选填）
               </label>
               <input
-                className="w-full border-frame border-ink bg-paper px-4 py-3 text-sm outline-none transition placeholder:text-muted/75 focus:border-red"
+                className="glass-field w-full px-4 py-3 text-sm outline-none transition placeholder:text-muted/75"
                 id="report-email"
                 name="reporterEmail"
                 placeholder="如果需要补充信息，编辑团队可以联系你"
@@ -220,14 +220,14 @@ export function WallpaperReportPanel({
 
           <div className="flex flex-wrap gap-3">
             <button
-              className="inline-flex border-frame border-ink bg-ink px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-paper transition hover:bg-red disabled:cursor-not-allowed disabled:opacity-60"
+              className="glass-primary inline-flex px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isSubmitting}
               type="submit"
             >
               {isSubmitting ? "提交中" : "提交举报"}
             </button>
             <button
-              className="inline-flex border-frame border-ink bg-transparent px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition hover:bg-ink hover:text-paper"
+              className="glass-control inline-flex px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition"
               onClick={() => setIsOpen(false)}
               type="button"
             >

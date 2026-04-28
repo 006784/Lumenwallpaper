@@ -81,20 +81,27 @@ type CachedDownloadPanelConfig = {
   updatedAt?: string;
 };
 
-const OVERLAY_BG = "rgba(0,0,0,0.5)";
-const INK = "#0a0804";
-const PAPER = "#f2ede4";
-const PAPER_2 = "#e8e0d2";
-const RED = "#d42b2b";
-const MUTED = "#8a8070";
-const HINT = "#b0a898";
-const BORDER = "#d0c8b8";
-const BORDER_DK = "rgba(10,8,4,0.12)";
-const FILM_BG = "#0a0804";
-const FILM_HOLE = "#2a2820";
+const OVERLAY_BG = "rgba(15, 39, 42, 0.28)";
+const INK = "#174f50";
+const PAPER = "rgba(250, 252, 253, 0.82)";
+const PAPER_2 = "rgba(239, 245, 246, 0.7)";
+const RED = "#ff6d2d";
+const MUTED = "#7b8c8c";
+const HINT = "#a8b3b3";
+const BORDER = "rgba(255,255,255,0.78)";
+const BORDER_DK = "rgba(23,79,80,0.12)";
+const FILM_BG = "rgba(255,255,255,0.58)";
+const FILM_HOLE = "rgba(23,79,80,0.16)";
 
-const FONT_BODY = "'Instrument Sans', system-ui, sans-serif";
+const FONT_BODY =
+  "var(--font-body), 'PingFang SC', 'Hiragino Sans GB', system-ui, sans-serif";
 const FONT_MONO = "monospace";
+const GLASS_SHADOW =
+  "22px 26px 60px rgba(37,58,62,0.18), -16px -16px 40px rgba(255,255,255,0.86), inset 1px 1px 2px rgba(255,255,255,0.94), inset -1px -1px 2px rgba(35,61,66,0.1)";
+const GLASS_SOFT_SHADOW =
+  "12px 16px 34px rgba(37,58,62,0.12), -10px -10px 26px rgba(255,255,255,0.82), inset 1px 1px 1px rgba(255,255,255,0.92), inset -1px -1px 2px rgba(35,61,66,0.08)";
+const GLASS_INSET =
+  "inset 5px 5px 12px rgba(40,62,66,0.1), inset -6px -6px 12px rgba(255,255,255,0.92)";
 
 const FREE_RATIO: RatioOption = {
   label: "FREE",
@@ -300,19 +307,28 @@ function Toggle({
   return (
     <button
       aria-pressed={checked}
-      className="relative block h-[18px] w-[34px]"
+      className="relative block h-[32px] w-[58px]"
       style={{
-        borderRadius: "9px",
-        background: checked ? RED : BORDER,
+        border: "1px solid rgba(255,255,255,0.78)",
+        borderRadius: "999px",
+        background: checked
+          ? "rgba(255,255,255,0.68)"
+          : "rgba(255,255,255,0.42)",
+        boxShadow: GLASS_INSET,
       }}
       type="button"
       onClick={onClick}
     >
       <span
-        className="absolute top-[2px] block h-[14px] w-[14px] rounded-full transition-all duration-200"
+        className="absolute top-[3px] block h-[26px] w-[26px] rounded-full transition-all duration-200"
         style={{
-          left: checked ? "18px" : "2px",
-          background: PAPER,
+          left: checked ? "28px" : "3px",
+          background: checked
+            ? "linear-gradient(145deg, #1f8585, #126160)"
+            : "linear-gradient(145deg, #ffffff, #edf3f4)",
+          boxShadow: checked
+            ? "0 8px 18px rgba(23,79,80,0.28), inset 1px 1px 2px rgba(255,255,255,0.5)"
+            : GLASS_SOFT_SHADOW,
         }}
       />
     </button>
@@ -661,9 +677,10 @@ export function DownloadPanel({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center px-3 py-3 sm:px-4 sm:py-6 md:items-center"
+      className="fixed inset-0 z-[80] flex items-end justify-center px-3 py-3 sm:px-4 sm:py-6 md:items-center"
       style={{
         background: OVERLAY_BG,
+        backdropFilter: "blur(18px) saturate(1.05)",
         fontFamily: FONT_BODY,
       }}
       onClick={onClose}
@@ -671,9 +688,11 @@ export function DownloadPanel({
       <div
         className="grid w-full overflow-hidden"
         style={{
-          background: PAPER,
-          border: `1.5px solid ${INK}`,
-          borderRadius: 0,
+          background:
+            "linear-gradient(145deg, rgba(255,255,255,0.92), rgba(236,244,246,0.72))",
+          border: `1px solid ${BORDER}`,
+          borderRadius: "34px",
+          boxShadow: GLASS_SHADOW,
           gridTemplateColumns: isCompact
             ? "1fr"
             : "minmax(0, 1fr) minmax(400px, 440px)",
@@ -684,10 +703,10 @@ export function DownloadPanel({
         onClick={(event) => event.stopPropagation()}
       >
         <div
-          className="flex flex-col"
+          className="relative z-0 flex flex-col overflow-hidden"
           style={{
-            borderRight: isCompact ? "none" : `1.5px solid ${INK}`,
-            borderBottom: isCompact ? `1.5px solid ${INK}` : "none",
+            borderRight: isCompact ? "none" : `1px solid ${BORDER_DK}`,
+            borderBottom: isCompact ? `1px solid ${BORDER_DK}` : "none",
             minHeight: isCompact ? "auto" : "min(760px, calc(100dvh - 48px))",
           }}
         >
@@ -695,7 +714,7 @@ export function DownloadPanel({
             className="flex h-[26px] items-center justify-between px-3"
             style={{
               background: FILM_BG,
-              borderBottom: `1.5px solid ${INK}`,
+              borderBottom: `1px solid ${BORDER_DK}`,
             }}
           >
             <FilmHoles count={5} />
@@ -728,8 +747,11 @@ export function DownloadPanel({
               <div
                 className="absolute left-0 top-[-24px]"
                 style={{
-                  background: INK,
-                  color: PAPER,
+                  background: "rgba(255,255,255,0.72)",
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: "999px",
+                  boxShadow: GLASS_SOFT_SHADOW,
+                  color: INK,
                   fontFamily: FONT_MONO,
                   fontSize: "9px",
                   letterSpacing: "1.5px",
@@ -745,8 +767,10 @@ export function DownloadPanel({
                   width: `${displayBoxWidth}px`,
                   height: `${displayBoxHeight}px`,
                   background:
-                    "linear-gradient(135deg, #17120d, #2a241b, #17120d)",
-                  border: `1.5px solid ${INK}`,
+                    "linear-gradient(145deg, rgba(255,255,255,0.72), rgba(226,236,238,0.58))",
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: "22px",
+                  boxShadow: GLASS_INSET,
                   transition:
                     "width 0.42s cubic-bezier(0.4,0,0.2,1), height 0.42s cubic-bezier(0.4,0,0.2,1)",
                 }}
@@ -769,12 +793,13 @@ export function DownloadPanel({
                 <div
                   className="absolute"
                   style={{
-                    border: `2px solid ${isCropActive ? RED : "rgba(242,237,228,0.72)"}`,
+                    border: `2px solid ${isCropActive ? RED : "rgba(255,255,255,0.86)"}`,
                     boxShadow: isCropActive
-                      ? "0 0 0 999px rgba(10,8,4,0.38)"
+                      ? "0 0 0 999px rgba(23,79,80,0.2)"
                       : "none",
                     height: `${cropFrame.heightPercent}%`,
                     left: `${cropFrame.leftPercent}%`,
+                    pointerEvents: "none",
                     top: `${cropFrame.topPercent}%`,
                     transition:
                       "left 0.32s ease, top 0.32s ease, width 0.32s ease, height 0.32s ease, box-shadow 0.2s ease",
@@ -847,8 +872,11 @@ export function DownloadPanel({
               <div
                 className="absolute bottom-[-24px] right-0"
                 style={{
-                  background: isCropActive ? RED : INK,
-                  color: PAPER,
+                  background: isCropActive ? RED : "rgba(255,255,255,0.76)",
+                  border: `1px solid ${isCropActive ? "rgba(255,109,45,0.7)" : BORDER}`,
+                  borderRadius: "999px",
+                  boxShadow: GLASS_SOFT_SHADOW,
+                  color: isCropActive ? "#fff" : INK,
                   fontFamily: FONT_MONO,
                   fontSize: "9px",
                   letterSpacing: "2px",
@@ -864,7 +892,7 @@ export function DownloadPanel({
             className="flex h-[26px] items-center justify-between px-3"
             style={{
               background: FILM_BG,
-              borderTop: `1.5px solid ${INK}`,
+              borderTop: `1px solid ${BORDER_DK}`,
             }}
           >
             <FilmHoles count={3} />
@@ -884,15 +912,16 @@ export function DownloadPanel({
         </div>
 
         <div
-          className="flex flex-col"
+          className="relative z-10 flex flex-col"
           style={{
-            background: PAPER,
+            background:
+              "linear-gradient(145deg, rgba(255,255,255,0.62), rgba(239,245,246,0.36))",
             minHeight: isCompact ? "auto" : "min(760px, calc(100dvh - 48px))",
           }}
         >
           <div
             className="px-[22px] pb-4 pt-5"
-            style={{ borderBottom: `1.5px solid ${INK}` }}
+            style={{ borderBottom: `1px solid ${BORDER_DK}` }}
           >
             <div className="flex items-start justify-between">
               <p
@@ -909,19 +938,21 @@ export function DownloadPanel({
                 aria-label="关闭下载配置"
                 className="flex h-[22px] w-[22px] items-center justify-center transition-colors"
                 style={{
-                  background: PAPER,
-                  border: `1.5px solid ${INK}`,
+                  background: "rgba(255,255,255,0.72)",
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: "999px",
+                  boxShadow: GLASS_SOFT_SHADOW,
                   color: INK,
                   fontSize: "11px",
                 }}
                 type="button"
                 onClick={onClose}
                 onMouseEnter={(event) => {
-                  event.currentTarget.style.background = INK;
-                  event.currentTarget.style.color = PAPER;
+                  event.currentTarget.style.background = RED;
+                  event.currentTarget.style.color = "#fff";
                 }}
                 onMouseLeave={(event) => {
-                  event.currentTarget.style.background = PAPER;
+                  event.currentTarget.style.background = "rgba(255,255,255,0.72)";
                   event.currentTarget.style.color = INK;
                 }}
               >
@@ -984,12 +1015,17 @@ export function DownloadPanel({
                       key={key}
                       className="text-center"
                       style={{
-                        background: active ? INK : PAPER,
+                        background: active
+                          ? "linear-gradient(145deg, #1f8585, #126160)"
+                          : "rgba(255,255,255,0.56)",
                         border: active
-                          ? `1.5px solid ${INK}`
+                          ? "1px solid rgba(23,79,80,0.28)"
                           : `1px solid ${BORDER}`,
-                        borderRadius: 0,
-                        color: active ? PAPER : MUTED,
+                        borderRadius: "18px",
+                        boxShadow: active
+                          ? "0 12px 26px rgba(23,79,80,0.22), inset 1px 1px 2px rgba(255,255,255,0.42)"
+                          : GLASS_SOFT_SHADOW,
+                        color: active ? "#fff" : MUTED,
                         cursor: "pointer",
                         fontFamily: FONT_MONO,
                         fontSize: "10px",
@@ -1060,13 +1096,18 @@ export function DownloadPanel({
                       key={option.label}
                       disabled={disabled}
                       style={{
-                        background: disabled ? PAPER : active ? RED : PAPER,
+                        background: disabled
+                          ? "rgba(255,255,255,0.32)"
+                          : active
+                            ? "linear-gradient(145deg, #ff8b45, #ff6424)"
+                            : "rgba(255,255,255,0.54)",
                         border: `1px solid ${disabled ? BORDER : active ? RED : BORDER}`,
-                        borderRadius: 0,
+                        borderRadius: "999px",
+                        boxShadow: active ? "0 10px 22px rgba(255,109,45,0.22)" : GLASS_SOFT_SHADOW,
                         color: disabled
                           ? "rgba(138,128,112,0.42)"
                           : active
-                            ? PAPER
+                            ? "#fff"
                             : MUTED,
                         cursor: disabled ? "not-allowed" : "pointer",
                         fontFamily: FONT_MONO,
@@ -1121,13 +1162,18 @@ export function DownloadPanel({
                       key={option.label}
                       disabled={disabled}
                       style={{
-                        background: disabled ? PAPER : active ? RED : PAPER,
+                        background: disabled
+                          ? "rgba(255,255,255,0.32)"
+                          : active
+                            ? "linear-gradient(145deg, #ff8b45, #ff6424)"
+                            : "rgba(255,255,255,0.54)",
                         border: `1px solid ${disabled ? BORDER : active ? RED : BORDER}`,
-                        borderRadius: 0,
+                        borderRadius: "999px",
+                        boxShadow: active ? "0 10px 22px rgba(255,109,45,0.22)" : GLASS_SOFT_SHADOW,
                         color: disabled
                           ? "rgba(138,128,112,0.42)"
                           : active
-                            ? PAPER
+                            ? "#fff"
                             : MUTED,
                         cursor: disabled ? "not-allowed" : "pointer",
                         fontFamily: FONT_MONO,
@@ -1195,7 +1241,7 @@ export function DownloadPanel({
 
               <div
                 className="flex items-center justify-between py-[9px]"
-                style={{ borderBottom: "1px solid rgba(10,8,4,0.08)" }}
+                style={{ borderBottom: `1px solid ${BORDER_DK}` }}
               >
                 <span style={{ color: "#5a5060", fontSize: "12px" }}>
                   三分构图参考线
@@ -1204,7 +1250,7 @@ export function DownloadPanel({
               </div>
               <div
                 className="flex items-center justify-between py-[9px]"
-                style={{ borderBottom: "1px solid rgba(10,8,4,0.08)" }}
+                style={{ borderBottom: `1px solid ${BORDER_DK}` }}
               >
                 <span style={{ color: "#5a5060", fontSize: "12px" }}>
                   等比缩放锁定，默认开启
@@ -1218,9 +1264,10 @@ export function DownloadPanel({
                 <button
                   disabled={!canCrop}
                   style={{
-                    background: PAPER,
+                    background: "rgba(255,255,255,0.54)",
                     border: `1px solid ${BORDER}`,
-                    borderRadius: 0,
+                    borderRadius: "999px",
+                    boxShadow: GLASS_SOFT_SHADOW,
                     color: canCrop ? MUTED : "rgba(138,128,112,0.42)",
                     cursor: canCrop ? "pointer" : "not-allowed",
                     fontFamily: FONT_MONO,
@@ -1255,7 +1302,11 @@ export function DownloadPanel({
 
             <section
               style={{
-                background: INK,
+                background:
+                  "linear-gradient(145deg, rgba(23,79,80,0.92), rgba(13,57,58,0.96))",
+                border: `1px solid rgba(255,255,255,0.12)`,
+                borderRadius: "22px",
+                boxShadow: "inset 1px 1px 2px rgba(255,255,255,0.18), 0 16px 30px rgba(23,79,80,0.16)",
                 padding: "14px 16px",
               }}
             >
@@ -1296,7 +1347,7 @@ export function DownloadPanel({
           <div
             className="flex flex-col gap-[7px]"
             style={{
-              borderTop: `1.5px solid ${INK}`,
+              borderTop: `1px solid ${BORDER_DK}`,
               padding: isPhone ? "14px 18px" : "16px 22px",
             }}
           >
@@ -1305,22 +1356,26 @@ export function DownloadPanel({
               style={{
                 background:
                   dlState === "done"
-                    ? "#1a3a1a"
+                    ? "linear-gradient(145deg, #28a96c, #178454)"
                     : dlState === "error"
-                      ? "#3a1717"
+                      ? "linear-gradient(145deg, #b94035, #8c2b23)"
                       : dlState === "loading"
-                        ? "#1a1810"
-                        : INK,
-                border: "none",
-                borderRadius: 0,
+                        ? "linear-gradient(145deg, #1f8585, #126160)"
+                        : "linear-gradient(145deg, #ff8b45, #ff6424)",
+                border: "1px solid rgba(255,255,255,0.28)",
+                borderRadius: "999px",
+                boxShadow:
+                  dlState === "idle"
+                    ? "0 16px 32px rgba(255,109,45,0.28), inset 1px 1px 2px rgba(255,255,255,0.62)"
+                    : GLASS_SOFT_SHADOW,
                 color:
                   dlState === "done"
-                    ? "#6ade80"
+                    ? "#fff"
                     : dlState === "error"
-                      ? "#ff8a8a"
+                      ? "#fff"
                       : dlState === "loading"
-                        ? RED
-                        : PAPER,
+                        ? "#fff"
+                        : "#fff",
                 cursor: dlState === "idle" ? "pointer" : "default",
                 fontFamily: FONT_MONO,
                 fontSize: "10px",
@@ -1343,7 +1398,8 @@ export function DownloadPanel({
                   return;
                 }
 
-                event.currentTarget.style.background = INK;
+                event.currentTarget.style.background =
+                  "linear-gradient(145deg, #ff8b45, #ff6424)";
               }}
             >
               {dlState === "loading"
@@ -1359,12 +1415,17 @@ export function DownloadPanel({
               <div className="space-y-2" aria-live="polite">
                 <div
                   className="h-[5px] overflow-hidden"
-                  style={{ background: "rgba(10,8,4,0.1)" }}
+                  style={{
+                    background: "rgba(255,255,255,0.58)",
+                    borderRadius: "999px",
+                    boxShadow: GLASS_INSET,
+                  }}
                 >
                   <div
                     className="h-full"
                     style={{
-                      background: dlState === "error" ? "#3a1717" : RED,
+                      background: dlState === "error" ? "#b94035" : RED,
+                      borderRadius: "999px",
                       transform: `scaleX(${Math.max(0.04, Math.min(1, progressPercent / 100))})`,
                       transformOrigin: "left",
                       transition: "transform 0.22s ease-out",
@@ -1402,9 +1463,10 @@ export function DownloadPanel({
               className="w-full"
               style={{
                 background: "transparent",
-                border: `1px solid ${cacheState === "done" ? "#1a6b3a" : BORDER}`,
-                borderRadius: 0,
-                color: cacheState === "done" ? "#1a6b3a" : MUTED,
+                border: `1px solid ${cacheState === "done" ? "rgba(35,140,88,0.38)" : BORDER}`,
+                borderRadius: "999px",
+                boxShadow: GLASS_SOFT_SHADOW,
+                color: cacheState === "done" ? "#238c58" : MUTED,
                 cursor: cacheState === "idle" ? "pointer" : "default",
                 fontFamily: FONT_MONO,
                 fontSize: "9px",

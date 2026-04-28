@@ -18,7 +18,7 @@ export function IosSpotlightSection({
   const [featuredWallpaper, ...restWallpapers] = wallpapers;
 
   return (
-    <section className="border-b-frame border-ink bg-[linear-gradient(180deg,rgba(232,224,210,0.55),rgba(242,237,228,0.92))] px-5 py-14 sm:px-6 md:px-10 md:py-section">
+    <section className="px-5 py-14 sm:px-6 md:px-10 md:py-section">
       <Reveal className="mb-10">
         <SectionHeading
           eyebrow="02 — iOS 专区"
@@ -55,7 +55,7 @@ export function IosSpotlightSection({
             imageQuality="large"
             wallpaper={featuredWallpaper}
           />
-          <div className="border-frame border-ink bg-paper/80 px-5 py-5">
+          <div className="glass-surface-soft px-5 py-5">
             <p className="text-[10px] uppercase tracking-[0.32em] text-muted">
               iOS Curation Note
             </p>

@@ -16,7 +16,7 @@ export function EditorialSection({
   items,
 }: EditorialSectionProps) {
   return (
-    <section className="border-b-frame border-ink bg-paper/45 px-4 py-14 md:px-10 md:py-section">
+    <section className="px-4 py-14 md:px-10 md:py-section">
       <Reveal className="mb-10" y={18} duration={0.6}>
         <SectionHeading
           eyebrow="03 — 编辑推荐"
@@ -43,9 +43,9 @@ export function EditorialSection({
         </div>
       </Reveal>
 
-      <Reveal className="overflow-hidden border-frame border-ink bg-paper dark:bg-paper2 shadow-[12px_12px_0_0_rgba(10,8,4,0.06)] dark:shadow-[12px_12px_0_0_rgba(0,0,0,0.35)] md:grid md:grid-cols-[1.16fr_0.84fr]" y={30} duration={0.7}>
+      <Reveal className="glass-surface overflow-hidden p-3 md:grid md:grid-cols-[1.16fr_0.84fr]" y={30} duration={0.7}>
       <Link
-        className="group relative block min-h-[360px] overflow-hidden border-b-frame border-ink md:min-h-[540px] md:border-b-0 md:border-r-frame"
+        className="group relative block min-h-[360px] overflow-hidden rounded-[24px] md:min-h-[540px]"
         href={feature.href}
       >
         <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.04]">
@@ -69,9 +69,9 @@ export function EditorialSection({
           ↗
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 to-transparent px-6 pb-8 pt-16 text-paper md:px-10">
+        <div className="absolute inset-x-3 bottom-3 rounded-[22px] bg-white/72 px-6 pb-8 pt-8 text-ink shadow-[0_14px_30px_rgba(37,58,62,0.16)] backdrop-blur md:px-10">
           <div className="mb-3 flex flex-wrap items-center gap-2">
-            <p className="text-[9px] uppercase tracking-[0.35em] text-gold">
+            <p className="text-[9px] uppercase tracking-[0.35em] text-red">
               ✦ {feature.eyebrow}
             </p>
             {feature.videoUrl ? (
@@ -80,10 +80,10 @@ export function EditorialSection({
               </span>
             ) : null}
           </div>
-          <h2 className="max-w-[12ch] font-display text-[clamp(2rem,4vw,2.5rem)] leading-[1.06] transition-[letter-spacing] duration-300 group-hover:tracking-[0.005em]">
+          <h2 className="max-w-[12ch] font-body text-[clamp(2rem,4vw,2.5rem)] font-semibold leading-[1.06]">
             {feature.title}
           </h2>
-          <p className="mt-3 max-w-md text-sm leading-6 text-paper/65">
+          <p className="mt-3 max-w-md text-sm leading-6 text-muted">
             {feature.description}
           </p>
         </div>
@@ -94,10 +94,10 @@ export function EditorialSection({
           return (
             <Link
               key={item.number}
-              className="group grid flex-1 grid-cols-[88px_1fr] border-b-frame border-ink transition last:border-b-0 hover:bg-paper2 md:grid-cols-[100px_1fr]"
+              className="group grid flex-1 grid-cols-[88px_1fr] rounded-[22px] transition hover:bg-white/38 md:grid-cols-[100px_1fr]"
               href={item.href}
             >
-              <div className="relative overflow-hidden border-r-frame border-ink">
+              <div className="relative m-3 overflow-hidden rounded-[18px]">
                 <div className="absolute inset-0 transition duration-card ease-out group-hover:scale-[1.08]">
                   <WallpaperCoverImage
                     alt={item.title}
@@ -125,7 +125,7 @@ export function EditorialSection({
                     </span>
                   ) : null}
                 </div>
-                <p className="font-display text-[20px] leading-[1.2]">{item.title}</p>
+                <p className="font-body text-[18px] font-semibold leading-[1.2]">{item.title}</p>
                 <div className="flex items-center justify-between">
                   <p className="text-[9px] uppercase tracking-[0.25em] text-muted">
                     {item.meta}

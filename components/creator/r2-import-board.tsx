@@ -238,7 +238,7 @@ export function R2ImportBoard({
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted">
             扫描到
           </p>
-          <p className="mt-2 font-mono text-[2rem] tracking-[-0.06em] text-ink">
+          <p className="mt-2 font-mono text-[2rem] text-ink">
             {summary?.scannedCount ?? 0}
           </p>
         </div>
@@ -246,7 +246,7 @@ export function R2ImportBoard({
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted">
             待导入
           </p>
-          <p className="mt-2 font-mono text-[2rem] tracking-[-0.06em] text-red">
+          <p className="mt-2 font-mono text-[2rem] text-red">
             {summary?.pendingCount ?? 0}
           </p>
         </div>
@@ -254,7 +254,7 @@ export function R2ImportBoard({
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted">
             已在前台
           </p>
-          <p className="mt-2 font-mono text-[2rem] tracking-[-0.06em] text-ink">
+          <p className="mt-2 font-mono text-[2rem] text-ink">
             {summary?.importedCount ?? 0}
           </p>
         </div>
@@ -262,7 +262,7 @@ export function R2ImportBoard({
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted">
             导入失败
           </p>
-          <p className="mt-2 font-mono text-[2rem] tracking-[-0.06em] text-gold">
+          <p className="mt-2 font-mono text-[2rem] text-gold">
             {summary?.failedCount ?? 0}
           </p>
         </div>

@@ -2,15 +2,15 @@ import { Reveal } from "@/components/ui/reveal";
 
 export function JoinSection() {
   return (
-    <section className="border-b-frame border-ink">
-      <Reveal className="md:grid md:grid-cols-[1fr_1fr]">
-      <div className="flex flex-col justify-between gap-8 border-b-frame border-ink px-4 py-12 md:border-b-0 md:border-r-frame md:px-10 md:py-16">
+    <section className="px-4 py-12 md:px-10 md:py-16">
+      <Reveal className="glass-surface overflow-hidden md:grid md:grid-cols-[1fr_1fr]">
+      <div className="flex flex-col justify-between gap-8 px-5 py-12 md:px-10 md:py-16">
         <div>
           <p className="mb-5 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.35em] text-red">
             <span className="live-dot inline-block h-[7px] w-[7px] rounded-full bg-red" />
             创作者计划
           </p>
-          <h2 className="font-display text-[clamp(2.2rem,5vw,3.6rem)] leading-[1.02] tracking-[-0.04em]">
+          <h2 className="font-body text-[clamp(2.2rem,5vw,3.6rem)] font-semibold leading-[1.02]">
             分享你
             <br />
             镜头里的<em className="not-italic italic text-red">世界</em>
@@ -29,7 +29,7 @@ export function JoinSection() {
             ["70%", "收益分成"],
           ].map(([value, label]) => (
             <div key={label}>
-              <p className="font-mono text-[38px] leading-none tracking-[-0.05em]">
+              <p className="font-mono text-[38px] leading-none">
                 {value}
               </p>
               <p className="mt-1 text-[9px] uppercase tracking-[0.3em] text-muted">
@@ -40,17 +40,17 @@ export function JoinSection() {
         </div>
       </div>
 
-      <div className="group relative flex min-h-[280px] flex-col items-center justify-center gap-5 overflow-hidden bg-ink px-8 py-12 transition hover:bg-[#1a1612]">
-        <div className="pointer-events-none absolute bottom-[-20px] font-mono text-[140px] tracking-[-0.08em] text-paper/5 md:text-[180px]">
+      <div className="group relative flex min-h-[280px] flex-col items-center justify-center gap-5 overflow-hidden bg-white/38 px-8 py-12 transition">
+        <div className="pointer-events-none absolute bottom-[-20px] font-mono text-[140px] text-ink/5 md:text-[180px]">
           UPLOAD
         </div>
-        <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-paper/20 text-[36px] text-paper/35 transition group-hover:rotate-45 group-hover:border-gold group-hover:text-gold">
+        <div className="glass-primary flex h-20 w-20 items-center justify-center text-[36px] transition group-hover:rotate-45">
           +
         </div>
-        <p className="font-mono text-[20px] tracking-[0.35em] text-paper/45 transition group-hover:text-paper">
+        <p className="font-mono text-[20px] tracking-[0.28em] text-muted transition group-hover:text-ink">
           拖拽上传你的作品
         </p>
-        <p className="text-[10px] uppercase tracking-[0.2em] text-paper/25">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-muted">
           JPG · PNG · WEBP · 最大 50MB
         </p>
       </div>

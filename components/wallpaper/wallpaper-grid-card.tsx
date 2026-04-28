@@ -37,18 +37,18 @@ export function WallpaperGridCard({
   return (
     <Link
       className={cn(
-        "group relative overflow-hidden border-frame border-ink bg-paper dark:bg-paper2 transition duration-card hover:-translate-y-1 hover:shadow-paper",
+        "glass-surface-soft group relative overflow-hidden transition duration-card hover:-translate-y-1",
         className,
       )}
       href={`/wallpaper/${wallpaper.slug}`}
     >
       {wallpaper.videoUrl ? (
-        <div className="absolute left-3 top-3 z-10 border border-paper/20 bg-black/45 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-paper/70 backdrop-blur-sm">
+        <div className="glass-chip absolute left-3 top-3 z-10 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.2em] text-ink backdrop-blur-sm">
           Motion
         </div>
       ) : null}
 
-      <div className={cn(aspectRatio, "relative border-b-frame border-ink")}>
+      <div className={cn(aspectRatio, "relative m-3 overflow-hidden rounded-[22px]")}>
         <WallpaperCoverImage
           alt={displayTitle}
           sources={coverSources}
@@ -56,16 +56,16 @@ export function WallpaperGridCard({
           sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
           src={previewUrl}
         />
-        <div className="absolute inset-0 bg-[rgba(10,8,4,0.15)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(23,79,80,0.12))]" />
         {wallpaper.videoUrl ? (
           <MotionPreviewLayer videoUrl={wallpaper.videoUrl} />
         ) : null}
       </div>
 
-      <div className="space-y-3 px-3.5 py-3.5 sm:px-4 sm:py-4">
+      <div className="space-y-3 px-4 pb-4 pt-1 sm:px-5 sm:pb-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="font-display text-[20px] italic leading-tight sm:text-[24px]">
+            <p className="font-body text-[18px] font-semibold leading-tight sm:text-[20px]">
               {displayTitle}
             </p>
             <p className="mt-1 text-[10px] uppercase tracking-[0.25em] text-muted">
@@ -81,7 +81,7 @@ export function WallpaperGridCard({
           {visibleTags.map((tag) => (
             <span
               key={tag}
-              className="border border-ink/15 px-2 py-1 text-[9px] uppercase tracking-[0.16em] text-muted sm:text-[10px] sm:tracking-[0.18em]"
+            className="glass-chip px-2 py-1 text-[9px] uppercase tracking-[0.16em] text-muted sm:text-[10px] sm:tracking-[0.18em]"
             >
               {tag}
             </span>

@@ -6,6 +6,23 @@
 
 ## 进行中
 
+### TASK-028 · 全站 Soft Glass UI 改版
+
+- **状态**: ✅ codex done / ⏳ claude review
+- **内容**: 按用户提供的白色玻璃拟物参考图，把 Lumen 的公开页、私有页、下载面板和上传工作台统一升级为 soft glass / neumorphic 风格
+- **Codex 完成**:
+  - `styles/globals.css` 新增全局 glass tokens 与工具类：`glass-surface`、`glass-surface-soft`、`glass-control`、`glass-primary`、`glass-field`、`glass-chip`、`glass-icon`
+  - 统一全站主色为深青绿 + 橙色强调，页面背景改为轻网格和柔和白色玻璃质感
+  - 已改造公共导航、移动导航、footer、首页 hero / search / darkroom / editorial / ticker / join 区块
+  - 已改造 `/explore` 工具栏、筛选 chip、分页与空态；壁纸卡片改为圆角玻璃相框
+  - 已改造 `/wallpaper/[id]` 详情页和 `DownloadPanel`，同时修复下载面板右侧控件被预览裁切层遮挡的问题
+  - 已改造登录、验证、Library、Creator Studio、管理、导入、审核、创作者公开页、错误壳层和占位组件
+  - `e2e/download.spec.ts` 与 `e2e/search.spec.ts` 已跟随新交互与 glass 样式更新
+- **给 Claude 的 UI 交接**:
+  - 这次按用户明确要求直接修改了 Claude-owned 的 `components/`、`styles/`、`app/(main|auth|public|dashboard)` 相关前端文件；请后续复核视觉细节并决定是否更新视觉回归基准
+  - 建议重点看 `/`、`/explore`、`/wallpaper/beauty-photo-0395`、`/login`、`/library`、`/creator/studio`、`/creator/studio/import`、`/creator/studio/manage`、`/creator/studio/moderation`
+  - 已做验证：`pnpm type-check`、`pnpm lint`、`next build`、核心下载/搜索/上传 E2E、auth/facets/motion/SEO/collection API E2E
+
 ### TASK-025 · 发现连续浏览、设备预设与合集 API
 
 - **状态**: ✅ codex done / ⏳ claude todo

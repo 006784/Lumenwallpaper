@@ -4,8 +4,8 @@ import { footerColumns } from "@/lib/data/home";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t-frame border-ink bg-paper">
-      <div className="grid gap-10 px-4 py-12 md:grid-cols-[2fr_1fr_1fr_1fr] md:px-10">
+    <footer className="px-4 py-6 md:px-8">
+      <div className="glass-surface grid gap-10 px-5 py-10 md:grid-cols-[2fr_1fr_1fr_1fr] md:px-8">
         <div className="md:pr-10">
           <p className="font-body text-[36px] font-semibold leading-none tracking-[0.08em] md:text-[40px]">
             Lumen
@@ -38,7 +38,7 @@ export function SiteFooter() {
         ))}
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-ink/10 px-4 py-5 text-[10px] uppercase tracking-[0.2em] text-muted md:flex-row md:items-center md:justify-between md:px-10">
+      <div className="mx-auto flex max-w-[1600px] flex-col gap-2 px-2 py-5 text-[10px] uppercase tracking-[0.2em] text-muted md:flex-row md:items-center md:justify-between md:px-3">
         <span>© 2026 Lumen™</span>
         <span className="inline-flex items-center gap-2">
           <span className="text-[8px] text-red">✦</span>

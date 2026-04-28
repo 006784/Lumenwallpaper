@@ -77,11 +77,11 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
   return (
     <div className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
       <form
-        className="relative overflow-hidden border-frame border-ink bg-paper/75 px-5 py-5 shadow-[14px_14px_0_0_rgba(10,8,4,0.06)] backdrop-blur md:px-7 md:py-7"
+        className="glass-surface relative overflow-hidden px-5 py-5 md:px-7 md:py-7"
         onSubmit={handleSubmit}
       >
-        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-gold via-red to-transparent" />
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-ink/10 pb-4">
+        <div className="absolute inset-x-8 top-0 h-[3px] rounded-full bg-red/70" />
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 pb-4">
           <div>
             <p className="text-[10px] uppercase tracking-[0.3em] text-red">
               01 — 邮件验证
@@ -90,7 +90,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
               输入你常用的邮箱，我们会把一次性登录链接发到那里。
             </p>
           </div>
-          <p className="border border-ink/10 bg-paper/70 px-3 py-2 text-[10px] uppercase tracking-[0.24em] text-muted">
+          <p className="glass-chip px-3 py-2 text-[10px] uppercase tracking-[0.24em] text-muted">
             Session Secure
           </p>
         </div>
@@ -104,7 +104,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
           </label>
           <input
             autoComplete="email"
-            className="w-full border-frame border-ink bg-paper/80 px-4 py-3.5 text-[15px] outline-none transition placeholder:text-muted/70 focus:border-red focus:bg-paper"
+            className="glass-field w-full px-4 py-3.5 text-[15px] outline-none transition placeholder:text-muted/70"
             id="email"
             name="email"
             placeholder="you@example.com"
@@ -117,7 +117,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
         </div>
 
         <button
-          className="inline-flex min-h-[50px] w-full items-center justify-center border-frame border-ink bg-ink px-5 py-3 font-mono text-[12px] uppercase tracking-[0.24em] text-paper shadow-[8px_8px_0_0_rgba(10,8,4,0.08)] transition hover:-translate-y-0.5 hover:bg-red hover:shadow-[10px_10px_0_0_rgba(212,43,43,0.15)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="glass-primary inline-flex min-h-[50px] w-full items-center justify-center px-5 py-3 font-mono text-[12px] uppercase tracking-[0.24em] disabled:cursor-not-allowed disabled:opacity-60"
           disabled={isSubmitting}
           type="submit"
         >
@@ -143,14 +143,12 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
         ) : null}
       </form>
 
-      <aside className="relative overflow-hidden border-frame border-ink bg-ink px-5 py-5 text-paper shadow-[14px_14px_0_0_rgba(10,8,4,0.12)] md:px-7 md:py-7">
-        <div className="pointer-events-none absolute right-[-52px] top-[-52px] h-40 w-40 rounded-full bg-gold/15 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-[-74px] left-[-74px] h-44 w-44 rounded-full bg-red/10 blur-3xl" />
+      <aside className="glass-surface relative overflow-hidden px-5 py-5 text-ink md:px-7 md:py-7">
         <div className="relative">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-gold">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-red">
             Magic Link
           </p>
-          <p className="mt-3 text-sm leading-7 text-paper/80">
+          <p className="mt-3 text-sm leading-7 text-muted">
             输入邮箱后，我们会发送一封一次性登录邮件。点击邮件中的链接即可完成验证并建立 HttpOnly 会话。
           </p>
         </div>
@@ -163,20 +161,20 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
           ].map(([index, title, description]) => (
             <div
               key={index}
-              className="border border-paper/12 bg-paper/5 px-4 py-4"
+              className="glass-surface-soft px-4 py-4"
             >
-              <p className="text-[10px] uppercase tracking-[0.28em] text-gold/80">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-red">
                 {index}
               </p>
-              <p className="mt-2 font-display text-[25px] leading-none italic text-paper">
+              <p className="mt-2 font-body text-[22px] font-semibold leading-none text-ink">
                 {title}
               </p>
-              <p className="mt-3 text-sm leading-6 text-paper/65">{description}</p>
+              <p className="mt-3 text-sm leading-6 text-muted">{description}</p>
             </div>
           ))}
         </div>
 
-        <div className="relative mt-6 space-y-2 border-t border-paper/10 pt-5 text-[11px] uppercase tracking-[0.2em] text-paper/45">
+        <div className="relative mt-6 space-y-2 border-t border-ink/10 pt-5 text-[11px] uppercase tracking-[0.2em] text-muted">
           <p>有效期：15 分钟</p>
           <p>链接仅可使用一次</p>
           <p>登录成功后会自动回到 Lumen</p>
