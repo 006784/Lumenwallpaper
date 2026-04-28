@@ -42,7 +42,7 @@ export function DarkroomSection({ items }: DarkroomSectionProps) {
 
       <Reveal
         stagger
-        className="glass-surface grid gap-3 p-3 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr] lg:grid-rows-[220px_220px] xl:grid-rows-[240px_240px]"
+        className="glass-surface grid auto-rows-[200px] gap-3 p-3 sm:grid-cols-2 lg:auto-rows-[220px] lg:grid-cols-4 xl:auto-rows-[240px]"
         y={30}
         duration={0.7}
       >
@@ -51,8 +51,8 @@ export function DarkroomSection({ items }: DarkroomSectionProps) {
             key={item.title}
             className={
               item.featured
-                ? "min-h-[200px] sm:col-span-2 lg:col-auto lg:row-span-2"
-                : "min-h-[180px]"
+                ? "sm:col-span-2 lg:row-span-2"
+                : ""
             }
           >
             <DarkroomCard item={item} />

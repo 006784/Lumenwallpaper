@@ -18,8 +18,8 @@ export function IosSpotlightSection({
   const [featuredWallpaper, ...restWallpapers] = wallpapers;
 
   return (
-    <section className="px-5 py-14 sm:px-6 md:px-10 md:py-section">
-      <Reveal className="mb-10">
+    <section className="px-5 py-12 sm:px-6 md:px-10 md:py-16">
+      <Reveal className="mb-8">
         <SectionHeading
           eyebrow="02 — iOS 专区"
           hint={
@@ -48,16 +48,16 @@ export function IosSpotlightSection({
         </div>
       </Reveal>
 
-      <Reveal className="grid gap-5 lg:grid-cols-[0.82fr_1.18fr]" y={24} duration={0.7}>
+      <Reveal className="grid items-start gap-5 lg:grid-cols-[0.72fr_1.28fr]" y={24} duration={0.7}>
         <div className="space-y-5">
-          <div className="mx-auto max-w-[320px] lg:max-w-[360px]">
+          <div className="mx-auto max-w-[280px] sm:max-w-[300px] lg:max-w-[320px]">
             <WallpaperGridCard
-              aspectRatio="aspect-[9/18]"
+              aspectRatio="aspect-[9/16]"
               imageQuality="large"
               wallpaper={featuredWallpaper}
             />
           </div>
-          <div className="glass-surface-soft px-5 py-5">
+          <div className="glass-surface-soft px-5 py-4">
             <p className="text-[10px] uppercase tracking-[0.32em] text-muted">
               iOS Curation Note
             </p>
@@ -71,7 +71,7 @@ export function IosSpotlightSection({
           {restWallpapers.map((wallpaper) => (
             <WallpaperGridCard
               key={wallpaper.id}
-              aspectRatio="aspect-[9/18]"
+              aspectRatio="aspect-[9/16]"
               imageQuality="large"
               wallpaper={wallpaper}
             />

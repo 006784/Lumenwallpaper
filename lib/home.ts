@@ -19,10 +19,10 @@ import {
 import type { HomePageSnapshot } from "@/types/home-api";
 import type { Wallpaper } from "@/types/wallpaper";
 
-const HOME_PUBLISHED_POOL_LIMIT = 30;
-const HOME_FEATURED_POOL_LIMIT = 12;
+const HOME_PUBLISHED_POOL_LIMIT = 96;
+const HOME_FEATURED_POOL_LIMIT = 36;
 const HOME_MOTION_LIMIT = 9;
-const HOME_IOS_POOL_LIMIT = 24;
+const HOME_IOS_POOL_LIMIT = 72;
 
 async function loadHomePool(
   label: string,
@@ -37,21 +37,39 @@ async function loadHomePool(
 }
 
 function getAdaptiveHomeLimits(staticPoolSize: number) {
-  if (staticPoolSize >= 18) {
+  if (staticPoolSize >= 72) {
     return {
-      darkroom: 5,
-      editorialItems: 3,
-      ios: 4,
-      mood: 8,
+      darkroom: 12,
+      editorialItems: 6,
+      ios: 15,
+      mood: 18,
+    };
+  }
+
+  if (staticPoolSize >= 40) {
+    return {
+      darkroom: 10,
+      editorialItems: 5,
+      ios: 10,
+      mood: 14,
+    };
+  }
+
+  if (staticPoolSize >= 20) {
+    return {
+      darkroom: 8,
+      editorialItems: 4,
+      ios: 8,
+      mood: 10,
     };
   }
 
   if (staticPoolSize >= 12) {
     return {
-      darkroom: 3,
+      darkroom: 5,
       editorialItems: 2,
-      ios: 3,
-      mood: 5,
+      ios: 5,
+      mood: 7,
     };
   }
 
@@ -194,23 +212,23 @@ export async function getHomePageSnapshot(): Promise<HomePageSnapshot> {
   const adaptiveLimits = getAdaptiveHomeLimits(staticPool.length);
   const usedStaticWallpapers = new Set<string>();
 
-  const moodWallpapers = takeUniqueWallpapers({
-    limit: adaptiveLimits.mood,
-    sources: [publishedWallpapers, featuredWallpapers],
-    usedIds: usedStaticWallpapers,
-  });
-  const iosWallpapers = takeUniqueWallpapers({
-    limit: adaptiveLimits.ios,
-    predicate: isPortraitWallpaper,
-    sources: [iosCandidates, publishedWallpapers, featuredWallpapers],
-    usedIds: usedStaticWallpapers,
-  });
   const editorialFeatureWallpaper =
     takeUniqueWallpapers({
       limit: 1,
       sources: [featuredWallpapers, publishedWallpapers],
       usedIds: usedStaticWallpapers,
     })[0] ?? null;
+  const iosWallpapers = takeUniqueWallpapers({
+    limit: adaptiveLimits.ios,
+    predicate: isPortraitWallpaper,
+    sources: [iosCandidates, publishedWallpapers, featuredWallpapers],
+    usedIds: usedStaticWallpapers,
+  });
+  const moodWallpapers = takeUniqueWallpapers({
+    limit: adaptiveLimits.mood,
+    sources: [publishedWallpapers, featuredWallpapers, iosCandidates],
+    usedIds: usedStaticWallpapers,
+  });
   const editorialItemsWallpapers = takeUniqueWallpapers({
     limit: adaptiveLimits.editorialItems,
     sources: [featuredWallpapers, publishedWallpapers],

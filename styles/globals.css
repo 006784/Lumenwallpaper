@@ -284,6 +284,7 @@ textarea:focus-visible {
 
   .wallpaper-card-grid {
     display: grid;
+    align-items: start;
     gap: 0.9rem;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 158px), 1fr));
   }
@@ -334,6 +335,56 @@ textarea:focus-visible {
     box-shadow: var(--glass-shadow);
   }
 
+  .dark .glass-surface {
+    border-color: rgba(232, 248, 247, 0.16);
+    background:
+      linear-gradient(145deg, rgba(28, 56, 59, 0.92), rgba(10, 26, 28, 0.72));
+  }
+
+  .dark .glass-surface-soft {
+    border-color: rgba(232, 248, 247, 0.14);
+    background:
+      linear-gradient(145deg, rgba(25, 49, 52, 0.78), rgba(9, 24, 26, 0.62));
+  }
+
+  .dark .glass-control {
+    border-color: rgba(232, 248, 247, 0.22);
+    background:
+      linear-gradient(145deg, rgba(31, 61, 64, 0.88), rgba(12, 29, 31, 0.76));
+    box-shadow:
+      10px 14px 28px rgba(0, 0, 0, 0.24),
+      -8px -8px 20px rgba(255, 255, 255, 0.04),
+      inset 1px 1px 1px rgba(255, 255, 255, 0.12),
+      inset -1px -1px 2px rgba(0, 0, 0, 0.28);
+    color: var(--color-ink);
+  }
+
+  .dark .glass-control:hover {
+    border-color: rgba(232, 248, 247, 0.34);
+    background:
+      linear-gradient(145deg, rgba(38, 72, 75, 0.94), rgba(15, 34, 36, 0.82));
+    box-shadow:
+      14px 18px 34px rgba(0, 0, 0, 0.3),
+      -8px -8px 22px rgba(255, 255, 255, 0.055),
+      inset 1px 1px 1px rgba(255, 255, 255, 0.16),
+      inset -1px -1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .dark .glass-field {
+    border-color: rgba(232, 248, 247, 0.16);
+    background: rgba(9, 24, 26, 0.58);
+    color: var(--color-ink);
+  }
+
+  .dark .glass-chip {
+    border-color: rgba(232, 248, 247, 0.16);
+    background: rgba(21, 43, 46, 0.72);
+    box-shadow:
+      7px 9px 18px rgba(0, 0, 0, 0.2),
+      -5px -5px 14px rgba(255, 255, 255, 0.035),
+      inset 1px 1px 1px rgba(255, 255, 255, 0.1);
+  }
+
   .section-entry-link--dark {
     border-color: rgba(242, 237, 228, 0.18);
     background: rgba(242, 237, 228, 0.08);
@@ -348,15 +399,17 @@ textarea:focus-visible {
 
   /* Dark mode overrides for section-entry-link on light sections */
   .dark .section-entry-link {
-    border-color: rgba(237, 232, 223, 0.14);
-    background: rgba(237, 232, 223, 0.05);
-    color: rgba(237, 232, 223, 0.78);
+    border-color: rgba(232, 248, 247, 0.2);
+    background: rgba(20, 42, 45, 0.78);
+    color: var(--color-ink);
   }
 
   .dark .section-entry-link:hover {
-    border-color: rgba(237, 232, 223, 0.28);
-    background: rgba(237, 232, 223, 0.1);
-    box-shadow: 8px 8px 0 0 rgba(237, 232, 223, 0.04);
+    border-color: rgba(232, 248, 247, 0.36);
+    background: rgba(30, 61, 64, 0.9);
+    box-shadow:
+      10px 14px 28px rgba(0, 0, 0, 0.26),
+      -8px -8px 18px rgba(255, 255, 255, 0.04);
   }
 
   .safe-bottom-padding {
