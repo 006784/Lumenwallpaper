@@ -45,7 +45,7 @@ export default async function DarkroomPage() {
         </div>
 
         {wallpapers.length > 0 ? (
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="wallpaper-card-grid mt-10">
             {wallpapers.map((wallpaper) => (
               <WallpaperGridCard key={wallpaper.id} wallpaper={wallpaper} />
             ))}

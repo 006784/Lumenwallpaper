@@ -270,11 +270,11 @@ export function ManageWallpapersBoard({
         return (
           <article
             key={item.wallpaper.id}
-            className="grid gap-5 border-frame border-ink bg-paper/75 p-5 shadow-[14px_14px_0_0_rgba(10,8,4,0.06)] md:grid-cols-[220px_1fr]"
+            className="glass-surface-soft grid gap-4 p-4 md:grid-cols-[172px_1fr]"
           >
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div
-                className="aspect-[4/5] border-frame border-ink"
+                className="aspect-[4/5] overflow-hidden rounded-[18px] shadow-[inset_0_0_0_1px_rgba(23,79,80,0.08)]"
                 style={artworkStyle}
               />
               <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.22em]">
@@ -297,7 +297,7 @@ export function ManageWallpapersBoard({
             <div className="space-y-5">
               <div className="flex flex-wrap items-start justify-between gap-4 border-b border-ink/10 pb-4">
                 <div>
-                  <p className="font-display text-[30px] italic leading-none">
+                  <p className="font-body text-[22px] font-semibold leading-tight">
                     {item.wallpaper.title}
                   </p>
                   <p className="mt-2 text-[10px] uppercase tracking-[0.24em] text-muted">

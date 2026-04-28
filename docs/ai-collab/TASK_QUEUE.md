@@ -17,6 +17,7 @@
   - 已改造 `/explore` 工具栏、筛选 chip、分页与空态；壁纸卡片改为圆角玻璃相框
   - 已改造 `/wallpaper/[id]` 详情页和 `DownloadPanel`，同时修复下载面板右侧控件被预览裁切层遮挡的问题
   - 已改造登录、验证、Library、Creator Studio、管理、导入、审核、创作者公开页、错误壳层和占位组件
+  - 新增 `.wallpaper-card-grid` 全局壁纸网格尺寸规范，Explore / Library / Darkroom / Creator / 详情推荐统一改为更紧凑的多列卡片；管理台和审核页的作品缩略卡也同步缩小
   - `e2e/download.spec.ts` 与 `e2e/search.spec.ts` 已跟随新交互与 glass 样式更新
 - **给 Claude 的 UI 交接**:
   - 这次按用户明确要求直接修改了 Claude-owned 的 `components/`、`styles/`、`app/(main|auth|public|dashboard)` 相关前端文件；请后续复核视觉细节并决定是否更新视觉回归基准

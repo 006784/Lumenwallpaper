@@ -48,13 +48,15 @@ export function IosSpotlightSection({
         </div>
       </Reveal>
 
-      <Reveal className="grid gap-5 lg:grid-cols-[1.02fr_0.98fr] xl:grid-cols-[1.08fr_0.92fr]" y={24} duration={0.7}>
+      <Reveal className="grid gap-5 lg:grid-cols-[0.82fr_1.18fr]" y={24} duration={0.7}>
         <div className="space-y-5">
-          <WallpaperGridCard
-            aspectRatio="aspect-[9/18]"
-            imageQuality="large"
-            wallpaper={featuredWallpaper}
-          />
+          <div className="mx-auto max-w-[320px] lg:max-w-[360px]">
+            <WallpaperGridCard
+              aspectRatio="aspect-[9/18]"
+              imageQuality="large"
+              wallpaper={featuredWallpaper}
+            />
+          </div>
           <div className="glass-surface-soft px-5 py-5">
             <p className="text-[10px] uppercase tracking-[0.32em] text-muted">
               iOS Curation Note
@@ -65,7 +67,7 @@ export function IosSpotlightSection({
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="wallpaper-card-grid">
           {restWallpapers.map((wallpaper) => (
             <WallpaperGridCard
               key={wallpaper.id}

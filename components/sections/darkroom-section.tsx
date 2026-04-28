@@ -42,7 +42,7 @@ export function DarkroomSection({ items }: DarkroomSectionProps) {
 
       <Reveal
         stagger
-        className="glass-surface grid gap-3 p-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr] lg:grid-rows-[260px_260px] xl:grid-rows-[280px_280px]"
+        className="glass-surface grid gap-3 p-3 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr] lg:grid-rows-[220px_220px] xl:grid-rows-[240px_240px]"
         y={30}
         duration={0.7}
       >

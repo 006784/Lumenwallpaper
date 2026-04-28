@@ -199,7 +199,7 @@ export function ExploreCatalogLoading({
           />
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="wallpaper-card-grid mt-8">
           {Array.from({ length: 6 }, (_, index) => (
             <ExploreCardSkeleton key={index} />
           ))}
@@ -626,7 +626,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             </button>
           </div>
         ) : isLoading && !result ? (
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="wallpaper-card-grid mt-10">
             {Array.from({ length: 6 }, (_, index) => (
               <ExploreCardSkeleton key={index} />
             ))}
@@ -636,8 +636,8 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             <div
               className={
                 isLoading
-                  ? "mt-10 grid gap-4 opacity-70 transition-opacity sm:grid-cols-2 xl:grid-cols-3"
-                  : "mt-10 grid gap-4 transition-opacity sm:grid-cols-2 xl:grid-cols-3"
+                  ? "wallpaper-card-grid mt-10 opacity-70 transition-opacity"
+                  : "wallpaper-card-grid mt-10 transition-opacity"
               }
             >
               {wallpapers.map((wallpaper) => (

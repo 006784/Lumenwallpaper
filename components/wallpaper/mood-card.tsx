@@ -9,10 +9,10 @@ import { MotionPreviewLayer } from "@/components/wallpaper/motion-preview-layer"
 import { WallpaperCoverImage } from "@/components/wallpaper/wallpaper-cover-image";
 
 const SHAPE_CLASSES: Record<MoodShape, string> = {
-  portrait: "h-[240px] w-[160px] md:h-[340px] md:w-[220px]",
-  landscape: "h-[180px] w-[280px] md:h-[240px] md:w-[380px]",
-  square: "h-[200px] w-[200px] md:h-[280px] md:w-[280px]",
-  tall: "h-[280px] w-[140px] md:h-[380px] md:w-[180px]",
+  portrait: "h-[220px] w-[148px] md:h-[300px] md:w-[194px]",
+  landscape: "h-[164px] w-[250px] md:h-[212px] md:w-[330px]",
+  square: "h-[184px] w-[184px] md:h-[246px] md:w-[246px]",
+  tall: "h-[252px] w-[128px] md:h-[334px] md:w-[158px]",
 };
 
 const TILT_STRENGTH = 7;
