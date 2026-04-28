@@ -6,6 +6,33 @@
 
 ## 进行中
 
+### TASK-030 · 首页壁纸展示密度提升
+
+- **状态**: ✅ codex done
+- **内容**: 用户反馈页面壁纸很多但首页只展示几张，Codex 接管前端与首页数据聚合，提升首页各内容区块的壁纸取数和展示数量
+- **Codex 完成**:
+  - `lib/home.ts`：首页 published 候选池从 30 提到 96、featured 从 12 提到 36、iOS 候选池从 24 提到 72
+  - `lib/home.ts`：大数据量时首页展示提升到情绪版 18 张、iOS 15 张、编辑推荐 6 张、暗室精选 12 张
+  - `lib/home.ts`：先为编辑主推和 iOS 竖屏专区分配作品，再分配其他区块，减少竖屏作品被前置区块抢走的问题
+  - `components/sections/darkroom-section.tsx`：让暗室精选在大屏下支持更多卡片而不是固定 5 张版式
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - 本地 `/api/home` 返回：`mood=18`、`ios=15`、`editorial=6`、`darkroom=12`
+
+### TASK-029 · iOS 专区留白与夜色模式可读性修复
+
+- **状态**: ✅ codex done
+- **内容**: 用户明确要求 Codex 接管 Claude 前端职责，全面检查首页 iOS 专区卡片留白、夜色模式文字/按钮对比度，并直接优化 Claude-owned UI 文件
+- **Codex 完成**:
+  - `components/sections/ios-spotlight-section.tsx`：压缩 iOS 专区布局，避免右侧壁纸卡片被网格拉伸后产生大面积空白
+  - `styles/globals.css`：补齐暗色模式下 glass surface/control/chip/field 的背景、边框、阴影与文字对比度
+  - `components/wallpaper/wallpaper-grid-card.tsx`：卡片改为 `h-fit self-start`，配合 `.wallpaper-card-grid { align-items: start; }` 防止被父级网格强制拉伸
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - 本地 `http://localhost:3001` 明暗模式截图检查；iOS 区域卡片高度已回到正常内容高度，夜色模式按钮和卡片文字可读
+
 ### TASK-028 · 全站 Soft Glass UI 改版
 
 - **状态**: ✅ codex done / ⏳ claude review
