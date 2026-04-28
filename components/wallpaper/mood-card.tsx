@@ -3,19 +3,11 @@
 import Link from "next/link";
 import { useRef } from "react";
 
-import { cn } from "@/lib/utils";
-import type { MoodCardData, MoodShape } from "@/types/home";
+import type { MoodCardData } from "@/types/home";
 import { MotionPreviewLayer } from "@/components/wallpaper/motion-preview-layer";
 import { WallpaperCoverImage } from "@/components/wallpaper/wallpaper-cover-image";
 
-const SHAPE_CLASSES: Record<MoodShape, string> = {
-  portrait: "h-[220px] w-[148px] md:h-[300px] md:w-[194px]",
-  landscape: "h-[164px] w-[250px] md:h-[212px] md:w-[330px]",
-  square: "h-[184px] w-[184px] md:h-[246px] md:w-[246px]",
-  tall: "h-[252px] w-[128px] md:h-[334px] md:w-[158px]",
-};
-
-const TILT_STRENGTH = 7;
+const TILT_STRENGTH = 4;
 
 type MoodCardProps = {
   card: MoodCardData;
@@ -42,21 +34,21 @@ export function MoodCard({ card }: MoodCardProps) {
   return (
     <Link
       ref={ref}
-      className={cn(
-        "glass-surface-soft group relative block shrink-0 overflow-hidden p-3 transition-shadow duration-card will-change-transform",
-        SHAPE_CLASSES[card.shape],
-      )}
+      className="glass-surface-soft group relative block h-[286px] w-[208px] shrink-0 overflow-hidden p-2.5 transition-shadow duration-card will-change-transform sm:h-[308px] sm:w-[224px] md:h-[330px] md:w-[240px]"
       href={card.href}
-      style={{ transformStyle: "preserve-3d", transition: "transform 0.08s linear, box-shadow 700ms" }}
+      style={{
+        transformStyle: "preserve-3d",
+        transition: "transform 0.08s linear, box-shadow 700ms",
+      }}
       onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
     >
-      <div className="absolute inset-3 overflow-hidden rounded-[22px] transition-transform duration-card ease-out group-hover:scale-[1.04]">
+      <div className="absolute inset-2.5 overflow-hidden rounded-[20px] transition-transform duration-card ease-out group-hover:scale-[1.035]">
         <WallpaperCoverImage
           alt={card.name}
           sources={card.coverSources}
           gradient={card.gradient}
-          sizes="(max-width: 640px) 50vw, 25vw"
+          sizes="(max-width: 640px) 65vw, 240px"
           src={card.previewUrl}
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(23,79,80,0.16))]" />
@@ -69,7 +61,7 @@ export function MoodCard({ card }: MoodCardProps) {
         />
       ) : null}
 
-      <div className="glass-chip absolute left-5 top-5 px-2 py-1 font-mono text-xs tracking-[0.2em] text-ink/70">
+      <div className="glass-chip absolute left-5 top-5 px-2.5 py-1 font-mono text-[11px] tracking-[0.2em] text-ink/70">
         {card.number}
       </div>
 
@@ -79,13 +71,15 @@ export function MoodCard({ card }: MoodCardProps) {
         </div>
       ) : null}
 
-      <div className="glass-control absolute right-5 top-5 flex h-9 w-9 items-center justify-center text-sm opacity-100 transition-[background-color,opacity] duration-hover md:opacity-0 md:group-hover:opacity-100">
-        ↓
+      <div className="glass-control absolute right-5 top-5 flex h-8 w-8 items-center justify-center text-xs opacity-100 transition-[background-color,opacity] duration-hover md:opacity-0 md:group-hover:opacity-100">
+        ↗
       </div>
 
-      <div className="absolute inset-x-3 bottom-3 rounded-[20px] bg-white/72 px-4 pb-4 pt-5 shadow-[0_12px_24px_rgba(37,58,62,0.12)] backdrop-blur md:translate-y-[112%] md:transition-transform md:duration-info md:ease-[var(--ease-film)] md:group-hover:translate-y-0">
-        <p className="font-body text-[18px] font-semibold text-ink">{card.name}</p>
-        <p className="mt-1 text-[9px] uppercase tracking-[0.28em] text-muted">
+      <div className="absolute inset-x-2.5 bottom-2.5 rounded-[18px] bg-white/76 px-3.5 pb-3.5 pt-4 shadow-[0_12px_24px_rgba(37,58,62,0.12)] backdrop-blur md:translate-y-[106%] md:transition-transform md:duration-info md:ease-[var(--ease-film)] md:group-hover:translate-y-0">
+        <p className="line-clamp-2 font-body text-[16px] font-semibold leading-tight text-ink">
+          {card.name}
+        </p>
+        <p className="mt-1 text-[8px] uppercase tracking-[0.22em] text-muted">
           {card.meta}
         </p>
         {card.aiTags && card.aiTags.length > 0 ? (

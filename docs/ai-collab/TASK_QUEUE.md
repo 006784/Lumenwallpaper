@@ -14,6 +14,7 @@
   - `styles/globals.css` 新增全局 glass tokens 与工具类：`glass-surface`、`glass-surface-soft`、`glass-control`、`glass-primary`、`glass-field`、`glass-chip`、`glass-icon`
   - 统一全站主色为深青绿 + 橙色强调，页面背景改为轻网格和柔和白色玻璃质感
   - 已改造公共导航、移动导航、footer、首页 hero / search / darkroom / editorial / ticker / join 区块
+  - 首页“情绪版”区块已二次重排为左侧目录面板 + 右侧统一尺寸画廊，避免巨型标题和不规则卡片抢重心
   - 已改造 `/explore` 工具栏、筛选 chip、分页与空态；壁纸卡片改为圆角玻璃相框
   - 已改造 `/wallpaper/[id]` 详情页和 `DownloadPanel`，同时修复下载面板右侧控件被预览裁切层遮挡的问题
   - 已改造登录、验证、Library、Creator Studio、管理、导入、审核、创作者公开页、错误壳层和占位组件
