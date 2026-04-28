@@ -19,9 +19,9 @@ import type {
 import {
   getCreatorByUsername,
   getSimilarWallpapers,
+  getPublishedWallpaperByIdOrSlug,
   getWallpaperMotionSnapshot,
   getWallpaperTrustSnapshot,
-  getWallpaperByIdOrSlug,
   listFeaturedWallpapers,
   listPublishedWallpapers,
   listWallpapersByCreator,
@@ -107,7 +107,7 @@ export async function getCachedFeaturedWallpapers(
 
 export async function getCachedWallpaperByIdentifier(identifier: string) {
   const wallpaper = await unstable_cache(
-    async () => getWallpaperByIdOrSlug(identifier),
+    async () => getPublishedWallpaperByIdOrSlug(identifier),
     ["wallpaper", PUBLIC_WALLPAPER_CACHE_VERSION, identifier],
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,

@@ -89,6 +89,8 @@ LUMEN_EDITOR_USERNAMES=
   {
     "AllowedOrigins": [
       "https://byteify.icu",
+      "https://cloudify.icu",
+      "https://lumen-wallpaper.vercel.app",
       "https://your-preview-deployment.vercel.app"
     ],
     "AllowedMethods": ["PUT"],

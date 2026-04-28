@@ -179,6 +179,10 @@ function buildR2UploadErrorMessage(
   return `上传到 R2 失败，状态码 ${xhr.status}${statusText}。${responseSnippet ? `返回：${responseSnippet}` : ""}${statusHint}`;
 }
 
+function shouldShowUploadDiagnostics(message: string) {
+  return /R2|CORS|status 0|上传诊断/i.test(message);
+}
+
 function uploadFileToPresignedUrl(
   upload: PresignedUploadPayload,
   file: File,
@@ -1791,9 +1795,19 @@ export function UploadStudioForm({
                 : state.kind === "submitting"
                   ? "border-gold/30 bg-gold/10 text-[#7a6114]"
                   : "border-ink/10 bg-paper/60 text-muted",
-          )}
+              )}
         >
-          {state.message}
+          <p>{state.message}</p>
+          {state.kind === "error" && shouldShowUploadDiagnostics(state.message) ? (
+            <a
+              className="mt-3 inline-flex border border-current px-3 py-1 text-[10px] uppercase tracking-[0.22em] transition hover:bg-red hover:text-paper"
+              href="/api/upload/diagnostics"
+              rel="noreferrer"
+              target="_blank"
+            >
+              运行上传诊断
+            </a>
+          ) : null}
         </div>
 
         {"wallpapers" in state && state.wallpapers && state.wallpapers.length > 0 ? (

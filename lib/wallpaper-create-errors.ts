@@ -1,4 +1,8 @@
-import { isR2AccessDeniedError, isR2NotFoundError } from "@/lib/r2";
+import {
+  isR2AccessDeniedError,
+  isR2NotFoundError,
+  R2UploadValidationError,
+} from "@/lib/r2";
 import { WallpaperVariantGenerationError } from "@/lib/wallpaper-variants";
 
 type WallpaperCreateErrorResponse = {
@@ -117,6 +121,30 @@ export function getWallpaperCreateErrorResponse(
       },
       message: "R2 拒绝读取或写入对象，请检查 Bucket 权限和访问密钥。",
       status: 503,
+    };
+  }
+
+  if (error instanceof R2UploadValidationError) {
+    const isTooLarge = error.code === "R2_UPLOAD_TOO_LARGE";
+
+    return {
+      code: error.code,
+      details: {
+        actionLabel: "重新选择文件",
+        description: isTooLarge
+          ? "R2 收到的实际文件超过允许大小，已拒绝发布。"
+          : "R2 收到的实际文件与发布请求里的文件信息不一致，可能是直传被替换或浏览器上传头异常。",
+        retryable: true,
+        title: isTooLarge ? "文件超过大小限制" : "上传文件校验失败",
+        troubleshooting: [
+          "重新选择原文件并等待上传完成。",
+          "如果仍然失败，打开上传诊断检查 R2 CORS 和请求头。",
+        ],
+      },
+      message: isTooLarge
+        ? "上传文件超过允许大小，请压缩后重新上传。"
+        : "上传文件与发布请求不一致，请重新上传后再发布。",
+      status: 400,
     };
   }
 

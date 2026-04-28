@@ -28,7 +28,7 @@ import {
 } from "@/lib/wallpaper-presenters";
 import type { WallpaperVariant } from "@/types/wallpaper";
 import {
-  getWallpaperByIdOrSlug,
+  getPublishedWallpaperByIdOrSlug,
   incrementWallpaperDownloads,
 } from "@/lib/wallpapers";
 
@@ -794,7 +794,7 @@ export async function GET(
 
   try {
     const { requestedVariant, transformConfig } = parseDownloadQuery(request);
-    const wallpaper = await getWallpaperByIdOrSlug(params.id);
+    const wallpaper = await getPublishedWallpaperByIdOrSlug(params.id);
 
     if (!wallpaper) {
       return jsonError("Wallpaper not found.", {
