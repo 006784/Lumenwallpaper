@@ -282,6 +282,32 @@ textarea:focus-visible {
     filter: drop-shadow(0 8px 12px rgba(23, 79, 80, 0.12));
   }
 
+  .wallpaper-card-grid {
+    display: grid;
+    gap: 0.9rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 158px), 1fr));
+  }
+
+  @media (min-width: 640px) {
+    .wallpaper-card-grid {
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(188px, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .wallpaper-card-grid {
+      gap: 1.1rem;
+      grid-template-columns: repeat(auto-fill, minmax(218px, 1fr));
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .wallpaper-card-grid {
+      grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
+    }
+  }
+
   .section-entry-link {
     display: inline-flex;
     align-items: center;

@@ -234,7 +234,7 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
                 查看全部 ↗
               </a>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="wallpaper-card-grid">
               {relatedWallpapers.map((w) => (
                 <WallpaperGridCard key={w.id} wallpaper={w} />
               ))}

@@ -187,7 +187,7 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
 
           {wallpapers.length > 0 ? (
             <Reveal stagger y={20} duration={0.6}>
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="wallpaper-card-grid">
                 {wallpapers.map((wallpaper) => (
                   <WallpaperGridCard key={wallpaper.id} wallpaper={wallpaper} />
                 ))}

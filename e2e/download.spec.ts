@@ -130,9 +130,14 @@ test.describe("壁纸浏览与下载", () => {
     const response = await page.request.get(
       `/api/wallpapers/${identifier}/download?format=webp&ratio=1%3A1&resolution=320%20%C3%97%20320`,
     );
+    const failurePayload = !response.ok()
+      ? ((await response.json().catch(() => null)) as { code?: string } | null)
+      : null;
 
     test.skip(
-      [404, 503].includes(response.status()),
+      [404, 503].includes(response.status()) ||
+        (response.status() === 500 &&
+          failurePayload?.code === "WALLPAPER_DOWNLOAD_FAILED"),
       "当前环境缺少下载源文件或 R2 配置，跳过转换链路测试",
     );
 

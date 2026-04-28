@@ -161,7 +161,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
             </div>
 
             {library.favorites.length > 0 ? (
-              <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="wallpaper-card-grid mt-8">
                 {library.favorites.map((wallpaper) => (
                   <WallpaperGridCard key={wallpaper.id} wallpaper={wallpaper} />
                 ))}
