@@ -5,7 +5,7 @@ import {
 } from "@/lib/api";
 import { getCurrentUser, isAuthConfigured } from "@/lib/auth";
 import {
-  getWallpaperByIdOrSlug,
+  getPublishedWallpaperByIdOrSlug,
   getWallpaperFavoriteState,
   toggleWallpaperFavorite,
 } from "@/lib/wallpapers";
@@ -21,7 +21,7 @@ export async function GET(
   { params }: WallpaperFavoriteRouteProps,
 ) {
   try {
-    const wallpaper = await getWallpaperByIdOrSlug(params.id);
+    const wallpaper = await getPublishedWallpaperByIdOrSlug(params.id);
 
     if (!wallpaper) {
       return jsonError("Wallpaper not found.", {
@@ -80,7 +80,7 @@ export async function POST(
   }
 
   try {
-    const wallpaper = await getWallpaperByIdOrSlug(params.id);
+    const wallpaper = await getPublishedWallpaperByIdOrSlug(params.id);
 
     if (!wallpaper) {
       return jsonError("Wallpaper not found.", {

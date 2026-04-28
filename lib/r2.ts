@@ -1,6 +1,7 @@
 import {
   DeleteObjectsCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
@@ -52,6 +53,23 @@ type R2UploadOptions = {
   cacheControl?: string;
   contentDisposition?: string;
 };
+
+export class R2UploadValidationError extends Error {
+  readonly code:
+    | "R2_UPLOAD_CONTENT_TYPE_MISMATCH"
+    | "R2_UPLOAD_SIZE_MISMATCH"
+    | "R2_UPLOAD_TOO_LARGE";
+
+  constructor(
+    code: R2UploadValidationError["code"],
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+    this.name = "R2UploadValidationError";
+    this.code = code;
+  }
+}
 
 export function getR2Config() {
   return {
@@ -633,6 +651,80 @@ export async function getR2ObjectBuffer(path: string) {
   );
 
   return readR2BodyAsBuffer(response.Body);
+}
+
+export async function getR2ObjectMetadata(path: string) {
+  const normalizedPath = normalizeR2StoragePath(path);
+
+  if (!normalizedPath) {
+    throw new Error("R2 object path is required.");
+  }
+
+  const client = createR2Client();
+  const config = getR2Config();
+  const response = await client.send(
+    new HeadObjectCommand({
+      Bucket: config.bucket,
+      Key: normalizedPath,
+    }),
+  );
+
+  return {
+    contentLength:
+      typeof response.ContentLength === "number" ? response.ContentLength : null,
+    contentType: response.ContentType ?? null,
+    etag: response.ETag ?? null,
+    lastModified: response.LastModified?.toISOString() ?? null,
+  };
+}
+
+function normalizeContentType(contentType: string | null | undefined) {
+  return contentType?.split(";")[0]?.trim().toLowerCase() || null;
+}
+
+export async function assertR2ObjectMatchesUpload(options: {
+  declaredSize?: number | null;
+  expectedContentType?: (typeof ALLOWED_UPLOAD_MIME_TYPES)[number] | null;
+  path: string;
+}) {
+  const metadata = await getR2ObjectMetadata(options.path);
+  const actualContentLength = metadata.contentLength;
+  const expectedContentType = normalizeContentType(options.expectedContentType);
+  const actualContentType = normalizeContentType(metadata.contentType);
+  const maxSizeBytes = expectedContentType
+    ? getUploadMaxSizeBytes(expectedContentType)
+    : MAX_UPLOAD_SIZE_BYTES;
+
+  if (actualContentLength !== null && actualContentLength > maxSizeBytes) {
+    throw new R2UploadValidationError(
+      "R2_UPLOAD_TOO_LARGE",
+      `Uploaded R2 object is too large: ${actualContentLength} bytes exceeds ${maxSizeBytes} bytes.`,
+    );
+  }
+
+  if (
+    typeof options.declaredSize === "number" &&
+    actualContentLength !== null &&
+    actualContentLength !== options.declaredSize
+  ) {
+    throw new R2UploadValidationError(
+      "R2_UPLOAD_SIZE_MISMATCH",
+      `Uploaded R2 object size mismatch: declared ${options.declaredSize} bytes, actual ${actualContentLength} bytes.`,
+    );
+  }
+
+  if (
+    expectedContentType &&
+    actualContentType &&
+    actualContentType !== expectedContentType
+  ) {
+    throw new R2UploadValidationError(
+      "R2_UPLOAD_CONTENT_TYPE_MISMATCH",
+      `Uploaded R2 object content type mismatch: expected ${expectedContentType}, actual ${actualContentType}.`,
+    );
+  }
+
+  return metadata;
 }
 
 export async function getR2ObjectStream(path: string) {

@@ -11,6 +11,7 @@ import { getCurrentUser, isAuthConfigured, isEditorUser } from "@/lib/auth";
 import {
   deleteWallpaperRecord,
   getWallpaperByIdOrSlug,
+  getPublishedWallpaperByIdOrSlug,
   updateWallpaperRecord,
   updateWallpaperSchema,
 } from "@/lib/wallpapers";
@@ -26,7 +27,7 @@ export async function GET(
   { params }: WallpaperRouteProps,
 ) {
   try {
-    const wallpaper = await getWallpaperByIdOrSlug(params.id);
+    const wallpaper = await getPublishedWallpaperByIdOrSlug(params.id);
 
     if (!wallpaper) {
       return jsonError("Wallpaper not found.", {

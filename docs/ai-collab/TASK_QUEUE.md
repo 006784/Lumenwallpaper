@@ -6,6 +6,25 @@
 
 ## 进行中
 
+### TASK-031 · 全项目审查修复与线上上传排查
+
+- **状态**: ✅ codex done
+- **内容**: 根据全项目代码审查修复公开壁纸可见性、公开下载计数边界、R2 直传实际对象校验，并排查线上上传 `status 0`
+- **Codex 完成**:
+  - 新增 `getPublishedWallpaperByIdOrSlug()`，公开详情 API、公开详情页缓存、下载、fallback、收藏状态和举报提交均只处理 `published` 壁纸
+  - 新增迁移 `202604010009_public_download_visibility.sql`，让 `increment_wallpaper_downloads` 只给 `published` 壁纸计数
+  - `lib/r2.ts` 新增 R2 `HeadObject` 元数据读取和实际上传对象校验，发布前校验真实 Content-Length / Content-Type，防止 presigned URL 被用来上传超限或不一致对象
+  - 上传失败 UI 增加“运行上传诊断”入口；README 与生产 runbook 补充当前生产/预览域名的 R2 CORS origin 示例
+- **线上上传排查**:
+  - `https://lumen-wallpaper.vercel.app/api/health` 正常返回 `status=ok`
+  - 连接到的 Cloudflare API 账号返回“未启用 R2”，无法直接读取生产 bucket CORS；这通常说明当前连接账号不是生产 R2 bucket 所在账号
+  - 对 `https://img.byteify.icu/...` 的现有对象执行 `OPTIONS`/`GET` 检查返回 Cloudflare 403 `This bucket cannot be viewed`，说明线上 R2 公网域或 bucket public access/CORS 至少有一项配置不对
+  - 截图中的浏览器 `status 0` 与 R2 CORS 预检失败高度一致；需要在生产 R2 bucket 上精确放行当前站点 origin（如 `https://lumen-wallpaper.vercel.app`、`https://byteify.icu`、`https://cloudify.icu`）的 `PUT` 和 `Content-Type`
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - `pnpm build`（通过；构建期间本地 Supabase 读取出现 transient `fetch failed` 日志，但最终完成）
+
 ### TASK-030 · 首页壁纸展示密度提升
 
 - **状态**: ✅ codex done

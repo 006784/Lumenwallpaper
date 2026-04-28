@@ -17,6 +17,7 @@ import {
 } from "@/lib/explore";
 import {
   ALLOWED_UPLOAD_MIME_TYPES,
+  assertR2ObjectMatchesUpload,
   deleteR2Objects,
   getR2AssetId,
   getUploadMaxSizeBytes,
@@ -2731,7 +2732,7 @@ export async function getSimilarWallpapers(
 export async function getWallpaperMotionSnapshot(
   identifier: string,
 ): Promise<WallpaperMotionSnapshot | null> {
-  const wallpaper = await getWallpaperByIdOrSlug(identifier);
+  const wallpaper = await getPublishedWallpaperByIdOrSlug(identifier);
 
   if (!wallpaper || wallpaper.status !== "published") {
     return null;
@@ -2783,7 +2784,7 @@ export async function getWallpaperMotionSnapshot(
 export async function getWallpaperTrustSnapshot(
   identifier: string,
 ): Promise<WallpaperTrustSnapshot | null> {
-  const wallpaper = await getWallpaperByIdOrSlug(identifier);
+  const wallpaper = await getPublishedWallpaperByIdOrSlug(identifier);
 
   if (!wallpaper || wallpaper.status !== "published") {
     return null;
@@ -2878,6 +2879,12 @@ export async function getWallpaperByIdOrSlug(identifier: string) {
       return (await hydrateWallpapers([byId]))[0] ?? null;
     },
   );
+}
+
+export async function getPublishedWallpaperByIdOrSlug(identifier: string) {
+  const wallpaper = await getWallpaperByIdOrSlug(identifier);
+
+  return wallpaper?.status === "published" ? wallpaper : null;
 }
 
 export async function getCreatorByUsername(username: string) {
@@ -3835,6 +3842,31 @@ export async function createWallpaperRecord(
           );
       const slug = await ensureUniqueSlug(toSlug(input.title));
       const isVideoWallpaper = isVideoWallpaperInput(input);
+
+      try {
+        await assertR2ObjectMatchesUpload({
+          declaredSize: input.original.size,
+          expectedContentType: input.original.contentType ?? null,
+          path: input.original.storagePath,
+        });
+
+        if (input.posterOriginal) {
+          await assertR2ObjectMatchesUpload({
+            declaredSize: input.posterOriginal.size,
+            expectedContentType: input.posterOriginal.contentType ?? null,
+            path: input.posterOriginal.storagePath,
+          });
+        }
+      } catch (error) {
+        await deleteR2Objects(
+          getCleanupPaths([
+            input.original.storagePath,
+            input.posterOriginal?.storagePath,
+          ]),
+        );
+        throw error;
+      }
+
       const videoOriginalFile = {
         variant: "original" as const,
         storagePath: input.original.storagePath,
@@ -4196,7 +4228,7 @@ export async function createWallpaperReport(
     } satisfies WallpaperReportReceipt;
   }
 
-  const wallpaper = await getWallpaperByIdOrSlug(identifier);
+  const wallpaper = await getPublishedWallpaperByIdOrSlug(identifier);
 
   if (!wallpaper) {
     return null;
@@ -4483,7 +4515,7 @@ export async function getWallpaperFavoriteState(
     } satisfies WallpaperFavoriteSnapshot;
   }
 
-  const wallpaper = await getWallpaperByIdOrSlug(identifier);
+  const wallpaper = await getPublishedWallpaperByIdOrSlug(identifier);
 
   if (!wallpaper) {
     return {
@@ -4530,7 +4562,7 @@ export async function toggleWallpaperFavorite(
     } satisfies WallpaperFavoriteSnapshot;
   }
 
-  const wallpaper = await getWallpaperByIdOrSlug(identifier);
+  const wallpaper = await getPublishedWallpaperByIdOrSlug(identifier);
 
   if (!wallpaper) {
     throw new Error("Wallpaper was not found while toggling favorite.");

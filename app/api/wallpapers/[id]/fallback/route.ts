@@ -10,7 +10,7 @@ import {
   getWallpaperDownloadFileByVariant,
   getWallpaperGradientKey,
 } from "@/lib/wallpaper-presenters";
-import { getWallpaperByIdOrSlug } from "@/lib/wallpapers";
+import { getPublishedWallpaperByIdOrSlug } from "@/lib/wallpapers";
 import type { WallpaperVariant } from "@/types/wallpaper";
 
 type WallpaperFallbackRouteProps = {
@@ -31,7 +31,7 @@ export async function GET(
   { params }: WallpaperFallbackRouteProps,
 ) {
   try {
-    const wallpaper = await getWallpaperByIdOrSlug(params.id);
+    const wallpaper = await getPublishedWallpaperByIdOrSlug(params.id);
 
     if (!wallpaper) {
       return jsonError("Wallpaper not found.", {
