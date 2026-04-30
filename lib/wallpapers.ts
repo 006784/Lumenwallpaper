@@ -20,6 +20,7 @@ import {
   assertR2ObjectMatchesUpload,
   deleteR2Objects,
   getR2AssetId,
+  getR2ObjectBuffer,
   getUploadMaxSizeBytes,
   isVideoUploadMimeType,
   getR2ObjectUrl,
@@ -1119,6 +1120,56 @@ function getWallpaperAnalysisFile(wallpaper: Pick<Wallpaper, "files">) {
     getWallpaperFileByVariant(wallpaper, "thumb") ??
     getWallpaperOriginalFile(wallpaper)
   );
+}
+
+function getWallpaperFileMimeType(file: WallpaperFile) {
+  const format = file.format?.trim().toLowerCase();
+
+  if (format === "jpg" || format === "jpeg") {
+    return "image/jpeg";
+  }
+
+  if (format === "png") {
+    return "image/png";
+  }
+
+  if (format === "webp") {
+    return "image/webp";
+  }
+
+  if (/\.(jpe?g)$/i.test(file.storagePath) || /\.(jpe?g)$/i.test(file.url)) {
+    return "image/jpeg";
+  }
+
+  if (/\.png$/i.test(file.storagePath) || /\.png$/i.test(file.url)) {
+    return "image/png";
+  }
+
+  if (/\.webp$/i.test(file.storagePath) || /\.webp$/i.test(file.url)) {
+    return "image/webp";
+  }
+
+  return "image/jpeg";
+}
+
+async function getWallpaperAiImageUrl(file: WallpaperFile) {
+  if (!file.storagePath) {
+    return file.url;
+  }
+
+  try {
+    const buffer = await getR2ObjectBuffer(file.storagePath);
+    const mimeType = getWallpaperFileMimeType(file);
+
+    return `data:${mimeType};base64,${buffer.toString("base64")}`;
+  } catch (error) {
+    console.warn(
+      "[wallpaper-ai] Failed to read R2 analysis image, falling back to URL:",
+      error instanceof Error ? error.message : error,
+    );
+
+    return file.url;
+  }
 }
 
 function hasCompleteWallpaperVariants(wallpaper: Pick<Wallpaper, "files">) {
@@ -2360,12 +2411,14 @@ export async function backfillWallpaperAssets(
     wallpaper.aiTags.length === 0;
 
   if (aiSourceFile?.url && needsAiBackfill) {
+    const imageUrl = await getWallpaperAiImageUrl(aiSourceFile);
+
     await enrichWallpaperWithAiMetadata(
       wallpaper.id,
       {
         title: wallpaper.title,
         description: wallpaper.description,
-        imageUrl: aiSourceFile.url,
+        imageUrl,
       },
       {
         providerOverride: options?.providerOverride,

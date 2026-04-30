@@ -283,9 +283,20 @@ function createAnalysisPrompt(input: {
 function getProviderErrorMessage(payload: unknown, fallbackStatus: number) {
   const apiMessage =
     (payload as { error?: { message?: string } })?.error?.message ??
+    (typeof (payload as { error?: unknown })?.error === "string"
+      ? (payload as { error: string }).error
+      : null) ??
     (payload as { message?: string })?.message;
 
-  return apiMessage || `Provider responded with status ${fallbackStatus}.`;
+  if (apiMessage) {
+    return apiMessage;
+  }
+
+  const serializedPayload = payload ? JSON.stringify(payload).slice(0, 500) : "";
+
+  return serializedPayload
+    ? `Provider responded with status ${fallbackStatus}: ${serializedPayload}`
+    : `Provider responded with status ${fallbackStatus}.`;
 }
 
 async function callOpenAiCompatibleVisionProvider(
