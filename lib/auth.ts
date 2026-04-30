@@ -16,7 +16,8 @@ import type { SessionUser, FrameSession } from "@/types/auth";
 import type { Database } from "@/types/database";
 
 export const MAGIC_LINK_EXPIRY_MINUTES = 15;
-export const SESSION_MAX_AGE_DAYS = 30;
+export const DEFAULT_SESSION_MAX_AGE_DAYS = 180;
+export const SESSION_MAX_AGE_DAYS_ENV = "LUMEN_SESSION_MAX_AGE_DAYS";
 export const FRAME_SESSION_COOKIE = "frame_session";
 
 const sessionsTable = "sessions" satisfies keyof Database["public"]["Tables"];
@@ -99,6 +100,22 @@ export function getAuthBaseUrl() {
 
 export function isAuthConfigured() {
   return Boolean(process.env.NEXTAUTH_SECRET);
+}
+
+export function getSessionMaxAgeDays() {
+  const configuredValue = process.env[SESSION_MAX_AGE_DAYS_ENV]?.trim();
+
+  if (!configuredValue) {
+    return DEFAULT_SESSION_MAX_AGE_DAYS;
+  }
+
+  const parsedValue = Number.parseInt(configuredValue, 10);
+
+  if (!Number.isFinite(parsedValue)) {
+    return DEFAULT_SESSION_MAX_AGE_DAYS;
+  }
+
+  return Math.min(Math.max(parsedValue, 1), 365);
 }
 
 export function normalizeRedirectPath(value: string | null | undefined) {
@@ -213,9 +230,11 @@ export function isEditorUser(
 }
 
 export function getSessionCookieOptions() {
+  const sessionMaxAgeDays = getSessionMaxAgeDays();
+
   return {
     httpOnly: true,
-    maxAge: 60 * 60 * 24 * SESSION_MAX_AGE_DAYS,
+    maxAge: 60 * 60 * 24 * sessionMaxAgeDays,
     path: "/",
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
@@ -306,8 +325,9 @@ export async function consumeMagicLinkSession(token: string) {
   }
 
   const user = await findOrCreateUserByEmail(session.email);
+  const sessionMaxAgeDays = getSessionMaxAgeDays();
   const expiresAt = new Date(
-    Date.now() + SESSION_MAX_AGE_DAYS * 24 * 60 * 60 * 1000,
+    Date.now() + sessionMaxAgeDays * 24 * 60 * 60 * 1000,
   ).toISOString();
 
   return {

@@ -6,6 +6,19 @@
 
 ## 进行中
 
+### TASK-037 · 登录长期会话优化
+
+- **状态**: ✅ codex done
+- **内容**: 用户反馈 Magic Link 每次都要收邮件点链接太麻烦，需要减少重复登录成本
+- **Codex 完成**:
+  - `lib/auth.ts` 将本机会话默认有效期从 30 天延长到 180 天，首次邮件验证后常用设备会保持登录
+  - 新增 `LUMEN_SESSION_MAX_AGE_DAYS` 配置项，可在 1 到 365 天之间调整会话时长；未配置时默认 180 天
+  - 登录页文案改为“首次验证 + 本机长期登录”，明确只有换浏览器、清理 Cookie 或会话过期时才需要重新收链接
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - `playwright test e2e/auth.spec.ts --project=desktop-chromium`
+
 ### TASK-036 · 批量审核与 INS 专区上传归类修复
 
 - **状态**: ✅ codex done

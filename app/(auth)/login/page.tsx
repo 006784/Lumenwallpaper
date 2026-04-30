@@ -43,15 +43,15 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
           用邮箱接回你的 Lumen 身份
         </h1>
         <p className="mt-6 max-w-3xl text-sm leading-7 text-muted md:text-base">
-          这里已经切到真实的 Magic Link 登录流程。输入邮箱后，系统会发送一次性链接；验证成功后会建立 HttpOnly 会话，并回到你刚才的页面。
+          这里保留一次性邮件验证，但验证成功后会在当前设备建立长期 HttpOnly 会话。除非换浏览器、清理 Cookie 或会话过期，否则不用每次重新收链接。
         </p>
 
         <div className="mt-8 flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.24em] text-muted">
           <span className="glass-chip px-3 py-2">
-            一次性链接
+            一次性验证
           </span>
           <span className="glass-chip px-3 py-2">
-            HttpOnly Session
+            180 天本机会话
           </span>
           {redirectPath !== "/" ? (
             <span className="glass-chip-active px-3 py-2">

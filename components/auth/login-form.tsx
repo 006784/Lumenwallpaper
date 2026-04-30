@@ -87,11 +87,11 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
               01 — 邮件验证
             </p>
             <p className="mt-2 max-w-md text-sm leading-6 text-muted">
-              输入你常用的邮箱，我们会把一次性登录链接发到那里。
+              输入你常用的邮箱，首次验证后这台设备会保持长期登录。
             </p>
           </div>
           <p className="glass-chip px-3 py-2 text-[10px] uppercase tracking-[0.24em] text-muted">
-            Session Secure
+            180 天会话
           </p>
         </div>
 
@@ -112,7 +112,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
             type="email"
           />
           <p className="mt-3 text-xs leading-6 text-muted">
-            推荐使用你准备绑定创作者身份的邮箱。
+            推荐使用你准备绑定创作者身份的邮箱；常用设备不需要每次重新收信。
           </p>
         </div>
 
@@ -121,7 +121,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
           disabled={isSubmitting}
           type="submit"
         >
-          {isSubmitting ? "发送中…" : "发送登录链接"}
+          {isSubmitting ? "发送中…" : "发送一次性登录链接"}
         </button>
 
         {error ? (
@@ -146,18 +146,18 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
       <aside className="glass-surface relative overflow-hidden px-5 py-5 text-ink md:px-7 md:py-7">
         <div className="relative">
           <p className="text-[10px] uppercase tracking-[0.3em] text-red">
-            Magic Link
+            长期登录
           </p>
           <p className="mt-3 text-sm leading-7 text-muted">
-            输入邮箱后，我们会发送一封一次性登录邮件。点击邮件中的链接即可完成验证并建立 HttpOnly 会话。
+            只在首次登录、换浏览器、清理 Cookie 或会话过期时需要邮件验证。验证成功后会建立 HttpOnly 长期会话。
           </p>
         </div>
 
         <div className="relative mt-6 grid gap-3">
           {[
-            ["01", "提交邮箱", "请求你的专属登录链接。"],
-            ["02", "打开邮件", "点开一次性链接完成验证。"],
-            ["03", "自动返回", "回到 Lumen 并建立安全会话。"],
+            ["01", "首次验证", "请求一次性登录链接。"],
+            ["02", "绑定本机", "点开邮件链接完成设备验证。"],
+            ["03", "长期使用", "回到 Lumen 后保持本机登录。"],
           ].map(([index, title, description]) => (
             <div
               key={index}
@@ -175,9 +175,9 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
         </div>
 
         <div className="relative mt-6 space-y-2 border-t border-ink/10 pt-5 text-[11px] uppercase tracking-[0.2em] text-muted">
-          <p>有效期：15 分钟</p>
+          <p>链接有效期：15 分钟</p>
           <p>链接仅可使用一次</p>
-          <p>登录成功后会自动回到 Lumen</p>
+          <p>本机会话默认保留 180 天</p>
         </div>
       </aside>
     </div>
