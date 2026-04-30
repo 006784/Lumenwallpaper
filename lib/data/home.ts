@@ -15,6 +15,7 @@ import type { SupportedLocale } from "@/types/i18n";
 
 export const navLinks: NavLink[] = [
   { label: "探索", href: "/explore" },
+  { label: "INS 专区", href: "/ins" },
   { label: "暗室精选", href: "/darkroom" },
   { label: "创作者", href: "/creator/studio" },
   { label: "4K 库", href: "/explore" },
@@ -25,6 +26,7 @@ export function getLocalizedNavLinks(locale: SupportedLocale): NavLink[] {
 
   return [
     { label: copy.nav.explore, href: "/explore" },
+    { label: copy.nav.ins, href: "/ins" },
     { label: copy.nav.darkroom, href: "/darkroom" },
     { label: copy.nav.creator, href: "/creator/studio" },
     { label: copy.nav.library, href: "/explore" },

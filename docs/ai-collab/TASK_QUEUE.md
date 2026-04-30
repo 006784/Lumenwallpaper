@@ -6,6 +6,28 @@
 
 ## 进行中
 
+### TASK-035 · INS 人物照片专区
+
+- **状态**: ✅ codex done
+- **内容**: 用户要求开发一个用于整理从 INS 下载的 IU、林允儿、张元英等照片专区，未来可扩展刘亦菲/国内艺人；UI 需要与现有风格统一，上传/下载接口复用现有系统
+- **Codex 完成**:
+  - 新增 `types/ins-picks.ts` 与 `lib/ins-picks.ts`，用人物合集定义 + 标签/别名匹配聚合现有 `wallpapers` 数据，不新增孤立内容表
+  - 新增 `GET /api/ins-picks?collection=iu|lim-yoona|jang-wonyoung|liu-yifei&limit=...`，统一返回合集、标签规范、上传入口和当前作品列表
+  - 新增公开页 `/ins` 与 `/ins/[collection]`，包含 IU、林允儿、张元英、刘亦菲预留合集，空态会提示继续使用现有上传 Studio 并按 `ins + 人物标签` 归档
+  - 新增 `components/sections/ins-picks-gallery.tsx`，复用 `WallpaperGridCard`、现有详情页和 `/api/wallpapers/[id]/download` 下载链路
+  - Header 导航新增 INS Picks/INS 专区入口，多语言导航文案已补齐
+  - `/ins` 与 `/ins/[collection]` 已加入 sitemap
+  - 新增 `e2e/ins-picks.spec.ts` 覆盖专区 API、公开入口和人物合集页面
+- **上传 / 下载协议**:
+  - 上传仍走 `/creator/studio`、`POST /api/upload/presign`、`POST /api/wallpapers`
+  - 推荐标签：`ins`、`instagram`、`celebrity`，再加人物标签如 `iu` / `张元英` / `林允儿`
+  - 下载仍走详情页与 `/api/wallpapers/[id]/download`，专区不另建下载接口
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - `pnpm build`
+  - `playwright test e2e/ins-picks.spec.ts --project=desktop-chromium`
+
 ### TASK-034 · 全站字体审美统一
 
 - **状态**: ✅ codex done

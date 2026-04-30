@@ -155,6 +155,7 @@ type LocalizedHomeDataCopy = {
     creator: string;
     darkroom: string;
     explore: string;
+    ins: string;
     library: string;
   };
   searchTags: Record<string, string>;
@@ -847,6 +848,7 @@ const LOCALIZED_HOME_DATA_COPY = {
       creator: "创作者",
       darkroom: "暗室精选",
       explore: "探索",
+      ins: "INS 专区",
       library: "4K 库",
     },
     searchTags: {
@@ -913,6 +915,7 @@ const LOCALIZED_HOME_DATA_COPY = {
       creator: "Creators",
       darkroom: "Darkroom",
       explore: "Explore",
+      ins: "INS Picks",
       library: "4K Library",
     },
     searchTags: {
@@ -979,6 +982,7 @@ const LOCALIZED_HOME_DATA_COPY = {
       creator: "クリエイター",
       darkroom: "暗室セレクト",
       explore: "探索",
+      ins: "INS セレクト",
       library: "4K ライブラリ",
     },
     searchTags: {
@@ -1045,6 +1049,7 @@ const LOCALIZED_HOME_DATA_COPY = {
       creator: "크리에이터",
       darkroom: "다크룸",
       explore: "탐색",
+      ins: "INS 픽",
       library: "4K 라이브러리",
     },
     searchTags: {

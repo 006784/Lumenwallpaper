@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
 import { EXPLORE_CATEGORIES } from "@/lib/explore";
+import { INS_PICK_COLLECTIONS } from "@/lib/ins-picks";
 import { getCachedPublishedWallpapers } from "@/lib/public-wallpaper-cache";
 
 export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
@@ -34,10 +35,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    {
+      url: `${baseUrl}/ins`,
+      changeFrequency: "weekly",
+      priority: 0.78,
+    },
     ...EXPLORE_CATEGORIES.map((category) => ({
       url: `${baseUrl}${category.href}`,
       changeFrequency: "weekly" as const,
       priority: 0.75,
+    })),
+    ...INS_PICK_COLLECTIONS.map((collection) => ({
+      url: `${baseUrl}${collection.href}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.72,
     })),
     ...wallpapers.map((wallpaper) => ({
       url: `${baseUrl}/wallpaper/${wallpaper.slug}`,
