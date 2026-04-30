@@ -16,10 +16,10 @@ type InsPickCollectionPageProps = {
 
 export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
-}: InsPickCollectionPageProps): Metadata {
-  const collection = getInsPickCollection(params.collection);
+}: InsPickCollectionPageProps): Promise<Metadata> {
+  const collection = await getInsPickCollection(params.collection);
 
   if (!collection) {
     return {
@@ -36,7 +36,7 @@ export function generateMetadata({
 export default async function InsPickCollectionPage({
   params,
 }: InsPickCollectionPageProps) {
-  const collection = getInsPickCollection(params.collection);
+  const collection = await getInsPickCollection(params.collection);
 
   if (!collection) {
     notFound();

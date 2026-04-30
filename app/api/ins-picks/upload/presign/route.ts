@@ -9,9 +9,11 @@ import {
 } from "@/lib/api";
 import { getCurrentUser, isAuthConfigured } from "@/lib/auth";
 import {
+  buildInsPickUploadMetadata,
   getInsPickCollection,
+  getInsPickUploadDirectory,
   getInsPickUploadTags,
-  INS_PICK_UPLOAD_METADATA,
+  listInsPickCollections,
 } from "@/lib/ins-picks";
 import { consumeRateLimit, getRateLimitHeaders } from "@/lib/rate-limit";
 import { createPresignedUpload, isR2Configured } from "@/lib/r2";
@@ -22,10 +24,7 @@ const collectionSchema = z.object({
     .string()
     .trim()
     .toLowerCase()
-    .max(64)
-    .refine((value) => Boolean(getInsPickCollection(value)), {
-      message: "Unknown INS picks collection.",
-    }),
+    .max(64),
 });
 
 export async function POST(request: Request) {
@@ -58,7 +57,7 @@ export async function POST(request: Request) {
     const rawBody = await request.json();
     const body = presignUploadSchema.parse(rawBody);
     const { collection: collectionSlug } = collectionSchema.parse(rawBody);
-    const collection = getInsPickCollection(collectionSlug);
+    const collection = await getInsPickCollection(collectionSlug);
 
     if (!collection) {
       return jsonError("Unknown INS picks collection.", {
@@ -92,8 +91,13 @@ export async function POST(request: Request) {
       });
     }
 
-    const upload = await createPresignedUpload(body.filename, body.contentType);
+    const upload = await createPresignedUpload(body.filename, body.contentType, {
+      directory: getInsPickUploadDirectory(collection),
+    });
     const requiredTags = getInsPickUploadTags(collection);
+    const uploadMetadata = buildInsPickUploadMetadata(
+      await listInsPickCollections(),
+    );
 
     logger.done("ins_picks.upload.presign.created", {
       collection: collection.slug,
@@ -107,11 +111,12 @@ export async function POST(request: Request) {
         collection: {
           label: collection.label,
           nativeName: collection.nativeName,
+          r2Prefix: collection.r2Prefix,
           requiredTags,
           slug: collection.slug,
         },
-        createEndpoint: INS_PICK_UPLOAD_METADATA.createEndpoint,
-        presignEndpoint: INS_PICK_UPLOAD_METADATA.presignEndpoint,
+        createEndpoint: uploadMetadata.createEndpoint,
+        presignEndpoint: uploadMetadata.presignEndpoint,
       },
       {
         headers: getRateLimitHeaders(uploadRateLimit),

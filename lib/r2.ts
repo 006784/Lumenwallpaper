@@ -444,6 +444,26 @@ function getFileExtension(filename: string) {
   return filename.slice(dotIndex + 1).toLowerCase();
 }
 
+function normalizeR2Directory(directory: string | undefined) {
+  if (!directory) {
+    return "";
+  }
+
+  return directory
+    .trim()
+    .replace(/^\/+|\/+$/g, "")
+    .split("/")
+    .map((part) =>
+      part
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]+/g, "-")
+        .replace(/^-+|-+$/g, ""),
+    )
+    .filter(Boolean)
+    .join("/");
+}
+
 function encodeContentDispositionFilename(filename: string) {
   return encodeURIComponent(filename).replace(
     /['()]/g,
@@ -547,28 +567,32 @@ function createReadableStreamFromAsyncIterable(
 
 export function buildR2StoragePath(options: {
   assetId?: string;
+  directory?: string;
   filename?: string;
   variant: WallpaperVariant;
 }) {
   const assetId = options.assetId ?? crypto.randomUUID();
+  const directory = normalizeR2Directory(options.directory);
   const extension =
     options.variant === "original"
       ? getFileExtension(options.filename ?? "upload.bin")
       : "webp";
+  const withDirectory = (prefix: string, filename: string) =>
+    directory ? `${prefix}/${directory}/${filename}` : `${prefix}/${filename}`;
 
   if (options.variant === "original") {
-    return `${R2_STORAGE_PREFIXES.original}/${assetId}.${extension}`;
+    return withDirectory(R2_STORAGE_PREFIXES.original, `${assetId}.${extension}`);
   }
 
   if (options.variant === "4k") {
-    return `${R2_STORAGE_PREFIXES["4k"]}/${assetId}_4k.${extension}`;
+    return withDirectory(R2_STORAGE_PREFIXES["4k"], `${assetId}_4k.${extension}`);
   }
 
   if (options.variant === "thumb") {
-    return `${R2_STORAGE_PREFIXES.thumb}/${assetId}_800.${extension}`;
+    return withDirectory(R2_STORAGE_PREFIXES.thumb, `${assetId}_800.${extension}`);
   }
 
-  return `${R2_STORAGE_PREFIXES.preview}/${assetId}_400.${extension}`;
+  return withDirectory(R2_STORAGE_PREFIXES.preview, `${assetId}_400.${extension}`);
 }
 
 function getVariantCacheControl(variant: WallpaperVariant) {
@@ -592,10 +616,14 @@ export function getUploadMaxSizeBytes(contentType: string) {
 export async function createPresignedUpload(
   filename: string,
   contentType: (typeof ALLOWED_UPLOAD_MIME_TYPES)[number],
+  options: {
+    directory?: string;
+  } = {},
 ): Promise<PresignedUploadPayload> {
   const client = createR2Client();
   const config = getR2Config();
   const key = buildR2StoragePath({
+    directory: options.directory,
     variant: "original",
     filename,
   });

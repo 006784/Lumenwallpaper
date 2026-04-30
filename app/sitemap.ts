@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
 import { EXPLORE_CATEGORIES } from "@/lib/explore";
-import { INS_PICK_COLLECTIONS } from "@/lib/ins-picks";
+import { listInsPickCollections } from "@/lib/ins-picks";
 import { getCachedPublishedWallpapers } from "@/lib/public-wallpaper-cache";
 
 export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
@@ -13,6 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     limit: 500,
     sort: "latest",
   });
+  const insPickCollections = await listInsPickCollections();
   const creatorUsernames = [
     ...new Set(
       wallpapers.map((item) => item.creator?.username).filter(Boolean),
@@ -45,7 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.75,
     })),
-    ...INS_PICK_COLLECTIONS.map((collection) => ({
+    ...insPickCollections.map((collection) => ({
       url: `${baseUrl}${collection.href}`,
       changeFrequency: "weekly" as const,
       priority: 0.72,

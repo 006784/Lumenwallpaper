@@ -87,6 +87,16 @@ function getNormalizedDimensions(metadata: sharp.Metadata) {
   };
 }
 
+function getVariantDirectoryFromOriginalPath(path: string) {
+  const parts = path.split("/").filter(Boolean);
+
+  if (parts[0] !== "originals" || parts.length <= 2) {
+    return undefined;
+  }
+
+  return parts.slice(1, -1).join("/");
+}
+
 async function createVariantBuffer(originalBuffer: Buffer, spec: VariantSpec) {
   const transformed = sharp(originalBuffer, {
     failOn: "none",
@@ -151,6 +161,7 @@ export async function generateWallpaperVariantFiles(
     for (const spec of VARIANT_SPECS) {
       const nextPath = buildR2StoragePath({
         assetId,
+        directory: getVariantDirectoryFromOriginalPath(normalizedOriginalPath),
         variant: spec.variant,
       });
       const variantBuffer = await createVariantBuffer(originalBuffer, spec);

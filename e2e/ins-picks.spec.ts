@@ -16,6 +16,8 @@ test.describe("INS Picks 专区", () => {
           slug: string;
         }>;
         upload: {
+          archiveEndpoint: string;
+          collectionsEndpoint: string;
           createEndpoint: string;
           href: string;
           presignEndpoint: string;
@@ -25,6 +27,10 @@ test.describe("INS Picks 专区", () => {
     };
 
     expect(payload.data.upload.href).toBe("/creator/studio");
+    expect(payload.data.upload.archiveEndpoint).toBe("/api/ins-picks/archives");
+    expect(payload.data.upload.collectionsEndpoint).toBe(
+      "/api/ins-picks/collections",
+    );
     expect(payload.data.upload.createEndpoint).toBe("/api/ins-picks/upload");
     expect(payload.data.upload.presignEndpoint).toBe(
       "/api/ins-picks/upload/presign",
@@ -64,6 +70,8 @@ test.describe("INS Picks 专区", () => {
     await expect(page.getByRole("link", { name: /Karina/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /Upload photos/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /Upload API/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Collections API/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /New person set/i })).toBeVisible();
   });
 
   test("人物合集页面可直接打开", async ({ page }) => {
@@ -84,11 +92,17 @@ test.describe("INS Picks 专区", () => {
     const metadataPayload = (await metadataResponse.json()) as {
       data: {
         collections: Array<{ slug: string }>;
+        archiveEndpoint: string;
+        collectionsEndpoint: string;
         createEndpoint: string;
         presignEndpoint: string;
       };
     };
 
+    expect(metadataPayload.data.archiveEndpoint).toBe("/api/ins-picks/archives");
+    expect(metadataPayload.data.collectionsEndpoint).toBe(
+      "/api/ins-picks/collections",
+    );
     expect(metadataPayload.data.createEndpoint).toBe("/api/ins-picks/upload");
     expect(metadataPayload.data.presignEndpoint).toBe(
       "/api/ins-picks/upload/presign",
@@ -114,5 +128,63 @@ test.describe("INS Picks 专区", () => {
       },
     });
     expect(createResponse.status()).toBe(401);
+  });
+
+  test("自定义合集和打包 API 暴露稳定契约", async ({ request }) => {
+    const collectionsResponse = await request.get("/api/ins-picks/collections");
+
+    expect(collectionsResponse.ok()).toBe(true);
+
+    const collectionsPayload = (await collectionsResponse.json()) as {
+      data: {
+        collections: Array<{ r2Prefix: string; slug: string; source: string }>;
+      };
+    };
+
+    expect(collectionsPayload.data.collections).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          r2Prefix: "originals/ins-picks/karina-yu-jimin",
+          slug: "karina-yu-jimin",
+          source: "static",
+        }),
+      ]),
+    );
+
+    const createCollectionResponse = await request.post(
+      "/api/ins-picks/collections",
+      {
+        data: {
+          label: "Test Muse",
+          nativeName: "测试人物",
+        },
+      },
+    );
+    expect(createCollectionResponse.status()).toBe(401);
+
+    const quoteResponse = await request.get(
+      "/api/ins-picks/archives?collection=karina-yu-jimin&quote=true",
+    );
+
+    expect(quoteResponse.ok()).toBe(true);
+
+    const quotePayload = (await quoteResponse.json()) as {
+      data: {
+        collection: { r2Prefix: string; slug: string };
+        endpoint: string;
+        paymentMode: string;
+        selectedCount: number;
+      };
+    };
+
+    expect(quotePayload.data.endpoint).toBe("/api/ins-picks/archives");
+    expect(quotePayload.data.paymentMode).toBe("paid-ready");
+    expect(quotePayload.data.collection).toEqual(
+      expect.objectContaining({
+        r2Prefix: "originals/ins-picks/karina-yu-jimin",
+        slug: "karina-yu-jimin",
+      }),
+    );
+    expect(quotePayload.data.selectedCount).toBeGreaterThanOrEqual(0);
   });
 });

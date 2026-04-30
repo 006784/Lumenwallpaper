@@ -9,9 +9,10 @@ import {
 } from "@/lib/api";
 import { getCurrentUser, isAuthConfigured, isEditorUser } from "@/lib/auth";
 import {
+  buildInsPickUploadMetadata,
   getInsPickCollection,
   getInsPickUploadTags,
-  INS_PICK_UPLOAD_METADATA,
+  listInsPickCollections,
 } from "@/lib/ins-picks";
 import { getWallpaperCreateErrorResponse } from "@/lib/wallpaper-create-errors";
 import { createWallpaperRecord, createWallpaperSchema } from "@/lib/wallpapers";
@@ -22,10 +23,7 @@ const collectionSchema = z.object({
     .string()
     .trim()
     .toLowerCase()
-    .max(64)
-    .refine((value) => Boolean(getInsPickCollection(value)), {
-      message: "Unknown INS picks collection.",
-    }),
+    .max(64),
 });
 
 const insPickUploadSchema = createWallpaperSchema.extend({
@@ -33,7 +31,7 @@ const insPickUploadSchema = createWallpaperSchema.extend({
 });
 
 export async function GET() {
-  return jsonSuccess(INS_PICK_UPLOAD_METADATA, {
+  return jsonSuccess(buildInsPickUploadMetadata(await listInsPickCollections()), {
     message: "INS picks upload metadata loaded.",
   });
 }
@@ -60,7 +58,7 @@ export async function POST(request: Request) {
   try {
     const rawBody = await request.json();
     const payload = insPickUploadSchema.parse(rawBody);
-    const collection = getInsPickCollection(payload.collection);
+    const collection = await getInsPickCollection(payload.collection);
 
     if (!collection) {
       return jsonError("Unknown INS picks collection.", {
@@ -112,9 +110,10 @@ export async function POST(request: Request) {
         label: collection.label,
         nativeName: collection.nativeName,
         requiredTags: collection.requiredTags,
+        r2Prefix: collection.r2Prefix,
         slug: collection.slug,
       },
-      upload: INS_PICK_UPLOAD_METADATA,
+      upload: buildInsPickUploadMetadata(await listInsPickCollections()),
       wallpaper,
     };
 

@@ -21,10 +21,7 @@ const insPicksQuerySchema = z.object({
     .toLowerCase()
     .max(64)
     .optional()
-    .transform((value) => value || undefined)
-    .refine((value) => !value || Boolean(getInsPickCollection(value)), {
-      message: "Unknown INS picks collection.",
-    }),
+    .transform((value) => value || undefined),
   limit: z
     .preprocess(
       (value) => {
@@ -46,6 +43,14 @@ export async function GET(request: Request) {
     const query = insPicksQuerySchema.parse(
       Object.fromEntries(searchParams.entries()),
     );
+
+    if (query.collection && !(await getInsPickCollection(query.collection))) {
+      return jsonError("Unknown INS picks collection.", {
+        status: 400,
+        code: "INVALID_INS_PICK_COLLECTION",
+      });
+    }
+
     const snapshot = await getCachedInsPicksSnapshot({
       collectionSlug: query.collection,
       limit: query.limit,

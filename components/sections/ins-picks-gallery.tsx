@@ -1,5 +1,9 @@
 import Link from "next/link";
 
+import {
+  InsPicksBatchArchive,
+  InsPicksCollectionTools,
+} from "@/components/sections/ins-picks-collection-tools";
 import { FrameButton } from "@/components/ui/frame-button";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
 import { getWallpaperPreviewUrl } from "@/lib/wallpaper-presenters";
@@ -194,6 +198,12 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
               <FrameButton href={snapshot.upload.createEndpoint} variant="outline">
                 Upload API
               </FrameButton>
+              <FrameButton
+                href={snapshot.upload.collectionsEndpoint}
+                variant="outline"
+              >
+                Collections API
+              </FrameButton>
               <FrameButton href="/api/ins-picks" variant="outline">
                 API snapshot
               </FrameButton>
@@ -203,6 +213,9 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
                 </FrameButton>
               ) : null}
             </div>
+            <InsPicksCollectionTools
+              collectionsEndpoint={snapshot.upload.collectionsEndpoint}
+            />
           </div>
 
           {heroCollection ? (
@@ -214,7 +227,10 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
                 </p>
                 <p className="mt-3 text-sm leading-7 text-muted">
                   Upload through the INS API or Studio, publish as wallpaper,
-                  download through the existing wallpaper download endpoint.
+                  download single files or package a whole set as a ZIP archive.
+                </p>
+                <p className="mt-3 break-all font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+                  R2: {heroCollection.r2Prefix}
                 </p>
               </div>
             </div>
@@ -263,21 +279,42 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
               </h2>
             </div>
             {selected?.latestWallpaper ? (
-              <FrameButton
-                href={getDownloadHref(selected.latestWallpaper)}
-                variant="outline"
-              >
-                Download latest
-              </FrameButton>
+              <div className="flex flex-wrap gap-2">
+                <FrameButton
+                  href={getDownloadHref(selected.latestWallpaper)}
+                  variant="outline"
+                >
+                  Download latest
+                </FrameButton>
+                <FrameButton
+                  href={`${snapshot.upload.archiveEndpoint}?collection=${encodeURIComponent(selected.slug)}`}
+                  variant="outline"
+                >
+                  Download ZIP
+                </FrameButton>
+              </div>
             ) : null}
           </div>
 
           {wallpapers.length > 0 ? (
-            <div className="wallpaper-card-grid grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-              {wallpapers.map((wallpaper) => (
-                <WallpaperGridCard key={wallpaper.id} wallpaper={wallpaper} />
-              ))}
-            </div>
+            <>
+              {selected ? (
+                <InsPicksBatchArchive
+                  archiveEndpoint={snapshot.upload.archiveEndpoint}
+                  collectionSlug={selected.slug}
+                  wallpapers={wallpapers.map((wallpaper) => ({
+                    id: wallpaper.id,
+                    slug: wallpaper.slug,
+                    title: wallpaper.title,
+                  }))}
+                />
+              ) : null}
+              <div className="wallpaper-card-grid grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+                {wallpapers.map((wallpaper) => (
+                  <WallpaperGridCard key={wallpaper.id} wallpaper={wallpaper} />
+                ))}
+              </div>
+            </>
           ) : (
             <EmptyGallery snapshot={snapshot} />
           )}

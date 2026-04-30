@@ -25,8 +25,17 @@
   - 新增 `POST /api/ins-picks/upload`，复用现有 `createWallpaperSchema`、R2 对象校验、数据库创建与 moderation 权限，并自动补齐 `ins / instagram / celebrity + 人物合集标签`
   - 新增合集：Irene/裴珠泫、Karina/柳智敏、Bae Suzy/裴秀智、Kim Jisoo/金智秀；页面、API 与 sitemap 会随 `INS_PICK_COLLECTIONS` 自动扩展
   - INS 页面空态和 API 入口文案已同步展示专区上传接口
+- **Codex 二次追加完成**:
+  - 用户要求支持按钮自定义添加人物合集、每个人物在 R2 独立分类、合集整包 ZIP 下载、批量选择打包，并为后续几元付费预留
+  - 新增迁移 `202604010010_ins_pick_collections.sql`，提供 `ins_pick_collections` 自定义人物合集表；公开页面/API 通过服务端读取，写入需 editor 登录
+  - 新增 `GET/POST /api/ins-picks/collections`：GET 返回静态 + 自定义合集；POST 创建自定义合集并生成 `originals/ins-picks/{slug}` R2 前缀
+  - 专区 presign 现在把原图上传到 `originals/ins-picks/{collection}`；变体生成同步保留目录，如 `compressed/ins-picks/{collection}`，避免所有人物混在同一层
+  - 新增 `GET/POST /api/ins-picks/archives`：可整合集打 ZIP，也支持 `wallpaperIds` 批量选择；`quote=true` 返回打包清单、总大小和 `paymentMode=paid-ready`
+  - INS 页面新增 `New person set` 创建按钮、Collections API 入口、合集 ZIP 下载入口；有作品时显示批量勾选打包面板
 - **上传 / 下载协议**:
   - 专区上传可走 `POST /api/ins-picks/upload/presign` + `POST /api/ins-picks/upload`
+  - 自定义合集可走 `POST /api/ins-picks/collections { label, nativeName?, aliases? }`
+  - 打包下载可走 `GET /api/ins-picks/archives?collection=karina-yu-jimin` 或 `POST /api/ins-picks/archives { collection, wallpaperIds }`
   - 通用上传仍兼容 `/creator/studio`、`POST /api/upload/presign`、`POST /api/wallpapers`
   - 推荐标签：`ins`、`instagram`、`celebrity`，再加人物标签如 `iu` / `张元英` / `林允儿`
   - 下载仍走详情页与 `/api/wallpapers/[id]/download`，专区不另建下载接口

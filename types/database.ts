@@ -351,6 +351,62 @@ export interface Database {
           },
         ];
       };
+      ins_pick_collections: {
+        Row: {
+          id: string;
+          slug: string;
+          label: string;
+          native_name: string;
+          subtitle: string;
+          description: string;
+          aliases: string[];
+          required_tags: string[];
+          r2_prefix: string;
+          status: "active" | "planned";
+          created_by: string | number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          label: string;
+          native_name: string;
+          subtitle?: string;
+          description?: string;
+          aliases?: string[];
+          required_tags?: string[];
+          r2_prefix: string;
+          status?: "active" | "planned";
+          created_by?: string | number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          label?: string;
+          native_name?: string;
+          subtitle?: string;
+          description?: string;
+          aliases?: string[];
+          required_tags?: string[];
+          r2_prefix?: string;
+          status?: "active" | "planned";
+          created_by?: string | number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ins_pick_collections_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       wallpaper_favorites: {
         Row: {
           id: string | number;
