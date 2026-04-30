@@ -348,6 +348,12 @@ export const openClawToolDefinitions: OpenClawToolDefinition[] = [
         limit: { type: "integer", minimum: 1, maximum: 10 },
         offset: { type: "integer", minimum: 0 },
         dryRun: { type: "boolean" },
+        geminiApiKey: {
+          type: "string",
+          description: "Optional request-scoped Gemini key for this batch only.",
+        },
+        geminiBaseUrl: { type: "string" },
+        geminiModel: { type: "string" },
       },
       additionalProperties: false,
     },

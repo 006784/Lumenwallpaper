@@ -36,7 +36,10 @@ import {
   sendModerationResultEmail,
 } from "@/lib/resend";
 import { logServerEvent } from "@/lib/monitoring";
-import { analyzeWallpaperWithFallback } from "@/lib/wallpaper-ai";
+import {
+  analyzeWallpaperWithFallback,
+  type WallpaperAiProviderOverride,
+} from "@/lib/wallpaper-ai";
 import { generateWallpaperVariantFiles } from "@/lib/wallpaper-variants";
 import {
   createFallbackWallpaperAssetUrl,
@@ -1821,6 +1824,9 @@ async function enrichWallpaperWithAiMetadata(
     imageUrl: string;
     title: string;
   },
+  options: {
+    providerOverride?: WallpaperAiProviderOverride;
+  } = {},
 ) {
   await persistWallpaperAiMetadata(wallpaperId, {
     ai_analysis_status: "pending",
@@ -1828,7 +1834,9 @@ async function enrichWallpaperWithAiMetadata(
   });
 
   try {
-    const analysis = await analyzeWallpaperWithFallback(input);
+    const analysis = await analyzeWallpaperWithFallback(input, {
+      providerOverride: options.providerOverride,
+    });
 
     if (!analysis) {
       await persistWallpaperAiMetadata(wallpaperId, {
@@ -2245,6 +2253,7 @@ export async function backfillWallpaperAssets(
     forceAi?: boolean;
     forceColors?: boolean;
     forceVariants?: boolean;
+    providerOverride?: WallpaperAiProviderOverride;
   },
 ): Promise<WallpaperAssetBackfillResult | null> {
   if (!isSupabaseConfigured()) {
@@ -2351,11 +2360,17 @@ export async function backfillWallpaperAssets(
     wallpaper.aiTags.length === 0;
 
   if (aiSourceFile?.url && needsAiBackfill) {
-    await enrichWallpaperWithAiMetadata(wallpaper.id, {
-      title: wallpaper.title,
-      description: wallpaper.description,
-      imageUrl: aiSourceFile.url,
-    });
+    await enrichWallpaperWithAiMetadata(
+      wallpaper.id,
+      {
+        title: wallpaper.title,
+        description: wallpaper.description,
+        imageUrl: aiSourceFile.url,
+      },
+      {
+        providerOverride: options?.providerOverride,
+      },
+    );
     wallpaper = (await getWallpaperByIdOrSlug(wallpaper.id)) ?? wallpaper;
   }
 
@@ -2394,6 +2409,7 @@ export async function backfillCreatorWallpaperAssets(
     forceColors?: boolean;
     forceVariants?: boolean;
     limit?: number;
+    providerOverride?: WallpaperAiProviderOverride;
   },
 ): Promise<WallpaperAssetBackfillSummary> {
   const wallpapers = await listWallpapersByCreator(username);

@@ -55,6 +55,13 @@ type VisionProviderResult = WallpaperAiMetadata & {
   providerLabel: string;
 };
 
+export type WallpaperAiProviderOverride = {
+  apiKey: string;
+  baseUrl?: string;
+  model?: string;
+  provider: "gemini";
+};
+
 const PROVIDER_PRESETS: Record<string, ProviderPreset> = {
   gemini: {
     label: "Gemini 2.5 Flash",
@@ -178,6 +185,27 @@ export function getConfiguredWallpaperAiProviders() {
       return null;
     })
     .filter((provider): provider is VisionProviderConfig => provider !== null);
+}
+
+function getOverrideWallpaperAiProviders(
+  override: WallpaperAiProviderOverride | undefined,
+) {
+  if (!override?.apiKey.trim()) {
+    return null;
+  }
+
+  const preset = PROVIDER_PRESETS[override.provider];
+
+  return [
+    {
+      id: override.provider,
+      label: preset.label,
+      apiKey: override.apiKey.trim(),
+      baseUrl: override.baseUrl?.trim() || preset.baseUrl,
+      model: override.model?.trim() || preset.model,
+      headers: {},
+    } satisfies VisionProviderConfig,
+  ];
 }
 
 export function isWallpaperAiConfigured() {
@@ -340,8 +368,12 @@ export async function analyzeWallpaperWithFallback(input: {
   description?: string | null;
   imageUrl: string;
   title: string;
-}) {
-  const providers = getConfiguredWallpaperAiProviders();
+}, options: {
+  providerOverride?: WallpaperAiProviderOverride;
+} = {}) {
+  const providers =
+    getOverrideWallpaperAiProviders(options.providerOverride) ??
+    getConfiguredWallpaperAiProviders();
 
   if (providers.length === 0) {
     return null;

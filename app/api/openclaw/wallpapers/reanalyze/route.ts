@@ -32,6 +32,9 @@ const wallpaperBulkReanalyzeSchema = z
     limit: z.number().int().positive().max(10).optional().default(5),
     offset: z.number().int().min(0).optional().default(0),
     dryRun: z.boolean().optional().default(false),
+    geminiApiKey: z.string().trim().min(1).optional(),
+    geminiBaseUrl: z.string().trim().url().optional(),
+    geminiModel: z.string().trim().min(1).max(100).optional(),
   })
   .refine((value) => {
     return !value.identifiers || value.offset === 0;
@@ -160,6 +163,14 @@ export async function POST(request: Request) {
       try {
         const result = await backfillWallpaperAssets(candidate.id, {
           forceAi: true,
+          providerOverride: payload.geminiApiKey
+            ? {
+                provider: "gemini",
+                apiKey: payload.geminiApiKey,
+                baseUrl: payload.geminiBaseUrl,
+                model: payload.geminiModel,
+              }
+            : undefined,
         });
 
         if (!result) {
