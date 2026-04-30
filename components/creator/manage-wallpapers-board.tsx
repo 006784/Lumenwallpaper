@@ -38,6 +38,12 @@ type ManageWallpapersBoardProps = {
   initialWallpapers: Wallpaper[];
 };
 
+type BatchWallpaperUpdateResult = {
+  requestedCount: number;
+  updatedCount: number;
+  wallpapers: Wallpaper[];
+};
+
 function createManagedItem(wallpaper: Wallpaper): ManagedWallpaperItem {
   return {
     wallpaper,
@@ -67,8 +73,10 @@ export function ManageWallpapersBoard({
   );
   const [busyId, setBusyId] = useState<string | null>(null);
   const [busyAction, setBusyAction] = useState<
-    "save" | "delete" | "analyze" | null
+    "save" | "delete" | "analyze" | "batch" | null
   >(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const selectedCount = selectedIds.length;
 
   function updateItem(
     wallpaperId: string,
@@ -233,6 +241,114 @@ export function ManageWallpapersBoard({
     }
   }
 
+  async function handleBatchModeration(payload: {
+    featured?: boolean;
+    status?: WallpaperStatus;
+  }) {
+    if (!canModerate || selectedIds.length === 0) {
+      return;
+    }
+
+    const actionLabel =
+      payload.status === "published"
+        ? "批量发布"
+        : payload.status === "processing"
+          ? "批量转入处理中"
+          : payload.status === "rejected"
+            ? "批量下架"
+            : payload.featured === true
+              ? "批量精选"
+              : payload.featured === false
+                ? "取消精选"
+                : "批量更新";
+
+    setBusyId("batch");
+    setBusyAction("batch");
+    setItems((current) =>
+      current.map((item) =>
+        selectedIds.includes(item.wallpaper.id)
+          ? {
+              ...item,
+              feedback: `${actionLabel}中…`,
+            }
+          : item,
+      ),
+    );
+
+    try {
+      const response = await fetch("/api/wallpapers/batch", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          wallpaperIds: selectedIds,
+          ...payload,
+        }),
+      });
+      const result = (await response.json()) as
+        | ApiSuccess<BatchWallpaperUpdateResult>
+        | ApiFailure;
+
+      if (!response.ok || !("data" in result)) {
+        throw new Error(
+          "error" in result ? result.error : "批量审核失败，请稍后再试。",
+        );
+      }
+
+      const updatedMap = new Map(
+        result.data.wallpapers.map((wallpaper) => [wallpaper.id, wallpaper]),
+      );
+
+      setItems((current) =>
+        current.map((item) => {
+          const updatedWallpaper = updatedMap.get(item.wallpaper.id);
+
+          if (!updatedWallpaper) {
+            return item;
+          }
+
+          return {
+            ...createManagedItem(updatedWallpaper),
+            feedback: `${actionLabel}完成。`,
+          };
+        }),
+      );
+      setSelectedIds([]);
+    } catch (error) {
+      setItems((current) =>
+        current.map((item) =>
+          selectedIds.includes(item.wallpaper.id)
+            ? {
+                ...item,
+                feedback:
+                  error instanceof Error
+                    ? error.message
+                    : "批量审核失败，请稍后再试。",
+              }
+            : item,
+        ),
+      );
+    } finally {
+      setBusyId(null);
+      setBusyAction(null);
+    }
+  }
+
+  function toggleSelection(wallpaperId: string) {
+    setSelectedIds((current) =>
+      current.includes(wallpaperId)
+        ? current.filter((id) => id !== wallpaperId)
+        : [...current, wallpaperId],
+    );
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((current) =>
+      current.length === items.length ? [] : items.map((item) => item.wallpaper.id),
+    );
+  }
+
   if (items.length === 0) {
     return (
       <div className="border-frame border-ink bg-paper/70 px-6 py-12 text-sm leading-7 text-muted">
@@ -253,6 +369,65 @@ export function ManageWallpapersBoard({
 
   return (
     <div className="grid gap-6">
+      {canModerate ? (
+        <div className="glass-surface-soft p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-muted">
+              <button
+                className="border border-ink/15 bg-paper px-3 py-2 transition hover:bg-ink hover:text-paper"
+                disabled={busyAction === "batch"}
+                onClick={toggleSelectAll}
+                type="button"
+              >
+                {selectedCount === items.length ? "取消全选" : "全选当前列表"}
+              </button>
+              <span>已选 {selectedCount}</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="inline-flex border border-gold/20 bg-gold/5 px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-gold transition hover:bg-gold hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={selectedCount === 0 || busyAction === "batch"}
+                onClick={() =>
+                  void handleBatchModeration({ status: "published" })
+                }
+                type="button"
+              >
+                批量发布
+              </button>
+              <button
+                className="inline-flex border border-ink/15 bg-paper px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-muted transition hover:bg-ink hover:text-paper disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={selectedCount === 0 || busyAction === "batch"}
+                onClick={() =>
+                  void handleBatchModeration({ status: "processing" })
+                }
+                type="button"
+              >
+                批量处理中
+              </button>
+              <button
+                className="inline-flex border border-red/20 bg-red/5 px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-red transition hover:bg-red hover:text-paper disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={selectedCount === 0 || busyAction === "batch"}
+                onClick={() =>
+                  void handleBatchModeration({ status: "rejected" })
+                }
+                type="button"
+              >
+                批量下架
+              </button>
+              <button
+                className="inline-flex border border-ink/15 bg-paper px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-muted transition hover:bg-ink hover:text-paper disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={selectedCount === 0 || busyAction === "batch"}
+                onClick={() =>
+                  void handleBatchModeration({ featured: true })
+                }
+                type="button"
+              >
+                批量精选
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       {items.map((item) => {
         const previewUrl = getWallpaperPreviewUrl(item.wallpaper);
         const artworkStyle = previewUrl
@@ -266,6 +441,7 @@ export function ManageWallpapersBoard({
                 GRADIENTS[getWallpaperGradientKey(item.wallpaper)],
             };
         const isBusy = busyId === item.wallpaper.id;
+        const isSelected = selectedIds.includes(item.wallpaper.id);
 
         return (
           <article
@@ -273,6 +449,17 @@ export function ManageWallpapersBoard({
             className="glass-surface-soft grid gap-4 p-4 md:grid-cols-[172px_1fr]"
           >
             <div className="space-y-3">
+              {canModerate ? (
+                <label className="flex items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-muted">
+                  <input
+                    checked={isSelected}
+                    disabled={busyAction === "batch"}
+                    onChange={() => toggleSelection(item.wallpaper.id)}
+                    type="checkbox"
+                  />
+                  选中这张作品
+                </label>
+              ) : null}
               <div
                 className="aspect-[4/5] overflow-hidden rounded-[18px] shadow-[inset_0_0_0_1px_rgba(23,79,80,0.08)]"
                 style={artworkStyle}

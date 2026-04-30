@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 import { InsPicksGallery } from "@/components/sections/ins-picks-gallery";
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
+import { getLocaleFromHeaders } from "@/lib/i18n";
+import { getInsPicksUiCopy } from "@/lib/i18n-ui";
 import {
   getCachedInsPicksSnapshot,
   getInsPickCollection,
@@ -19,23 +22,28 @@ export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 export async function generateMetadata({
   params,
 }: InsPickCollectionPageProps): Promise<Metadata> {
+  const locale = getLocaleFromHeaders(headers());
+  const copy = getInsPicksUiCopy(locale);
   const collection = await getInsPickCollection(params.collection);
 
   if (!collection) {
     return {
-      title: "INS Picks",
+      title: copy.metadata.title,
     };
   }
 
+  const localized = copy.collections.details[collection.slug];
+
   return {
-    title: `${collection.label} · INS Picks`,
-    description: collection.description,
+    title: `${collection.label} · ${copy.metadata.title}`,
+    description: localized?.description ?? collection.description,
   };
 }
 
 export default async function InsPickCollectionPage({
   params,
 }: InsPickCollectionPageProps) {
+  const locale = getLocaleFromHeaders(headers());
   const collection = await getInsPickCollection(params.collection);
 
   if (!collection) {
@@ -51,5 +59,7 @@ export default async function InsPickCollectionPage({
     notFound();
   }
 
-  return <InsPicksGallery mode="collection" snapshot={snapshot} />;
+  return (
+    <InsPicksGallery locale={locale} mode="collection" snapshot={snapshot} />
+  );
 }

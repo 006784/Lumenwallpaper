@@ -234,6 +234,8 @@ function getWallpaperMatchValues(wallpaper: Wallpaper) {
     wallpaper.creator?.username ?? "",
     ...wallpaper.tags,
     ...wallpaper.aiTags,
+    ...wallpaper.files.flatMap((file) => [file.storagePath, file.url]),
+    wallpaper.videoUrl ?? "",
   ]
     .map(normalizeMatchValue)
     .filter(Boolean);
@@ -244,7 +246,14 @@ function wallpaperMatchesCollection(
   collection: InsPickCollectionDefinition,
 ) {
   const values = getWallpaperMatchValues(wallpaper);
-  const aliases = collection.aliases.map(normalizeMatchValue).filter(Boolean);
+  const aliases = [
+    collection.slug,
+    collection.r2Prefix,
+    ...collection.requiredTags,
+    ...collection.aliases,
+  ]
+    .map(normalizeMatchValue)
+    .filter(Boolean);
 
   return aliases.some((alias) => {
     return values.some((value) => value === alias || value.includes(alias));

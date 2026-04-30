@@ -7,9 +7,18 @@ import {
   isAuthConfigured,
   isEditorUser,
 } from "@/lib/auth";
+import { getInsPickCollection } from "@/lib/ins-picks";
 import { PagePlaceholder } from "@/components/ui/page-placeholder";
 
-export default function CreatorStudioPage() {
+type CreatorStudioPageProps = {
+  searchParams?: {
+    insCollection?: string;
+  };
+};
+
+export default async function CreatorStudioPage({
+  searchParams,
+}: CreatorStudioPageProps) {
   if (!isAuthConfigured()) {
     return (
       <PagePlaceholder
@@ -27,6 +36,9 @@ export default function CreatorStudioPage() {
   }
 
   const isEditor = isEditorUser(currentUser);
+  const insPickCollection = searchParams?.insCollection
+    ? await getInsPickCollection(searchParams.insCollection)
+    : null;
 
   return (
     <section className="glass-panel-grid relative overflow-hidden px-5 pb-8 pt-24 sm:px-6 md:px-10 md:pb-12 md:pt-28">
@@ -38,7 +50,9 @@ export default function CreatorStudioPage() {
           直传 R2，并把作品归到你的创作者档案
         </h1>
         <p className="mt-3 max-w-4xl text-sm leading-6 text-muted">
-          现在这条链路已经切到登录态。上传权限、元数据写入、授权确认和作品归属都基于当前会话，不再手工填写创作者身份。
+          {insPickCollection
+            ? `当前处于 INS 专区上传模式：${insPickCollection.label} / ${insPickCollection.nativeName}。文件会进入 ${insPickCollection.r2Prefix}，并自动补齐人物标签。`
+            : "现在这条链路已经切到登录态。上传权限、元数据写入、授权确认和作品归属都基于当前会话，不再手工填写创作者身份。"}
         </p>
 
         <div className="mt-5 flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.24em] text-muted">
@@ -54,6 +68,14 @@ export default function CreatorStudioPage() {
           <span className="glass-chip-active px-3 py-2">
             @{currentUser.username}
           </span>
+          {insPickCollection ? (
+            <Link
+              className="glass-chip-active px-3 py-2 transition hover:text-ink"
+              href={`/ins/${insPickCollection.slug}`}
+            >
+              INS: {insPickCollection.label}
+            </Link>
+          ) : null}
           {isEditor ? (
             <Link
               className="glass-chip px-3 py-2 transition hover:text-ink"
@@ -68,6 +90,17 @@ export default function CreatorStudioPage() {
           <UploadStudioForm
             creatorEmail={currentUser.email}
             creatorUsername={currentUser.username}
+            insPickCollection={
+              insPickCollection
+                ? {
+                    label: insPickCollection.label,
+                    nativeName: insPickCollection.nativeName,
+                    requiredTags: insPickCollection.requiredTags,
+                    r2Prefix: insPickCollection.r2Prefix,
+                    slug: insPickCollection.slug,
+                  }
+                : null
+            }
           />
         </div>
       </div>

@@ -6,6 +6,24 @@
 
 ## 进行中
 
+### TASK-036 · 批量审核与 INS 专区上传归类修复
+
+- **状态**: ✅ codex done
+- **内容**: 用户反馈线上一次可上传多张壁纸，但管理/审核只能逐张处理；同时 INS 专区上传后的壁纸没有显示到对应人物专区，且需要按人物在 R2 独立文件夹分类
+- **Codex 完成**:
+  - 新增 `PATCH /api/wallpapers/batch`，编辑账号可批量更新作品 `status` / `featured` / tags，复用已有 `batchUpdateWallpapers` 数据层
+  - 管理台 `ManageWallpapersBoard` 增加多选、全选当前列表、批量发布、批量处理中、批量下架、批量精选，解决多图上传后只能逐张审核的问题
+  - `/ins/[collection]` 的上传按钮现在跳转到 `/creator/studio?insCollection={slug}`，Studio 会进入 INS 专区上传模式
+  - INS 专区上传模式会调用 `/api/ins-picks/upload/presign` 与 `/api/ins-picks/upload`，自动带上 collection，R2 原图路径进入 `originals/ins-picks/{person-slug}/...`，例如 `originals/ins-picks/iu/`、`originals/ins-picks/bae-suzy/`
+  - Studio 在 INS 模式下自动预填人物 required tags，创建记录时由专用接口再次补齐 `ins / instagram / celebrity + 人物标签`
+  - INS 专区列表匹配现在同时看标题、描述、标签、AI 标签、R2 storage path、文件 URL、视频 URL；即使标签缺失，只要文件在 `originals/ins-picks/{person-slug}` 目录下也会归到对应人物页
+  - INS 专区上传成功后主动刷新 `/ins` 与 `/ins/{collection}`，避免线上缓存导致刚上传作品不显示
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - `playwright test e2e/ins-picks.spec.ts --project=desktop-chromium`
+  - `pnpm build`（通过；构建期间仍有 Supabase transient `fetch failed` 重试日志，但最终成功）
+
 ### TASK-035 · INS 人物照片专区
 
 - **状态**: ✅ codex done

@@ -40,6 +40,13 @@ type UploadState =
 type UploadStudioFormProps = {
   creatorEmail: string;
   creatorUsername: string;
+  insPickCollection?: {
+    label: string;
+    nativeName: string;
+    requiredTags: string[];
+    r2Prefix: string;
+    slug: string;
+  } | null;
 };
 
 type PendingFileInfo = {
@@ -529,6 +536,7 @@ function getProgressLabel(progress: UploadProgressState, item: UploadQueueItem |
 export function UploadStudioForm({
   creatorEmail,
   creatorUsername,
+  insPickCollection = null,
 }: UploadStudioFormProps) {
   const fieldClassName =
     "glass-field w-full px-4 py-3 text-sm outline-none transition placeholder:text-muted/75";
@@ -540,7 +548,9 @@ export function UploadStudioForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [state, setState] = useState<UploadState>({
     kind: "idle",
-    message: `当前已登录为 @${creatorUsername}，支持一次加入多张图片，也支持 MP4 / WEBM / MOV 动态壁纸。`,
+    message: insPickCollection
+      ? `当前已登录为 @${creatorUsername}，INS 专区会上传到 ${insPickCollection.r2Prefix} 并自动补齐 ${insPickCollection.label} 标签。`
+      : `当前已登录为 @${creatorUsername}，支持一次加入多张图片，也支持 MP4 / WEBM / MOV 动态壁纸。`,
   });
 
   const activeItem =
@@ -666,6 +676,8 @@ export function UploadStudioForm({
     const nextItems: UploadQueueItem[] = [];
     const errors: string[] = [];
 
+    const defaultTags = insPickCollection?.requiredTags.join(", ") ?? "";
+
     for (const file of nextFiles) {
       const signature = `${file.name}:${file.size}:${file.lastModified}:${file.type}`;
 
@@ -696,7 +708,7 @@ export function UploadStudioForm({
           info,
           title: toDisplayTitleFromFilename(file.name),
           description: "",
-          tagsValue: "",
+          tagsValue: defaultTags,
           colorsValue: "",
           licenseAccepted: false,
           progress: {
@@ -818,16 +830,30 @@ export function UploadStudioForm({
       message: `正在发布 ${itemIndex + 1}/${itemCount}：${item.info.name}`,
     });
 
-    const presignResponse = await fetch("/api/upload/presign", {
+    const presignEndpoint = insPickCollection
+      ? "/api/ins-picks/upload/presign"
+      : "/api/upload/presign";
+    const createEndpoint = insPickCollection
+      ? "/api/ins-picks/upload"
+      : "/api/wallpapers";
+    const withInsCollection = <T extends Record<string, unknown>>(payload: T) =>
+      insPickCollection
+        ? {
+            ...payload,
+            collection: insPickCollection.slug,
+          }
+        : payload;
+
+    const presignResponse = await fetch(presignEndpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
+      body: JSON.stringify(withInsCollection({
         filename: item.file.name,
         contentType: item.file.type,
         size: item.file.size,
-      }),
+      })),
     });
 
     const presignPayload = (await presignResponse.json()) as
@@ -866,16 +892,16 @@ export function UploadStudioForm({
 
       try {
         const poster = await extractVideoPosterFile(item.file);
-        const posterPresignResponse = await fetch("/api/upload/presign", {
+        const posterPresignResponse = await fetch(presignEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
+          body: JSON.stringify(withInsCollection({
             filename: poster.file.name,
             contentType: poster.file.type,
             size: poster.file.size,
-          }),
+          })),
         });
 
         const posterPresignPayload = (await posterPresignResponse.json()) as
@@ -956,12 +982,12 @@ export function UploadStudioForm({
       },
     }));
 
-    const createResponse = await fetch("/api/wallpapers", {
+    const createResponse = await fetch(createEndpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
+      body: JSON.stringify(withInsCollection({
         title: item.title.trim(),
         description: item.description.trim(),
         tags: parseCsv(item.tagsValue),
@@ -990,9 +1016,9 @@ export function UploadStudioForm({
               contentType: posterUpload.file.type,
               width: posterUpload.width,
               height: posterUpload.height,
-            }
+          }
           : undefined,
-      }),
+      })),
     });
 
     const createPayload = (await createResponse.json()) as

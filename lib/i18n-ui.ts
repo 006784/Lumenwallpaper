@@ -143,6 +143,68 @@ type WallpaperPageCopy = {
   seoFallback: (input: { tagLine: string; title: string }) => string;
 };
 
+export type InsPicksUiCopy = {
+  archive: {
+    clear: string;
+    failed: string;
+    packageSelected: (count: number) => string;
+    selectAll: string;
+  };
+  card: {
+    planned: string;
+    ready: string;
+    works: (count: number) => string;
+  };
+  collections: {
+    api: string;
+    body: string;
+    details: Record<string, { description: string; subtitle: string }>;
+    eyebrow: string;
+    relatedTitle: string;
+    title: string;
+  };
+  empty: {
+    body: string;
+    cta: string;
+    eyebrow: string;
+    tagRecipe: string;
+    title: string;
+  };
+  gallery: {
+    downloadLatest: string;
+    downloadZip: string;
+    eyebrow: string;
+    latestTitle: string;
+    selectedTitle: (label: string) => string;
+  };
+  hero: {
+    allCollections: string;
+    apiSnapshot: string;
+    archiveTitle: string;
+    badge: string;
+    body: string;
+    collectionsApi: string;
+    eyebrow: string;
+    pipelineBody: string;
+    title: string;
+    uploadApi: string;
+    uploadPhotos: string;
+  };
+  metadata: {
+    description: string;
+    title: string;
+  };
+  tools: {
+    create: string;
+    createFailed: string;
+    created: string;
+    englishNamePlaceholder: string;
+    nativeNamePlaceholder: string;
+    newSet: string;
+    openSet: string;
+  };
+};
+
 type LocalizedHomeDataCopy = {
   categories: Record<string, string>;
   footerColumns: {
@@ -814,6 +876,413 @@ const WALLPAPER_PAGE_COPY = {
   },
 } satisfies Record<SupportedLocale, WallpaperPageCopy>;
 
+const INS_PICKS_UI_COPY: Record<SupportedLocale, InsPicksUiCopy> = {
+  "zh-CN": {
+    archive: {
+      clear: "清空",
+      failed: "打包选中照片失败。",
+      packageSelected: (count) => `打包选中 (${count})`,
+      selectAll: "全选",
+    },
+    card: {
+      planned: "计划中",
+      ready: "已准备",
+      works: (count) => `${count} 个作品`,
+    },
+    collections: {
+      api: "合集 API",
+      body: "可以继续通过自定义合集新增人物。专区上传接口会自动为每个合集补齐来源标签、人物标签和独立 R2 前缀。",
+      details: {
+        "bae-joohyun": {
+          description: "Red Velvet 的优雅肖像、安静人像、造型细节和干净的杂志式裁切。",
+          subtitle: "Irene / Instagram 档案",
+        },
+        "bae-suzy": {
+          description: "明亮自然的人像、演员剧照感、旅行瞬间和柔和的时装氛围。",
+          subtitle: "Suzy / Instagram 档案",
+        },
+        iu: {
+          description: "柔和肖像、演唱会瞬间、旅行画面和温暖安静的手机壁纸裁切。",
+          subtitle: "IU / Instagram 档案",
+        },
+        "jang-wonyoung": {
+          description: "舞台光泽、镜自拍、机场造型，以及适合手机壁纸的干净裁切。",
+          subtitle: "IVE / Instagram 档案",
+        },
+        "karina-yu-jimin": {
+          description: "Aespa 舞台质感、镜面细节、冷感干净的人像和锋利的手机裁切。",
+          subtitle: "Karina / Instagram 档案",
+        },
+        "kim-jisoo": {
+          description: "Blackpink 人像、城市造型、杂志感静帧和可直接做壁纸的精致裁切。",
+          subtitle: "Jisoo / Instagram 档案",
+        },
+        "lim-yoona": {
+          description: "优雅人像、城市旅行、时装细节和明亮的杂志感画面。",
+          subtitle: "Yoona / Instagram 档案",
+        },
+        "liu-yifei": {
+          description: "为未来国内人物合集、海报和编辑感裁切预留的空间。",
+          subtitle: "即将加入 / 国内档案",
+        },
+      },
+      eyebrow: "人物合集",
+      relatedTitle: "相关合集",
+      title: "人物合集",
+    },
+    empty: {
+      body: "使用 INS 专区上传接口或现有 Studio。确认授权后上传文件，再选择人物合集；作品发布后会自动进入对应专区。",
+      cta: "在 Studio 上传",
+      eyebrow: "上传链路",
+      tagRecipe: "标签配方",
+      title: "等待第一批 INS 导入。",
+    },
+    gallery: {
+      downloadLatest: "下载最新",
+      downloadZip: "下载 ZIP",
+      eyebrow: "画廊",
+      latestTitle: "最新 INS 精选",
+      selectedTitle: (label) => `${label} 壁纸`,
+    },
+    hero: {
+      allCollections: "全部合集",
+      apiSnapshot: "API 快照",
+      archiveTitle: "统一链路",
+      badge: "创作者来源专区",
+      body: "为明星 Instagram 风格照片集准备的专属区域。IU、林允儿、张元英、裴珠泫、柳智敏、裴秀智、金智秀，以及未来国内人物合集，都共用同一套上传、审核和壁纸下载链路。",
+      collectionsApi: "合集 API",
+      eyebrow: "INS 精选",
+      pipelineBody: "通过 INS API 或 Studio 上传，发布为壁纸后可下载单张，也可以把整个合集打包成 ZIP。",
+      title: "Instagram 人物照片档案",
+      uploadApi: "上传 API",
+      uploadPhotos: "上传照片",
+    },
+    metadata: {
+      description:
+        "为 IU、林允儿、张元英、裴珠泫、柳智敏、裴秀智、金智秀以及未来人物准备的 Instagram 风格壁纸合集。",
+      title: "INS 精选",
+    },
+    tools: {
+      create: "创建",
+      createFailed: "创建合集失败。",
+      created: "合集已创建。后续上传会使用它自己的 R2 前缀。",
+      englishNamePlaceholder: "英文名",
+      nativeNamePlaceholder: "中文 / 本名",
+      newSet: "新建人物合集",
+      openSet: "打开合集",
+    },
+  },
+  en: {
+    archive: {
+      clear: "Clear",
+      failed: "Failed to package selected photos.",
+      packageSelected: (count) => `Package selected (${count})`,
+      selectAll: "Select all",
+    },
+    card: {
+      planned: "Planned",
+      ready: "Ready",
+      works: (count) => `${count} works`,
+    },
+    collections: {
+      api: "Collections API",
+      body: "Add new names through custom collections. The dedicated upload endpoint attaches source tags, person tags, and an isolated R2 prefix for each set.",
+      details: {
+        "bae-joohyun": {
+          description:
+            "Red Velvet elegance, calm portraits, styling details, and clean editorial crops.",
+          subtitle: "Irene / Instagram archive",
+        },
+        "bae-suzy": {
+          description:
+            "Bright natural portraits, actress stills, travel frames, and soft fashion moments.",
+          subtitle: "Suzy / Instagram archive",
+        },
+        iu: {
+          description:
+            "Soft portraits, concert moments, travel frames, and calm warm-toned crops.",
+          subtitle: "IU / Instagram archive",
+        },
+        "jang-wonyoung": {
+          description:
+            "Stage polish, mirror selfies, airport looks, and clean phone-wallpaper crops.",
+          subtitle: "IVE / Instagram archive",
+        },
+        "karina-yu-jimin": {
+          description:
+            "Aespa stage polish, mirrored details, cyber-clean portraits, and sharp phone crops.",
+          subtitle: "Karina / Instagram archive",
+        },
+        "kim-jisoo": {
+          description:
+            "Blackpink portraits, city looks, magazine stills, and polished wallpaper-ready crops.",
+          subtitle: "Jisoo / Instagram archive",
+        },
+        "lim-yoona": {
+          description:
+            "Elegant portraits, city travel, fashion details, and bright magazine-like stills.",
+          subtitle: "Yoona / Instagram archive",
+        },
+        "liu-yifei": {
+          description:
+            "A reserved slot for future domestic celebrity sets, posters, and editorial crops.",
+          subtitle: "Coming next / domestic archive",
+        },
+      },
+      eyebrow: "Collections",
+      relatedTitle: "Related sets",
+      title: "Artist sets",
+    },
+    empty: {
+      body: "Use the dedicated INS upload endpoint or the existing Studio. Confirm rights, upload the file, then attach the collection. This zone will classify the work automatically after it is published.",
+      cta: "Upload in Studio",
+      eyebrow: "Upload pipeline",
+      tagRecipe: "Tag recipe",
+      title: "Waiting for the first INS import.",
+    },
+    gallery: {
+      downloadLatest: "Download latest",
+      downloadZip: "Download ZIP",
+      eyebrow: "Gallery",
+      latestTitle: "Latest INS picks",
+      selectedTitle: (label) => `${label} wallpapers`,
+    },
+    hero: {
+      allCollections: "All collections",
+      apiSnapshot: "API snapshot",
+      archiveTitle: "Unified pipeline",
+      badge: "Creator source zone",
+      body: "A dedicated area for celebrity Instagram-style photo sets. IU, Lim Yoona, Jang Wonyoung, Irene, Karina, Bae Suzy, Kim Jisoo, and future domestic collections all share the same upload, moderation, and wallpaper download pipeline.",
+      collectionsApi: "Collections API",
+      eyebrow: "INS Picks",
+      pipelineBody: "Upload through the INS API or Studio, publish as wallpaper, download single files or package a whole set as a ZIP archive.",
+      title: "Instagram muse archive",
+      uploadApi: "Upload API",
+      uploadPhotos: "Upload photos",
+    },
+    metadata: {
+      description:
+        "Celebrity Instagram-style wallpaper collections for IU, Lim Yoona, Jang Wonyoung, Irene, Karina, Bae Suzy, Kim Jisoo, and future muse sets.",
+      title: "INS Picks",
+    },
+    tools: {
+      create: "Create",
+      createFailed: "Failed to create collection.",
+      created: "Collection created. Uploads will use its own R2 prefix.",
+      englishNamePlaceholder: "English name",
+      nativeNamePlaceholder: "Chinese / native name",
+      newSet: "New person set",
+      openSet: "Open set",
+    },
+  },
+  ja: {
+    archive: {
+      clear: "クリア",
+      failed: "選択した写真のパッケージ作成に失敗しました。",
+      packageSelected: (count) => `選択分を ZIP 化 (${count})`,
+      selectAll: "すべて選択",
+    },
+    card: {
+      planned: "予定",
+      ready: "準備済み",
+      works: (count) => `${count} 件`,
+    },
+    collections: {
+      api: "コレクション API",
+      body: "カスタムコレクションから新しい人物を追加できます。専用アップロード API は、ソースタグ、人物タグ、個別の R2 プレフィックスを自動で付与します。",
+      details: {
+        "bae-joohyun": {
+          description:
+            "Red Velvet の上品なポートレート、静かな表情、スタイリングの細部、クリーンなエディトリアルクロップ。",
+          subtitle: "Irene / Instagram アーカイブ",
+        },
+        "bae-suzy": {
+          description:
+            "明るく自然なポートレート、女優らしい静止画、旅のフレーム、柔らかなファッションモーメント。",
+          subtitle: "Suzy / Instagram アーカイブ",
+        },
+        iu: {
+          description:
+            "柔らかなポートレート、コンサートの瞬間、旅のフレーム、穏やかな暖色系クロップ。",
+          subtitle: "IU / Instagram アーカイブ",
+        },
+        "jang-wonyoung": {
+          description:
+            "ステージの輝き、ミラーセルフィー、空港ルック、スマホ壁紙に合うクリーンなクロップ。",
+          subtitle: "IVE / Instagram アーカイブ",
+        },
+        "karina-yu-jimin": {
+          description:
+            "Aespa のステージ感、ミラーのディテール、サイバーでクリーンなポートレート、シャープなスマホクロップ。",
+          subtitle: "Karina / Instagram アーカイブ",
+        },
+        "kim-jisoo": {
+          description:
+            "Blackpink のポートレート、シティルック、雑誌のような静止画、壁紙向きの洗練されたクロップ。",
+          subtitle: "Jisoo / Instagram アーカイブ",
+        },
+        "lim-yoona": {
+          description:
+            "エレガントなポートレート、街と旅、ファッションの細部、明るい雑誌風の一枚。",
+          subtitle: "Yoona / Instagram アーカイブ",
+        },
+        "liu-yifei": {
+          description:
+            "今後の国内セレブセット、ポスター、エディトリアルクロップのための予約枠。",
+          subtitle: "近日追加 / 国内アーカイブ",
+        },
+      },
+      eyebrow: "コレクション",
+      relatedTitle: "関連セット",
+      title: "アーティストセット",
+    },
+    empty: {
+      body: "INS 専用アップロード API または既存の Studio を使用します。権利確認後にファイルをアップロードし、人物コレクションを紐づけると、公開後に自動で分類されます。",
+      cta: "Studio でアップロード",
+      eyebrow: "アップロード導線",
+      tagRecipe: "タグ設計",
+      title: "最初の INS インポートを待っています。",
+    },
+    gallery: {
+      downloadLatest: "最新をダウンロード",
+      downloadZip: "ZIP をダウンロード",
+      eyebrow: "ギャラリー",
+      latestTitle: "最新 INS ピック",
+      selectedTitle: (label) => `${label} の壁紙`,
+    },
+    hero: {
+      allCollections: "すべてのコレクション",
+      apiSnapshot: "API スナップショット",
+      archiveTitle: "統一パイプライン",
+      badge: "クリエイターソース領域",
+      body: "著名人の Instagram 風フォトセット専用エリアです。IU、イム・ユナ、チャン・ウォニョン、アイリーン、カリナ、ペ・スジ、キム・ジス、今後の国内コレクションまで、同じアップロード、審査、壁紙ダウンロード導線を共有します。",
+      collectionsApi: "コレクション API",
+      eyebrow: "INS ピック",
+      pipelineBody: "INS API または Studio からアップロードし、壁紙として公開後、単体ダウンロードやセット全体の ZIP 化ができます。",
+      title: "Instagram ミューズアーカイブ",
+      uploadApi: "アップロード API",
+      uploadPhotos: "写真をアップロード",
+    },
+    metadata: {
+      description:
+        "IU、イム・ユナ、チャン・ウォニョン、アイリーン、カリナ、ペ・スジ、キム・ジスなどの Instagram 風壁紙コレクション。",
+      title: "INS ピック",
+    },
+    tools: {
+      create: "作成",
+      createFailed: "コレクションの作成に失敗しました。",
+      created: "コレクションを作成しました。以後のアップロードは専用の R2 プレフィックスを使用します。",
+      englishNamePlaceholder: "英語名",
+      nativeNamePlaceholder: "日本語 / 本名",
+      newSet: "人物セットを追加",
+      openSet: "セットを開く",
+    },
+  },
+  ko: {
+    archive: {
+      clear: "해제",
+      failed: "선택한 사진을 패키징하지 못했습니다.",
+      packageSelected: (count) => `선택 항목 패키징 (${count})`,
+      selectAll: "전체 선택",
+    },
+    card: {
+      planned: "예정",
+      ready: "준비됨",
+      works: (count) => `${count}개`,
+    },
+    collections: {
+      api: "컬렉션 API",
+      body: "커스텀 컬렉션으로 새 인물을 추가할 수 있습니다. 전용 업로드 엔드포인트가 각 세트에 소스 태그, 인물 태그, 독립 R2 prefix를 붙입니다.",
+      details: {
+        "bae-joohyun": {
+          description:
+            "Red Velvet의 우아한 포트레이트, 차분한 표정, 스타일링 디테일과 깔끔한 에디토리얼 크롭.",
+          subtitle: "Irene / Instagram 아카이브",
+        },
+        "bae-suzy": {
+          description:
+            "밝고 자연스러운 포트레이트, 배우 스틸 감성, 여행 프레임과 부드러운 패션 무드.",
+          subtitle: "Suzy / Instagram 아카이브",
+        },
+        iu: {
+          description:
+            "부드러운 포트레이트, 콘서트 순간, 여행 프레임과 차분한 웜톤 크롭.",
+          subtitle: "IU / Instagram 아카이브",
+        },
+        "jang-wonyoung": {
+          description:
+            "무대의 광택, 거울 셀피, 공항 룩과 휴대폰 배경화면에 맞는 깨끗한 크롭.",
+          subtitle: "IVE / Instagram 아카이브",
+        },
+        "karina-yu-jimin": {
+          description:
+            "Aespa 무대감, 미러 디테일, 사이버하게 정돈된 포트레이트와 선명한 모바일 크롭.",
+          subtitle: "Karina / Instagram 아카이브",
+        },
+        "kim-jisoo": {
+          description:
+            "Blackpink 포트레이트, 시티 룩, 매거진 스틸과 배경화면에 어울리는 세련된 크롭.",
+          subtitle: "Jisoo / Instagram 아카이브",
+        },
+        "lim-yoona": {
+          description:
+            "우아한 포트레이트, 도시 여행, 패션 디테일과 밝은 매거진 같은 스틸.",
+          subtitle: "Yoona / Instagram 아카이브",
+        },
+        "liu-yifei": {
+          description:
+            "향후 국내 셀러브리티 세트, 포스터, 에디토리얼 크롭을 위한 예약 슬롯.",
+          subtitle: "곧 추가 / 국내 아카이브",
+        },
+      },
+      eyebrow: "컬렉션",
+      relatedTitle: "관련 세트",
+      title: "아티스트 세트",
+    },
+    empty: {
+      body: "INS 전용 업로드 엔드포인트나 기존 Studio를 사용하세요. 권리를 확인한 뒤 파일을 업로드하고 컬렉션을 연결하면, 게시 후 자동으로 분류됩니다.",
+      cta: "Studio에서 업로드",
+      eyebrow: "업로드 파이프라인",
+      tagRecipe: "태그 규칙",
+      title: "첫 INS 가져오기를 기다리는 중입니다.",
+    },
+    gallery: {
+      downloadLatest: "최신 다운로드",
+      downloadZip: "ZIP 다운로드",
+      eyebrow: "갤러리",
+      latestTitle: "최신 INS 픽",
+      selectedTitle: (label) => `${label} 배경화면`,
+    },
+    hero: {
+      allCollections: "전체 컬렉션",
+      apiSnapshot: "API 스냅샷",
+      archiveTitle: "통합 파이프라인",
+      badge: "크리에이터 소스 존",
+      body: "셀러브리티 Instagram 스타일 사진 세트를 위한 전용 영역입니다. IU, 임윤아, 장원영, 아이린, 카리나, 배수지, 김지수와 향후 국내 컬렉션까지 같은 업로드, 검수, 배경화면 다운로드 파이프라인을 사용합니다.",
+      collectionsApi: "컬렉션 API",
+      eyebrow: "INS 픽",
+      pipelineBody: "INS API 또는 Studio로 업로드하고 배경화면으로 게시한 뒤, 단일 파일 다운로드나 세트 전체 ZIP 패키징을 사용할 수 있습니다.",
+      title: "Instagram 뮤즈 아카이브",
+      uploadApi: "업로드 API",
+      uploadPhotos: "사진 업로드",
+    },
+    metadata: {
+      description:
+        "IU, 임윤아, 장원영, 아이린, 카리나, 배수지, 김지수와 향후 인물 세트를 위한 Instagram 스타일 배경화면 컬렉션.",
+      title: "INS 픽",
+    },
+    tools: {
+      create: "생성",
+      createFailed: "컬렉션을 생성하지 못했습니다.",
+      created: "컬렉션이 생성되었습니다. 이후 업로드는 이 컬렉션의 전용 R2 prefix를 사용합니다.",
+      englishNamePlaceholder: "영문 이름",
+      nativeNamePlaceholder: "한국어 / 본명",
+      newSet: "인물 세트 추가",
+      openSet: "세트 열기",
+    },
+  },
+};
+
 const LOCALIZED_HOME_DATA_COPY = {
   "zh-CN": {
     categories: {
@@ -1099,6 +1568,10 @@ export function getDarkroomPageCopy(locale: SupportedLocale) {
 
 export function getWallpaperPageCopy(locale: SupportedLocale) {
   return WALLPAPER_PAGE_COPY[locale];
+}
+
+export function getInsPicksUiCopy(locale: SupportedLocale) {
+  return INS_PICKS_UI_COPY[locale];
 }
 
 export function getLocalizedHomeDataCopy(locale: SupportedLocale) {

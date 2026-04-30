@@ -3,20 +3,24 @@
 import { useMemo, useState, useTransition } from "react";
 
 import { cn } from "@/lib/utils";
+import type { InsPicksUiCopy } from "@/lib/i18n-ui";
 import type { Wallpaper } from "@/types/wallpaper";
 
 type CollectionToolsProps = {
   collectionsEndpoint: string;
+  copy: InsPicksUiCopy["tools"];
 };
 
 type BatchArchiveProps = {
   archiveEndpoint: string;
   collectionSlug: string;
+  copy: InsPicksUiCopy["archive"];
   wallpapers: Array<Pick<Wallpaper, "id" | "slug" | "title">>;
 };
 
 export function InsPicksCollectionTools({
   collectionsEndpoint,
+  copy,
 }: CollectionToolsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [label, setLabel] = useState("");
@@ -43,12 +47,12 @@ export function InsPicksCollectionTools({
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        setMessage(payload?.error ?? "Failed to create collection.");
+        setMessage(payload?.error ?? copy.createFailed);
         return;
       }
 
       const href = payload?.data?.collection?.href;
-      setMessage("Collection created. Uploads will use its own R2 prefix.");
+      setMessage(copy.created);
       setCreatedHref(typeof href === "string" ? href : null);
       setLabel("");
       setNativeName("");
@@ -62,7 +66,7 @@ export function InsPicksCollectionTools({
         onClick={() => setIsOpen((value) => !value)}
         type="button"
       >
-        New person set
+        {copy.newSet}
       </button>
 
       {isOpen ? (
@@ -70,13 +74,13 @@ export function InsPicksCollectionTools({
           <input
             className="glass-field min-h-[42px] px-4 text-sm outline-none"
             onChange={(event) => setLabel(event.target.value)}
-            placeholder="English name"
+            placeholder={copy.englishNamePlaceholder}
             value={label}
           />
           <input
             className="glass-field min-h-[42px] px-4 text-sm outline-none"
             onChange={(event) => setNativeName(event.target.value)}
-            placeholder="中文 / native name"
+            placeholder={copy.nativeNamePlaceholder}
             value={nativeName}
           />
           <button
@@ -88,7 +92,7 @@ export function InsPicksCollectionTools({
             onClick={submitCollection}
             type="button"
           >
-            Create
+            {copy.create}
           </button>
         </div>
       ) : null}
@@ -100,7 +104,7 @@ export function InsPicksCollectionTools({
             <>
               {" "}
               <a className="text-red underline" href={createdHref}>
-                Open set
+                {copy.openSet}
               </a>
             </>
           ) : null}
@@ -113,6 +117,7 @@ export function InsPicksCollectionTools({
 export function InsPicksBatchArchive({
   archiveEndpoint,
   collectionSlug,
+  copy,
   wallpapers,
 }: BatchArchiveProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>(() =>
@@ -148,7 +153,7 @@ export function InsPicksBatchArchive({
 
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
-        setMessage(payload?.error ?? "Failed to package selected photos.");
+        setMessage(payload?.error ?? copy.failed);
         return;
       }
 
@@ -178,15 +183,15 @@ export function InsPicksBatchArchive({
           }
           type="button"
         >
-          {allSelected ? "Clear" : "Select all"}
+          {allSelected ? copy.clear : copy.selectAll}
         </button>
         <button
           className="glass-primary px-5 py-2 text-[10px] uppercase tracking-[0.24em]"
           disabled={isPending || selectedIds.length === 0}
-          onClick={downloadSelectedArchive}
-          type="button"
-        >
-          Package selected ({selectedIds.length})
+        onClick={downloadSelectedArchive}
+        type="button"
+      >
+          {copy.packageSelected(selectedIds.length)}
         </button>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">

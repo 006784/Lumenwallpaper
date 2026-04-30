@@ -74,6 +74,25 @@ test.describe("INS Picks 专区", () => {
     await expect(page.getByRole("button", { name: /New person set/i })).toBeVisible();
   });
 
+  test("公开页面支持日语和韩语文案", async ({ page }) => {
+    await page.goto("/ins?locale=ja");
+
+    await expect(
+      page.getByRole("heading", { name: /Instagram ミューズアーカイブ/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: /写真をアップロード/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /人物セットを追加/i })).toBeVisible();
+    await expect(page.getByText("IVE / Instagram アーカイブ")).toBeVisible();
+
+    await page.goto("/ins/iu?locale=ko");
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: /^IU$/i }),
+    ).toBeVisible();
+    await expect(page.getByText("IU / Instagram 아카이브")).toBeVisible();
+    await expect(page.getByRole("link", { name: /전체 컬렉션/i })).toBeVisible();
+  });
+
   test("人物合集页面可直接打开", async ({ page }) => {
     await page.goto("/ins/iu");
 
@@ -81,6 +100,10 @@ test.describe("INS Picks 专区", () => {
       page.getByRole("heading", { level: 1, name: /^IU$/i }),
     ).toBeVisible();
     await expect(page.getByText("IU / Instagram archive")).toBeVisible();
+    await expect(page.getByRole("link", { name: /Upload photos/i })).toHaveAttribute(
+      "href",
+      "/creator/studio?insCollection=iu",
+    );
     await expect(page.getByRole("link", { name: /All collections/i })).toBeVisible();
   });
 

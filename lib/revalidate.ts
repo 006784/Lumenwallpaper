@@ -31,6 +31,7 @@ function tryRevalidatePath(path: string) {
 }
 
 export function revalidateWallpaperPublicData(options?: {
+  insPickCollectionSlugs?: Array<string | null | undefined>;
   creatorUsernames?: Array<string | null | undefined>;
   identifiers?: Array<string | number | null | undefined>;
 }) {
@@ -68,4 +69,15 @@ export function revalidateWallpaperPublicData(options?: {
   tryRevalidatePath("/");
   tryRevalidatePath("/explore");
   tryRevalidatePath("/darkroom");
+  tryRevalidatePath("/ins");
+
+  for (const slug of options?.insPickCollectionSlugs ?? []) {
+    const normalized = slug?.trim();
+
+    if (!normalized) {
+      continue;
+    }
+
+    tryRevalidatePath(`/ins/${normalized}`);
+  }
 }

@@ -14,6 +14,7 @@ import {
   getInsPickUploadTags,
   listInsPickCollections,
 } from "@/lib/ins-picks";
+import { revalidateWallpaperPublicData } from "@/lib/revalidate";
 import { getWallpaperCreateErrorResponse } from "@/lib/wallpaper-create-errors";
 import { createWallpaperRecord, createWallpaperSchema } from "@/lib/wallpapers";
 import type { InsPickUploadResult } from "@/types/ins-picks";
@@ -103,6 +104,11 @@ export async function POST(request: Request) {
       creatorId: String(currentUser.id),
       status: wallpaper.status,
       wallpaperId: String(wallpaper.id),
+    });
+    revalidateWallpaperPublicData({
+      creatorUsernames: [wallpaper.creator?.username],
+      identifiers: [wallpaper.id, wallpaper.slug],
+      insPickCollectionSlugs: [collection.slug],
     });
 
     const result: InsPickUploadResult = {

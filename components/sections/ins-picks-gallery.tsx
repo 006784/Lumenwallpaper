@@ -6,8 +6,10 @@ import {
 } from "@/components/sections/ins-picks-collection-tools";
 import { FrameButton } from "@/components/ui/frame-button";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
+import { getInsPicksUiCopy } from "@/lib/i18n-ui";
 import { getWallpaperPreviewUrl } from "@/lib/wallpaper-presenters";
 import { cn } from "@/lib/utils";
+import type { SupportedLocale } from "@/types/i18n";
 import type {
   InsPickCollectionSummary,
   InsPicksSnapshot,
@@ -15,6 +17,7 @@ import type {
 import type { Wallpaper } from "@/types/wallpaper";
 
 type InsPicksGalleryProps = {
+  locale: SupportedLocale;
   mode: "index" | "collection";
   snapshot: InsPicksSnapshot;
 };
@@ -80,12 +83,15 @@ function CollectionPreview({
 
 function CollectionCard({
   collection,
+  copy,
   featured = false,
 }: {
   collection: InsPickCollectionSummary;
+  copy: ReturnType<typeof getInsPicksUiCopy>;
   featured?: boolean;
 }) {
   const isPlanned = collection.status === "planned" && collection.count === 0;
+  const localized = copy.collections.details[collection.slug];
 
   return (
     <Link
@@ -99,16 +105,18 @@ function CollectionCard({
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <span className="glass-chip-active px-3 py-2 font-mono text-[9px] uppercase tracking-[0.24em]">
-              {collection.count > 0 ? `${collection.count} works` : "Ready"}
+              {collection.count > 0
+                ? copy.card.works(collection.count)
+                : copy.card.ready}
             </span>
             {isPlanned ? (
               <span className="glass-chip px-3 py-2 font-mono text-[9px] uppercase tracking-[0.24em] text-muted">
-                Planned
+                {copy.card.planned}
               </span>
             ) : null}
           </div>
           <p className="font-mono text-[10px] uppercase tracking-[0.34em] text-red">
-            {collection.subtitle}
+            {localized?.subtitle ?? collection.subtitle}
           </p>
           <h2 className="mt-4 font-display text-[clamp(2.2rem,5vw,4rem)] font-medium leading-[0.95] text-ink">
             {collection.label}
@@ -117,7 +125,7 @@ function CollectionCard({
         </div>
 
         <p className="max-w-md text-sm leading-7 text-muted">
-          {collection.description}
+          {localized?.description ?? collection.description}
         </p>
       </div>
       <CollectionPreview collection={collection} />
@@ -125,25 +133,29 @@ function CollectionCard({
   );
 }
 
-function EmptyGallery({ snapshot }: { snapshot: InsPicksSnapshot }) {
+function EmptyGallery({
+  copy,
+  snapshot,
+}: {
+  copy: ReturnType<typeof getInsPicksUiCopy>;
+  snapshot: InsPicksSnapshot;
+}) {
   return (
     <div className="glass-surface grid gap-8 p-5 md:grid-cols-[0.9fr_1.1fr] md:p-8">
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.34em] text-red">
-          Upload pipeline
+          {copy.empty.eyebrow}
         </p>
         <h2 className="mt-4 font-display text-[clamp(2rem,5vw,3.8rem)] font-medium leading-[0.98]">
-          Waiting for the first INS import.
+          {copy.empty.title}
         </h2>
         <p className="mt-5 max-w-xl text-sm leading-7 text-muted">
-          Use the dedicated INS upload endpoint or the existing Studio. Confirm
-          rights, upload the file, then attach the collection. This zone will
-          classify the work automatically after it is published.
+          {copy.empty.body}
         </p>
       </div>
       <div className="glass-surface-soft p-5">
         <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted">
-          Tag recipe
+          {copy.empty.tagRecipe}
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           {snapshot.sourceTags.map((tag) => (
@@ -159,17 +171,26 @@ function EmptyGallery({ snapshot }: { snapshot: InsPicksSnapshot }) {
           </span>
         </div>
         <FrameButton className="mt-8" href={snapshot.upload.href}>
-          Upload in Studio
+          {copy.empty.cta}
         </FrameButton>
       </div>
     </div>
   );
 }
 
-export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
+export function InsPicksGallery({
+  locale,
+  mode,
+  snapshot,
+}: InsPicksGalleryProps) {
+  const copy = getInsPicksUiCopy(locale);
   const selected = snapshot.selectedCollection;
   const heroCollection = selected ?? snapshot.collections[0];
   const wallpapers = snapshot.wallpapers;
+  const selectedCopy = selected ? copy.collections.details[selected.slug] : null;
+  const uploadHref = selected
+    ? `/creator/studio?insCollection=${encodeURIComponent(selected.slug)}`
+    : "/creator/studio";
 
   return (
     <>
@@ -178,43 +199,46 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
           <div className="space-y-7">
             <div className="glass-chip inline-flex items-center gap-3 px-4 py-2 text-[10px] uppercase text-muted">
               <span className="h-2 w-2 rounded-full bg-red shadow-[0_0_18px_rgba(255,109,45,0.5)]" />
-              Creator source zone
+              {copy.hero.badge}
             </div>
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.36em] text-red">
-                INS Picks
+                {copy.hero.eyebrow}
               </p>
               <h1 className="mt-5 max-w-[10em] font-display text-[clamp(3rem,7vw,6.4rem)] font-medium leading-[0.94] text-ink">
-                {selected ? selected.label : "Instagram muse archive"}
+                {selected ? selected.label : copy.hero.title}
               </h1>
               <p className="mt-6 max-w-3xl text-base leading-8 text-muted md:text-lg">
                 {selected
-                  ? selected.description
-                  : "A dedicated area for celebrity Instagram-style photo sets. IU, Lim Yoona, Jang Wonyoung, Irene, Karina, Bae Suzy, Kim Jisoo, and future domestic collections all share the same upload, moderation, and wallpaper download pipeline."}
+                  ? selectedCopy?.description ?? selected.description
+                  : copy.hero.body}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <FrameButton href="/creator/studio">Upload photos</FrameButton>
+              <FrameButton href={uploadHref}>
+                {copy.hero.uploadPhotos}
+              </FrameButton>
               <FrameButton href={snapshot.upload.createEndpoint} variant="outline">
-                Upload API
+                {copy.hero.uploadApi}
               </FrameButton>
               <FrameButton
                 href={snapshot.upload.collectionsEndpoint}
                 variant="outline"
               >
-                Collections API
+                {copy.hero.collectionsApi}
               </FrameButton>
               <FrameButton href="/api/ins-picks" variant="outline">
-                API snapshot
+                {copy.hero.apiSnapshot}
               </FrameButton>
               {selected ? (
                 <FrameButton href="/ins" variant="outline">
-                  All collections
+                  {copy.hero.allCollections}
                 </FrameButton>
               ) : null}
             </div>
             <InsPicksCollectionTools
               collectionsEndpoint={snapshot.upload.collectionsEndpoint}
+              copy={copy.tools}
             />
           </div>
 
@@ -223,11 +247,10 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
               <CollectionPreview collection={heroCollection} />
               <div className="border-t border-ink/10 p-5">
                 <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted">
-                  Unified pipeline
+                  {copy.hero.archiveTitle}
                 </p>
                 <p className="mt-3 text-sm leading-7 text-muted">
-                  Upload through the INS API or Studio, publish as wallpaper,
-                  download single files or package a whole set as a ZIP archive.
+                  {copy.hero.pipelineBody}
                 </p>
                 <p className="mt-3 break-all font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
                   R2: {heroCollection.r2Prefix}
@@ -243,15 +266,16 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.34em] text-red">
-                Collections
+                {copy.collections.eyebrow}
               </p>
               <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3.6rem)] font-medium leading-none">
-                {mode === "collection" ? "Related sets" : "Artist sets"}
+                {mode === "collection"
+                  ? copy.collections.relatedTitle
+                  : copy.collections.title}
               </h2>
             </div>
             <p className="max-w-lg text-sm leading-7 text-muted">
-              Add new names by extending the collection definitions. The
-              dedicated upload endpoint adds source + person tags for each set.
+              {copy.collections.body}
             </p>
           </div>
 
@@ -260,6 +284,7 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
               <CollectionCard
                 key={collection.slug}
                 collection={collection}
+                copy={copy}
                 featured={mode === "index" && index === 0}
               />
             ))}
@@ -272,10 +297,12 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.34em] text-red">
-                Gallery
+                {copy.gallery.eyebrow}
               </p>
               <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3.6rem)] font-medium leading-none">
-                {selected ? `${selected.label} wallpapers` : "Latest INS picks"}
+                {selected
+                  ? copy.gallery.selectedTitle(selected.label)
+                  : copy.gallery.latestTitle}
               </h2>
             </div>
             {selected?.latestWallpaper ? (
@@ -284,13 +311,13 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
                   href={getDownloadHref(selected.latestWallpaper)}
                   variant="outline"
                 >
-                  Download latest
+                  {copy.gallery.downloadLatest}
                 </FrameButton>
                 <FrameButton
                   href={`${snapshot.upload.archiveEndpoint}?collection=${encodeURIComponent(selected.slug)}`}
                   variant="outline"
                 >
-                  Download ZIP
+                  {copy.gallery.downloadZip}
                 </FrameButton>
               </div>
             ) : null}
@@ -302,6 +329,7 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
                 <InsPicksBatchArchive
                   archiveEndpoint={snapshot.upload.archiveEndpoint}
                   collectionSlug={selected.slug}
+                  copy={copy.archive}
                   wallpapers={wallpapers.map((wallpaper) => ({
                     id: wallpaper.id,
                     slug: wallpaper.slug,
@@ -316,7 +344,7 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
               </div>
             </>
           ) : (
-            <EmptyGallery snapshot={snapshot} />
+            <EmptyGallery copy={copy} snapshot={snapshot} />
           )}
         </div>
       </section>
