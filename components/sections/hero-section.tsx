@@ -29,7 +29,7 @@ export function HeroSection({ filmRows, locale }: HeroSectionProps) {
             </div>
 
             <div className="max-w-4xl space-y-6">
-              <h1 className="max-w-[11em] font-body text-[clamp(2.55rem,6vw,5.4rem)] font-semibold leading-[1.05] text-ink [text-wrap:balance]">
+              <h1 className="max-w-[10.5em] font-display text-[clamp(2.75rem,6.4vw,5.75rem)] font-medium leading-[0.98] text-ink [text-wrap:balance]">
                 <span className="block">{copy.hero.h1Line1}</span>
                 <span className="block">{copy.hero.h1Line2}</span>
               </h1>

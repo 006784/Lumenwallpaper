@@ -7,8 +7,10 @@
     var(--font-geist-sans), "PingFang SC", "Hiragino Sans GB",
     "Noto Sans CJK SC", "Microsoft YaHei UI", sans-serif;
   --font-display:
-    "Noto Serif SC", "Source Han Serif SC", "PingFang SC",
-    "Hiragino Sans GB", "Songti SC", "Iowan Old Style", Georgia, serif;
+    "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+    "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "AppleMyungjo",
+    "Noto Serif KR", "Noto Serif SC", "Source Han Serif SC", "Songti SC",
+    serif;
   --font-mono:
     var(--font-geist-mono), "SFMono-Regular", "JetBrains Mono", monospace;
 

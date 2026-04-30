@@ -20,6 +20,7 @@
   - 新增 `hooks/use-i18n.ts`，供客户端组件读取 `messages`、`supportedLocales` 和切换语言
   - 新增 `components/layout/language-switcher.tsx`，Header 内可直接切换简中/英语/日语/韩语，并刷新当前页面写入 `?locale=...`
   - Header/Footer、首页主要区块、Explore 列表与筛选、暗室页、壁纸详情页关键文案已接入本地化
+  - 根据用户反馈，首页英文 hero 标题已从 Geist Sans 粗黑体切换到更有杂志感的 serif display 字体栈，并补齐日文/韩文标题 fallback
   - 新增 `e2e/i18n-api.spec.ts` 与 `e2e/i18n-ui.spec.ts` 覆盖字典、公开 API、本地化首页与语言切换器
 - **接口 / 类型说明**:
   - 语言切换器调用 `setLocale("en" | "ja" | "ko" | "zh-CN")`，或 `POST /api/i18n { locale }`；URL 参数 `?locale=en` 也会被 middleware 写入 cookie
