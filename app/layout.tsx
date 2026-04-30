@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
-import { GeistSans } from "geist/font/sans";
 import { headers } from "next/headers";
 
 import { ObservabilityWidgets } from "@/components/layout/observability-widgets";
@@ -60,7 +59,7 @@ export default function RootLayout({
   return (
     <html
       suppressHydrationWarning
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      className={GeistMono.variable}
       lang={localeToHtmlLang(locale)}
     >
       <head>

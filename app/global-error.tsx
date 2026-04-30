@@ -3,7 +3,6 @@
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 import { GeistMono } from "geist/font/mono";
-import { GeistSans } from "geist/font/sans";
 
 import { ErrorShell } from "@/components/ui/error-shell";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
@@ -23,7 +22,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   return (
     <html
       suppressHydrationWarning
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      className={GeistMono.variable}
       lang="zh-CN"
     >
       <head>

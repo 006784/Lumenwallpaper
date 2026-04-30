@@ -6,6 +6,20 @@
 
 ## 进行中
 
+### TASK-034 · 全站字体审美统一
+
+- **状态**: ✅ codex done
+- **内容**: 用户反馈英文与全站字体不够好看，要求统一优化全站字体气质
+- **Codex 完成**:
+  - 全站正文 `font-body` 从 Geist Sans 切换为更柔和的系统 UI 字体栈，覆盖英文、简中、日文、韩文 fallback
+  - 全站 `h1/h2.font-body` 自动使用 `font-display` serif 字体栈，让大标题更偏杂志/editorial 气质
+  - `font-display` 补齐英文、日文、韩文、简中 serif fallback；`font-mono` 保留 Geist Mono 并增加更稳的 monospace fallback
+  - 根布局与全局错误页移除不再使用的 Geist Sans 变量，减少无效字体加载
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - `pnpm build`
+
 ### TASK-033 · 多语言适配（英语 / 日语 / 韩语）
 
 - **状态**: ✅ codex done
