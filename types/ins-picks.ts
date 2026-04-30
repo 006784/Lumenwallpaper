@@ -28,9 +28,37 @@ export interface InsPicksSnapshot {
   selectedCollection: InsPickCollectionSummary | null;
   sourceTags: string[];
   upload: {
+    createEndpoint: string;
     href: string;
     note: string;
+    presignEndpoint: string;
     requiredTags: string[];
   };
   wallpapers: Wallpaper[];
+}
+
+export interface InsPickUploadMetadata {
+  collections: Array<{
+    label: string;
+    nativeName: string;
+    requiredTags: string[];
+    slug: string;
+    status: InsPickCollectionStatus;
+  }>;
+  createEndpoint: string;
+  href: string;
+  note: string;
+  presignEndpoint: string;
+  sourceTags: string[];
+}
+
+export interface InsPickUploadResult {
+  collection: {
+    label: string;
+    nativeName: string;
+    requiredTags: string[];
+    slug: string;
+  };
+  upload: InsPickUploadMetadata;
+  wallpaper: Wallpaper;
 }

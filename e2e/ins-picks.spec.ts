@@ -16,18 +16,33 @@ test.describe("INS Picks 专区", () => {
           slug: string;
         }>;
         upload: {
+          createEndpoint: string;
           href: string;
+          presignEndpoint: string;
           requiredTags: string[];
         };
       };
     };
 
     expect(payload.data.upload.href).toBe("/creator/studio");
+    expect(payload.data.upload.createEndpoint).toBe("/api/ins-picks/upload");
+    expect(payload.data.upload.presignEndpoint).toBe(
+      "/api/ins-picks/upload/presign",
+    );
     expect(payload.data.upload.requiredTags).toEqual(
       expect.arrayContaining(["ins", "instagram", "celebrity"]),
     );
     expect(payload.data.collections.map((collection) => collection.slug)).toEqual(
-      expect.arrayContaining(["iu", "lim-yoona", "jang-wonyoung", "liu-yifei"]),
+      expect.arrayContaining([
+        "iu",
+        "lim-yoona",
+        "jang-wonyoung",
+        "bae-joohyun",
+        "karina-yu-jimin",
+        "bae-suzy",
+        "kim-jisoo",
+        "liu-yifei",
+      ]),
     );
 
     for (const collection of payload.data.collections) {
@@ -46,7 +61,9 @@ test.describe("INS Picks 专区", () => {
     await expect(page.getByRole("link", { name: /Jang Wonyoung/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /IU \/ Instagram archive/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /Lim Yoona/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Karina/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /Upload photos/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Upload API/i })).toBeVisible();
   });
 
   test("人物合集页面可直接打开", async ({ page }) => {
@@ -57,5 +74,45 @@ test.describe("INS Picks 专区", () => {
     ).toBeVisible();
     await expect(page.getByText("IU / Instagram archive")).toBeVisible();
     await expect(page.getByRole("link", { name: /All collections/i })).toBeVisible();
+  });
+
+  test("专区上传元数据公开，写入接口仍要求登录", async ({ request }) => {
+    const metadataResponse = await request.get("/api/ins-picks/upload");
+
+    expect(metadataResponse.ok()).toBe(true);
+
+    const metadataPayload = (await metadataResponse.json()) as {
+      data: {
+        collections: Array<{ slug: string }>;
+        createEndpoint: string;
+        presignEndpoint: string;
+      };
+    };
+
+    expect(metadataPayload.data.createEndpoint).toBe("/api/ins-picks/upload");
+    expect(metadataPayload.data.presignEndpoint).toBe(
+      "/api/ins-picks/upload/presign",
+    );
+    expect(metadataPayload.data.collections.map((collection) => collection.slug)).toEqual(
+      expect.arrayContaining(["bae-joohyun", "karina-yu-jimin", "bae-suzy", "kim-jisoo"]),
+    );
+
+    const presignResponse = await request.post("/api/ins-picks/upload/presign", {
+      data: {
+        collection: "karina-yu-jimin",
+        fileName: "karina.jpg",
+        fileSize: 1024 * 100,
+        fileType: "image/jpeg",
+      },
+    });
+    expect(presignResponse.status()).toBe(401);
+
+    const createResponse = await request.post("/api/ins-picks/upload", {
+      data: {
+        collection: "karina-yu-jimin",
+        title: "Karina test",
+      },
+    });
+    expect(createResponse.status()).toBe(401);
   });
 });

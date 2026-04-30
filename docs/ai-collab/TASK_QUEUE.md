@@ -18,8 +18,16 @@
   - Header 导航新增 INS Picks/INS 专区入口，多语言导航文案已补齐
   - `/ins` 与 `/ins/[collection]` 已加入 sitemap
   - 新增 `e2e/ins-picks.spec.ts` 覆盖专区 API、公开入口和人物合集页面
+- **Codex 追加完成**:
+  - 用户要求专区增加单独上传接口，并扩展裴珠泫、柳智敏、裴秀智、金智秀等人物合集
+  - 新增 `GET /api/ins-picks/upload`，返回专区上传元数据、支持合集、专区创建接口和 presign 接口路径
+  - 新增 `POST /api/ins-picks/upload/presign`，复用现有 R2 presign、鉴权和限流，额外接收 `collection`
+  - 新增 `POST /api/ins-picks/upload`，复用现有 `createWallpaperSchema`、R2 对象校验、数据库创建与 moderation 权限，并自动补齐 `ins / instagram / celebrity + 人物合集标签`
+  - 新增合集：Irene/裴珠泫、Karina/柳智敏、Bae Suzy/裴秀智、Kim Jisoo/金智秀；页面、API 与 sitemap 会随 `INS_PICK_COLLECTIONS` 自动扩展
+  - INS 页面空态和 API 入口文案已同步展示专区上传接口
 - **上传 / 下载协议**:
-  - 上传仍走 `/creator/studio`、`POST /api/upload/presign`、`POST /api/wallpapers`
+  - 专区上传可走 `POST /api/ins-picks/upload/presign` + `POST /api/ins-picks/upload`
+  - 通用上传仍兼容 `/creator/studio`、`POST /api/upload/presign`、`POST /api/wallpapers`
   - 推荐标签：`ins`、`instagram`、`celebrity`，再加人物标签如 `iu` / `张元英` / `林允儿`
   - 下载仍走详情页与 `/api/wallpapers/[id]/download`，专区不另建下载接口
 - **验证**:

@@ -132,9 +132,9 @@ function EmptyGallery({ snapshot }: { snapshot: InsPicksSnapshot }) {
           Waiting for the first INS import.
         </h2>
         <p className="mt-5 max-w-xl text-sm leading-7 text-muted">
-          Keep using the existing upload studio. Confirm rights, upload the file,
-          then add the source tag and the person tag. This zone will classify the
-          work automatically after it is published.
+          Use the dedicated INS upload endpoint or the existing Studio. Confirm
+          rights, upload the file, then attach the collection. This zone will
+          classify the work automatically after it is published.
         </p>
       </div>
       <div className="glass-surface-soft p-5">
@@ -151,7 +151,7 @@ function EmptyGallery({ snapshot }: { snapshot: InsPicksSnapshot }) {
             </span>
           ))}
           <span className="glass-chip-active px-3 py-2 text-[10px] uppercase tracking-[0.18em]">
-            iu / 张元英 / 林允儿
+            iu / 张元英 / 林允儿 / 裴珠泫 / 柳智敏 / 裴秀智 / 金智秀
           </span>
         </div>
         <FrameButton className="mt-8" href={snapshot.upload.href}>
@@ -186,11 +186,14 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
               <p className="mt-6 max-w-3xl text-base leading-8 text-muted md:text-lg">
                 {selected
                   ? selected.description
-                  : "A dedicated area for celebrity Instagram-style photo sets. IU, Lim Yoona, Jang Wonyoung, and future domestic collections all share the same upload, moderation, and wallpaper download pipeline."}
+                  : "A dedicated area for celebrity Instagram-style photo sets. IU, Lim Yoona, Jang Wonyoung, Irene, Karina, Bae Suzy, Kim Jisoo, and future domestic collections all share the same upload, moderation, and wallpaper download pipeline."}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <FrameButton href="/creator/studio">Upload photos</FrameButton>
+              <FrameButton href={snapshot.upload.createEndpoint} variant="outline">
+                Upload API
+              </FrameButton>
               <FrameButton href="/api/ins-picks" variant="outline">
                 API snapshot
               </FrameButton>
@@ -210,8 +213,8 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
                   Unified pipeline
                 </p>
                 <p className="mt-3 text-sm leading-7 text-muted">
-                  Upload through Studio, publish as wallpaper, download through
-                  the existing wallpaper download endpoint.
+                  Upload through the INS API or Studio, publish as wallpaper,
+                  download through the existing wallpaper download endpoint.
                 </p>
               </div>
             </div>
@@ -231,8 +234,8 @@ export function InsPicksGallery({ mode, snapshot }: InsPicksGalleryProps) {
               </h2>
             </div>
             <p className="max-w-lg text-sm leading-7 text-muted">
-              Add new names by extending the collection definitions and tagging
-              uploads with source + person tags.
+              Add new names by extending the collection definitions. The
+              dedicated upload endpoint adds source + person tags for each set.
             </p>
           </div>
 

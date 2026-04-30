@@ -9,7 +9,7 @@ export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 export const metadata: Metadata = {
   title: "INS Picks",
   description:
-    "Celebrity Instagram-style wallpaper collections for IU, Lim Yoona, Jang Wonyoung, and future muse sets.",
+    "Celebrity Instagram-style wallpaper collections for IU, Lim Yoona, Jang Wonyoung, Irene, Karina, Bae Suzy, Kim Jisoo, and future muse sets.",
 };
 
 export default async function InsPicksPage() {
