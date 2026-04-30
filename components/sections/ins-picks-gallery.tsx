@@ -32,36 +32,57 @@ function CollectionPreview({
   collection: InsPickCollectionSummary;
 }) {
   const previewWallpapers = collection.previewWallpapers;
+  const initials = collection.label
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   if (previewWallpapers.length === 0) {
     return (
-      <div className="grid h-full min-h-[240px] grid-cols-2 gap-2 p-3">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div
-            key={index}
-            className={cn(
-              "glass-surface-soft relative overflow-hidden",
-              index === 0 ? "rounded-tl-[26px]" : "",
-              index === 1 ? "rounded-tr-[26px]" : "",
-              index === 2 ? "rounded-bl-[26px]" : "",
-              index === 3 ? "rounded-br-[26px]" : "",
-            )}
-          >
-            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,109,45,0.16),rgba(23,79,80,0.08)_48%,rgba(255,255,255,0.34))]" />
-            <div className="absolute inset-x-4 bottom-4 h-px bg-ink/10" />
+      <div className="relative grid h-full min-h-[260px] overflow-hidden p-3">
+        <div className="relative overflow-hidden rounded-[26px] border border-ink/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.54),rgba(23,79,80,0.08)_46%,rgba(255,109,45,0.12))]">
+          <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,rgba(255,109,45,0.85),rgba(23,79,80,0.55),rgba(214,176,106,0.75))]" />
+          <div className="absolute inset-y-6 left-5 flex flex-col justify-between">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <span
+                aria-hidden="true"
+                className="h-3 w-2 rounded-[3px] border border-ink/15 bg-paper/40"
+                key={index}
+              />
+            ))}
           </div>
-        ))}
+          <div className="absolute inset-y-6 right-5 flex flex-col justify-between">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <span
+                aria-hidden="true"
+                className="h-3 w-2 rounded-[3px] border border-ink/15 bg-paper/40"
+                key={index}
+              />
+            ))}
+          </div>
+          <div className="absolute inset-10 rounded-[22px] border border-ink/10 bg-paper/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.48)]" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-12 text-center">
+            <span className="font-display text-[clamp(3.4rem,7vw,5.5rem)] leading-none text-ink/45">
+              {initials}
+            </span>
+            <span className="mt-4 font-mono text-[9px] uppercase tracking-[0.26em] text-muted">
+              {collection.r2Prefix}
+            </span>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid h-full min-h-[240px] grid-cols-2 gap-2 p-3">
+    <div className="grid h-full min-h-[260px] grid-cols-2 gap-2 p-3">
       {previewWallpapers.map((wallpaper, index) => (
         <div
           key={wallpaper.id}
           className={cn(
-            "relative overflow-hidden bg-black",
+            "relative overflow-hidden bg-black shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]",
             index === 0 ? "rounded-tl-[26px]" : "",
             index === 1 ? "rounded-tr-[26px]" : "",
             index === 2 ? "rounded-bl-[26px]" : "",
@@ -74,7 +95,8 @@ function CollectionPreview({
               backgroundImage: `url("${getWallpaperPreviewUrl(wallpaper, "medium")}")`,
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/64 via-black/10 to-transparent" />
+          <div className="absolute inset-x-3 bottom-3 h-px bg-paper/20" />
         </div>
       ))}
     </div>
@@ -96,12 +118,14 @@ function CollectionCard({
   return (
     <Link
       className={cn(
-        "glass-surface group grid overflow-hidden transition duration-card hover:-translate-y-1 md:grid-cols-[0.9fr_1.1fr]",
+        "glass-surface group relative isolate grid overflow-hidden transition duration-card hover:-translate-y-1 md:grid-cols-[0.9fr_1.1fr]",
         featured ? "md:col-span-2" : "",
       )}
       href={collection.href}
     >
-      <div className="flex min-h-[260px] flex-col justify-between gap-8 p-5 md:p-6">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,rgba(255,109,45,0.9),rgba(23,79,80,0.55),rgba(214,176,106,0.8))] opacity-80" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.28),rgba(255,255,255,0)_42%,rgba(23,79,80,0.08))]" />
+      <div className="relative flex min-h-[280px] flex-col justify-between gap-8 p-5 md:p-6">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <span className="glass-chip-active px-3 py-2 font-mono text-[9px] uppercase tracking-[0.24em]">
@@ -122,13 +146,27 @@ function CollectionCard({
             {collection.label}
           </h2>
           <p className="mt-2 text-[15px] text-muted">{collection.nativeName}</p>
+          <p className="mt-4 max-w-md text-sm leading-7 text-muted">
+            {localized?.description ?? collection.description}
+          </p>
         </div>
-
-        <p className="max-w-md text-sm leading-7 text-muted">
-          {localized?.description ?? collection.description}
-        </p>
+        <div className="flex flex-wrap gap-2">
+          <span className="glass-chip px-3 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-muted">
+            {collection.source}
+          </span>
+          <span className="glass-chip px-3 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-muted">
+            {collection.status}
+          </span>
+        </div>
       </div>
-      <CollectionPreview collection={collection} />
+      <div className="relative">
+        <CollectionPreview collection={collection} />
+        <div className="pointer-events-none absolute inset-x-5 bottom-5 flex items-center justify-between gap-3">
+          <span className="rounded-full border border-paper/20 bg-black/24 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-paper/75 backdrop-blur">
+            {collection.slug}
+          </span>
+        </div>
+      </div>
     </Link>
   );
 }

@@ -147,7 +147,7 @@ export type InsPicksUiCopy = {
   archive: {
     clear: string;
     failed: string;
-    packageSelected: (count: number) => string;
+    packageSelected: string;
     selectAll: string;
   };
   card: {
@@ -881,7 +881,7 @@ const INS_PICKS_UI_COPY: Record<SupportedLocale, InsPicksUiCopy> = {
     archive: {
       clear: "清空",
       failed: "打包选中照片失败。",
-      packageSelected: (count) => `打包选中 (${count})`,
+      packageSelected: "打包选中",
       selectAll: "全选",
     },
     card: {
@@ -976,7 +976,7 @@ const INS_PICKS_UI_COPY: Record<SupportedLocale, InsPicksUiCopy> = {
     archive: {
       clear: "Clear",
       failed: "Failed to package selected photos.",
-      packageSelected: (count) => `Package selected (${count})`,
+      packageSelected: "Package selected",
       selectAll: "Select all",
     },
     card: {
@@ -1079,7 +1079,7 @@ const INS_PICKS_UI_COPY: Record<SupportedLocale, InsPicksUiCopy> = {
     archive: {
       clear: "クリア",
       failed: "選択した写真のパッケージ作成に失敗しました。",
-      packageSelected: (count) => `選択分を ZIP 化 (${count})`,
+      packageSelected: "選択分を ZIP 化",
       selectAll: "すべて選択",
     },
     card: {
@@ -1182,7 +1182,7 @@ const INS_PICKS_UI_COPY: Record<SupportedLocale, InsPicksUiCopy> = {
     archive: {
       clear: "해제",
       failed: "선택한 사진을 패키징하지 못했습니다.",
-      packageSelected: (count) => `선택 항목 패키징 (${count})`,
+      packageSelected: "선택 항목 패키징",
       selectAll: "전체 선택",
     },
     card: {

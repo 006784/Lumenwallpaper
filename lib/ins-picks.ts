@@ -246,10 +246,17 @@ function wallpaperMatchesCollection(
   collection: InsPickCollectionDefinition,
 ) {
   const values = getWallpaperMatchValues(wallpaper);
+  const sourceTags = new Set(
+    [...INS_PICK_SOURCE_TAGS, ...INS_PICK_UPLOAD_SOURCE_TAGS]
+      .map(normalizeMatchValue)
+      .filter(Boolean),
+  );
   const aliases = [
     collection.slug,
     collection.r2Prefix,
-    ...collection.requiredTags,
+    ...collection.requiredTags.filter(
+      (tag) => !sourceTags.has(normalizeMatchValue(tag)),
+    ),
     ...collection.aliases,
   ]
     .map(normalizeMatchValue)

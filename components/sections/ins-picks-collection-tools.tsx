@@ -188,10 +188,10 @@ export function InsPicksBatchArchive({
         <button
           className="glass-primary px-5 py-2 text-[10px] uppercase tracking-[0.24em]"
           disabled={isPending || selectedIds.length === 0}
-        onClick={downloadSelectedArchive}
-        type="button"
-      >
-          {copy.packageSelected(selectedIds.length)}
+          onClick={downloadSelectedArchive}
+          type="button"
+        >
+          {copy.packageSelected} ({selectedIds.length})
         </button>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">

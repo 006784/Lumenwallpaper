@@ -107,6 +107,31 @@ test.describe("INS Picks 专区", () => {
     await expect(page.getByRole("link", { name: /All collections/i })).toBeVisible();
   });
 
+  test("人物合集不会因为通用 INS 标签串档", async ({ request }) => {
+    const response = await request.get("/api/ins-picks?collection=iu");
+
+    expect(response.ok()).toBe(true);
+
+    const payload = (await response.json()) as {
+      data: {
+        wallpapers: Array<{
+          files: Array<{ storagePath: string }>;
+          tags: string[];
+        }>;
+      };
+    };
+
+    for (const wallpaper of payload.data.wallpapers) {
+      const searchable = [
+        ...wallpaper.tags,
+        ...wallpaper.files.map((file) => file.storagePath),
+      ].join(" ");
+
+      expect(searchable).toMatch(/iu|李知恩|originals\/ins-picks\/iu/i);
+      expect(searchable).not.toMatch(/bae-joohyun|裴珠泫|irene/i);
+    }
+  });
+
   test("专区上传元数据公开，写入接口仍要求登录", async ({ request }) => {
     const metadataResponse = await request.get("/api/ins-picks/upload");
 
