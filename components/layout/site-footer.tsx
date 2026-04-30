@@ -1,8 +1,17 @@
 import Link from "next/link";
 
-import { footerColumns } from "@/lib/data/home";
+import { getLocalizedFooterColumns } from "@/lib/data/home";
+import { getHomeUiCopy } from "@/lib/i18n-ui";
+import type { SupportedLocale } from "@/types/i18n";
 
-export function SiteFooter() {
+type SiteFooterProps = {
+  locale: SupportedLocale;
+};
+
+export function SiteFooter({ locale }: SiteFooterProps) {
+  const footerColumns = getLocalizedFooterColumns(locale);
+  const copy = getHomeUiCopy(locale);
+
   return (
     <footer className="px-4 py-6 md:px-8">
       <div className="glass-surface grid gap-10 px-5 py-10 md:grid-cols-[2fr_1fr_1fr_1fr] md:px-8">
@@ -11,9 +20,9 @@ export function SiteFooter() {
             Lumen
           </p>
           <p className="mt-4 max-w-sm text-sm leading-7 text-muted">
-            每一帧都值得被看见。
+            {copy.footer.taglineLine1}
             <br />
-            壁纸不是装饰，是态度。
+            {copy.footer.taglineLine2}
           </p>
         </div>
 
@@ -42,7 +51,7 @@ export function SiteFooter() {
         <span>© 2026 Lumen™</span>
         <span className="inline-flex items-center gap-2">
           <span className="text-[8px] text-red">✦</span>
-          Made with obsession
+          {copy.footer.madeWith}
         </span>
       </div>
     </footer>

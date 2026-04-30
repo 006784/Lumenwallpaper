@@ -183,6 +183,37 @@ function shouldShowUploadDiagnostics(message: string) {
   return /R2|CORS|status 0|上传诊断/i.test(message);
 }
 
+function getFormStateTitle(state: UploadState) {
+  return {
+    error: "发布未完成",
+    idle: "工作台就绪",
+    submitting: "正在发布",
+    success: "发布完成",
+  }[state.kind];
+}
+
+function getFormStateClassName(state: UploadState) {
+  return {
+    error:
+      "border-red/25 bg-[linear-gradient(145deg,rgba(255,255,255,0.74),rgba(255,239,234,0.54))] text-red shadow-[inset_1px_1px_2px_rgba(255,255,255,0.88),0_16px_34px_rgba(255,91,44,0.11)]",
+    idle:
+      "border-ink/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.72),rgba(239,247,247,0.52))] text-muted shadow-[inset_1px_1px_2px_rgba(255,255,255,0.86)]",
+    submitting:
+      "border-gold/25 bg-[linear-gradient(145deg,rgba(255,255,255,0.74),rgba(255,247,220,0.58))] text-[#7a6114] shadow-[inset_1px_1px_2px_rgba(255,255,255,0.88),0_16px_34px_rgba(195,151,41,0.1)]",
+    success:
+      "border-[#6be3a5]/30 bg-[linear-gradient(145deg,rgba(255,255,255,0.74),rgba(226,255,240,0.56))] text-[#2f7d54] shadow-[inset_1px_1px_2px_rgba(255,255,255,0.88),0_16px_34px_rgba(47,125,84,0.1)]",
+  }[state.kind];
+}
+
+function getFormStateDotClassName(state: UploadState) {
+  return {
+    error: "bg-red shadow-[0_0_0_5px_rgba(255,91,44,0.12)]",
+    idle: "bg-muted/60 shadow-[0_0_0_5px_rgba(37,58,62,0.07)]",
+    submitting: "bg-gold shadow-[0_0_0_5px_rgba(195,151,41,0.13)]",
+    success: "bg-[#39b974] shadow-[0_0_0_5px_rgba(57,185,116,0.13)]",
+  }[state.kind];
+}
+
 function uploadFileToPresignedUrl(
   upload: PresignedUploadPayload,
   file: File,
@@ -1396,6 +1427,33 @@ export function UploadStudioForm({
                         <span>{item.progress.percent}%</span>
                       ) : null}
                     </div>
+                    <div
+                      className={cn(
+                        "mt-4 h-1.5 overflow-hidden rounded-full",
+                        item.id === activeItem?.id
+                          ? "bg-paper/14"
+                          : "bg-white/60 shadow-[inset_2px_2px_5px_rgba(40,62,66,0.08),inset_-2px_-2px_5px_rgba(255,255,255,0.88)]",
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-[width] duration-300",
+                          item.status === "error"
+                            ? "bg-red"
+                            : item.status === "success"
+                              ? "bg-[#39b974]"
+                              : item.id === activeItem?.id
+                                ? "bg-paper/78"
+                                : "bg-red",
+                        )}
+                        style={{
+                          width: `${Math.max(
+                            item.status === "success" ? 100 : item.progress.percent,
+                            item.status === "idle" ? 2 : 0,
+                          )}%`,
+                        }}
+                      />
+                    </div>
                     <button
                       className={cn(
                         "mt-4 inline-flex border px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] transition",
@@ -1766,15 +1824,21 @@ export function UploadStudioForm({
 
       <div className="space-y-3 border-t border-ink/10 pt-8">
         <button
-          className="glass-primary inline-flex min-h-[52px] w-full items-center justify-center px-5 py-3 font-mono text-[12px] uppercase tracking-[0.24em] disabled:cursor-not-allowed disabled:opacity-60"
+          className="glass-primary group relative inline-flex min-h-[56px] w-full items-center justify-center overflow-hidden px-5 py-3 font-mono text-[12px] uppercase tracking-[0.24em] disabled:cursor-not-allowed disabled:opacity-60"
           disabled={!canPublish}
           type="submit"
         >
-          {isSubmitting
-            ? "正在顺序发布作品…"
-            : uploadItems.length > 1
-              ? `发布 ${uploadItems.length} 个作品到 Lumen`
-              : "发布到 Lumen"}
+          <span className="pointer-events-none absolute inset-x-8 top-0 h-px bg-white/80 opacity-80" />
+          <span className="relative flex items-center gap-3">
+            <span className="h-1.5 w-1.5 rounded-full bg-white/80 shadow-[0_0_16px_rgba(255,255,255,0.9)]" />
+            <span>
+              {isSubmitting
+                ? "正在顺序发布作品…"
+                : uploadItems.length > 1
+                  ? `发布 ${uploadItems.length} 个作品到 Lumen`
+                  : "发布到 Lumen"}
+            </span>
+          </span>
         </button>
 
         {!canPublish ? (
@@ -1787,20 +1851,33 @@ export function UploadStudioForm({
 
         <div
           className={cn(
-            "border px-4 py-4 text-sm leading-7",
-            state.kind === "success"
-              ? "border-[#6be3a5]/30 bg-[#6be3a5]/10 text-[#2f7d54]"
-              : state.kind === "error"
-                ? "border-red/25 bg-red/10 text-red"
-                : state.kind === "submitting"
-                  ? "border-gold/30 bg-gold/10 text-[#7a6114]"
-                  : "border-ink/10 bg-paper/60 text-muted",
-              )}
+            "relative overflow-hidden rounded-[28px] border px-4 py-4 text-sm leading-7 sm:px-5",
+            getFormStateClassName(state),
+          )}
         >
-          <p>{state.message}</p>
+          <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-white/75" />
+          <div className="flex items-start gap-3">
+            <span
+              className={cn(
+                "mt-2 h-2.5 w-2.5 shrink-0 rounded-full",
+                getFormStateDotClassName(state),
+              )}
+            />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-body text-[1.05rem] font-semibold leading-tight text-ink">
+                  {getFormStateTitle(state)}
+                </p>
+                <span className="glass-chip px-3 py-1 text-[10px] uppercase tracking-[0.22em]">
+                  {statusLabel}
+                </span>
+              </div>
+              <p className="mt-2 max-w-[82rem] text-sm leading-7">{state.message}</p>
+            </div>
+          </div>
           {state.kind === "error" && shouldShowUploadDiagnostics(state.message) ? (
             <a
-              className="mt-3 inline-flex border border-current px-3 py-1 text-[10px] uppercase tracking-[0.22em] transition hover:bg-red hover:text-paper"
+              className="ml-5 mt-4 inline-flex min-h-[36px] items-center justify-center rounded-full border border-red/35 bg-white/55 px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-red shadow-[inset_1px_1px_1px_rgba(255,255,255,0.9),0_10px_22px_rgba(255,91,44,0.12)] transition hover:bg-red hover:text-paper sm:ml-[22px]"
               href="/api/upload/diagnostics"
               rel="noreferrer"
               target="_blank"

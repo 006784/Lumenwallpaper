@@ -8,6 +8,15 @@ import type { NavLink } from "@/types/home";
 
 type MobileNavProps = {
   currentUsername: string | null;
+  labels?: {
+    closeMenu: string;
+    dashboard: string;
+    library: string;
+    login: string;
+    logout: string;
+    moderation: string;
+    openMenu: string;
+  };
   isEditor: boolean;
   navLinks: NavLink[];
   unreadCount: number;
@@ -15,6 +24,15 @@ type MobileNavProps = {
 
 export function MobileNav({
   currentUsername,
+  labels = {
+    closeMenu: "关闭菜单",
+    dashboard: "管理台",
+    library: "个人库",
+    login: "登录 / 注册",
+    logout: "退出",
+    moderation: "审核台",
+    openMenu: "打开菜单",
+  },
   isEditor,
   navLinks,
   unreadCount,
@@ -40,14 +58,14 @@ export function MobileNav({
       {/* 汉堡按钮 */}
       <button
         aria-expanded={isOpen}
-        aria-label={isOpen ? "关闭菜单" : "打开菜单"}
+        aria-label={isOpen ? labels.closeMenu : labels.openMenu}
         className="glass-control relative flex h-10 w-10 flex-col items-center justify-center gap-[5px] md:hidden"
         type="button"
         onClick={() => setIsOpen((v) => !v)}
       >
         <span
           className={cn(
-            "block h-px w-5 bg-ink transition-transform duration-200 origin-center",
+            "block h-px w-5 origin-center bg-ink transition-transform duration-200",
             isOpen && "translate-y-[6px] rotate-45",
           )}
         />
@@ -59,7 +77,7 @@ export function MobileNav({
         />
         <span
           className={cn(
-            "block h-px w-5 bg-ink transition-transform duration-200 origin-center",
+            "block h-px w-5 origin-center bg-ink transition-transform duration-200",
             isOpen && "-translate-y-[6px] -rotate-45",
           )}
         />
@@ -107,7 +125,7 @@ export function MobileNav({
                     onClick={handleLinkClick}
                   >
                     <span>
-                      个人库
+                      {labels.library}
                       {unreadCount > 0 ? (
                         <span className="ml-2 border border-red/20 bg-red/5 px-2 py-0.5 text-[9px] text-red">
                           {unreadCount}
@@ -121,7 +139,7 @@ export function MobileNav({
                     href="/creator/studio/manage"
                     onClick={handleLinkClick}
                   >
-                    管理台
+                    {labels.dashboard}
                     <span className="text-ink/20">→</span>
                   </Link>
                   {isEditor ? (
@@ -130,20 +148,24 @@ export function MobileNav({
                       href="/creator/studio/moderation"
                       onClick={handleLinkClick}
                     >
-                      审核台
+                      {labels.moderation}
                       <span className="text-ink/20">→</span>
                     </Link>
                   ) : null}
-                  <div className="flex items-center gap-3 border-t border-ink/8 pt-4">
+                  <div className="border-ink/8 flex items-center gap-3 border-t pt-4">
                     <span className="text-[11px] uppercase tracking-[0.22em] text-muted">
                       @{currentUsername}
                     </span>
-                    <form action="/api/auth/signout" className="ml-auto" method="post">
+                    <form
+                      action="/api/auth/signout"
+                      className="ml-auto"
+                      method="post"
+                    >
                       <button
-                      className="glass-control px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-muted transition hover:text-ink"
+                        className="glass-control px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-muted transition hover:text-ink"
                         type="submit"
                       >
-                        退出
+                        {labels.logout}
                       </button>
                     </form>
                   </div>
@@ -154,7 +176,7 @@ export function MobileNav({
                   href="/login"
                   onClick={handleLinkClick}
                 >
-                  登录 / 注册
+                  {labels.login}
                   <span className="text-ink/20">→</span>
                 </Link>
               )}

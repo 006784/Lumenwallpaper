@@ -5,6 +5,7 @@ import {
   heroFilmRows as fallbackHeroFilmRows,
   moodCards as fallbackMoodCards,
 } from "@/lib/data/home";
+import { DEFAULT_LOCALE, translateStaticText } from "@/lib/i18n";
 import {
   getCachedFeaturedWallpapers,
   getCachedPublishedWallpapers,
@@ -16,6 +17,7 @@ import {
   wallpaperToFilmCell,
   wallpaperToMoodCard,
 } from "@/lib/wallpaper-presenters";
+import type { SupportedLocale } from "@/types/i18n";
 import type { HomePageSnapshot } from "@/types/home-api";
 import type { Wallpaper } from "@/types/wallpaper";
 
@@ -24,10 +26,7 @@ const HOME_FEATURED_POOL_LIMIT = 36;
 const HOME_MOTION_LIMIT = 9;
 const HOME_IOS_POOL_LIMIT = 72;
 
-async function loadHomePool(
-  label: string,
-  loader: () => Promise<Wallpaper[]>,
-) {
+async function loadHomePool(label: string, loader: () => Promise<Wallpaper[]>) {
   try {
     return await loader();
   } catch (error) {
@@ -145,7 +144,9 @@ function isPortraitWallpaper(wallpaper: Wallpaper) {
     return wallpaper.height > wallpaper.width;
   }
 
-  const previewFile = wallpaper.files.find((file) => file.variant === "preview");
+  const previewFile = wallpaper.files.find(
+    (file) => file.variant === "preview",
+  );
 
   if (
     typeof previewFile?.width === "number" &&
@@ -159,51 +160,86 @@ function isPortraitWallpaper(wallpaper: Wallpaper) {
   return false;
 }
 
-function getFallbackHomePageSnapshot(): HomePageSnapshot {
+function getFallbackHomePageSnapshot(
+  locale: SupportedLocale = DEFAULT_LOCALE,
+): HomePageSnapshot {
   return {
-    darkroomItems: fallbackDarkroomItems,
-    editorialFeature: fallbackEditorialFeature,
-    editorialItems: fallbackEditorialItems,
-    heroFilmRows: fallbackHeroFilmRows,
+    darkroomItems: fallbackDarkroomItems.map((item) => ({
+      ...item,
+      badge: item.badge ? translateStaticText(item.badge, locale) : undefined,
+      meta: translateStaticText(item.meta, locale),
+      title: translateStaticText(item.title, locale),
+    })),
+    editorialFeature: {
+      ...fallbackEditorialFeature,
+      description: translateStaticText(
+        fallbackEditorialFeature.description,
+        locale,
+      ),
+      eyebrow: translateStaticText(fallbackEditorialFeature.eyebrow, locale),
+      title: translateStaticText(fallbackEditorialFeature.title, locale),
+    },
+    editorialItems: fallbackEditorialItems.map((item) => ({
+      ...item,
+      meta: translateStaticText(item.meta, locale),
+      title: translateStaticText(item.title, locale),
+    })),
+    heroFilmRows: fallbackHeroFilmRows.map((row) =>
+      row.map((cell) => ({
+        ...cell,
+        label: translateStaticText(cell.label, locale),
+      })),
+    ),
     iosWallpapers: [],
-    moodCards: fallbackMoodCards,
+    locale,
+    moodCards: fallbackMoodCards.map((card) => ({
+      ...card,
+      meta: translateStaticText(card.meta, locale),
+      name: translateStaticText(card.name, locale),
+    })),
   };
 }
 
-export async function getHomePageSnapshot(): Promise<HomePageSnapshot> {
-  const [publishedWallpapers, featuredWallpapers, motionWallpapers, iosCandidates] =
-    await Promise.all([
-      loadHomePool("published wallpapers", () =>
-        getCachedPublishedWallpapers({
-          limit: HOME_PUBLISHED_POOL_LIMIT,
-          sort: "latest",
-          motion: false,
-        }),
-      ),
-      loadHomePool("featured wallpapers", () =>
-        getCachedFeaturedWallpapers({
-          limit: HOME_FEATURED_POOL_LIMIT,
-          sort: "popular",
-          motion: false,
-        }),
-      ),
-      loadHomePool("motion wallpapers", () =>
-        getCachedPublishedWallpapers({
-          limit: HOME_MOTION_LIMIT,
-          sort: "latest",
-          motion: true,
-        }),
-      ),
-      loadHomePool("ios wallpapers", () =>
-        getCachedPublishedWallpapers({
-          limit: HOME_IOS_POOL_LIMIT,
-          sort: "latest",
-          motion: false,
-        }),
-      ),
-    ]);
+export async function getHomePageSnapshot(
+  locale: SupportedLocale = DEFAULT_LOCALE,
+): Promise<HomePageSnapshot> {
+  const [
+    publishedWallpapers,
+    featuredWallpapers,
+    motionWallpapers,
+    iosCandidates,
+  ] = await Promise.all([
+    loadHomePool("published wallpapers", () =>
+      getCachedPublishedWallpapers({
+        limit: HOME_PUBLISHED_POOL_LIMIT,
+        sort: "latest",
+        motion: false,
+      }),
+    ),
+    loadHomePool("featured wallpapers", () =>
+      getCachedFeaturedWallpapers({
+        limit: HOME_FEATURED_POOL_LIMIT,
+        sort: "popular",
+        motion: false,
+      }),
+    ),
+    loadHomePool("motion wallpapers", () =>
+      getCachedPublishedWallpapers({
+        limit: HOME_MOTION_LIMIT,
+        sort: "latest",
+        motion: true,
+      }),
+    ),
+    loadHomePool("ios wallpapers", () =>
+      getCachedPublishedWallpapers({
+        limit: HOME_IOS_POOL_LIMIT,
+        sort: "latest",
+        motion: false,
+      }),
+    ),
+  ]);
 
-  const fallbackSnapshot = getFallbackHomePageSnapshot();
+  const fallbackSnapshot = getFallbackHomePageSnapshot(locale);
   const staticPool = getUniqueWallpapers([
     featuredWallpapers,
     iosCandidates,
@@ -239,29 +275,34 @@ export async function getHomePageSnapshot(): Promise<HomePageSnapshot> {
     sources: [featuredWallpapers, publishedWallpapers],
     usedIds: usedStaticWallpapers,
   });
-  const motionCells = motionWallpapers.map(wallpaperToFilmCell);
+  const motionCells = motionWallpapers.map((wallpaper) =>
+    wallpaperToFilmCell(wallpaper, locale),
+  );
   const heroFilmRows =
     motionCells.length > 0
-      ? groupFilmRows([
-          ...motionCells,
-          ...fallbackHeroFilmRows.flatMap((row) => row),
-        ].slice(0, HOME_MOTION_LIMIT))
+      ? groupFilmRows(
+          [...motionCells, ...fallbackHeroFilmRows.flatMap((row) => row)].slice(
+            0,
+            HOME_MOTION_LIMIT,
+          ),
+        )
       : fallbackSnapshot.heroFilmRows;
 
   return {
+    locale,
     moodCards:
       moodWallpapers.length > 0
         ? moodWallpapers.map((wallpaper, index) =>
-            wallpaperToMoodCard(wallpaper, index),
+            wallpaperToMoodCard(wallpaper, index, locale),
           )
         : fallbackSnapshot.moodCards,
     editorialFeature: editorialFeatureWallpaper
-      ? wallpaperToEditorialFeature(editorialFeatureWallpaper)
+      ? wallpaperToEditorialFeature(editorialFeatureWallpaper, locale)
       : fallbackSnapshot.editorialFeature,
     editorialItems:
       editorialItemsWallpapers.length > 0
         ? editorialItemsWallpapers.map((wallpaper, index) =>
-            wallpaperToEditorialItem(wallpaper, index),
+            wallpaperToEditorialItem(wallpaper, index, locale),
           )
         : fallbackSnapshot.editorialItems,
     heroFilmRows,
@@ -271,6 +312,7 @@ export async function getHomePageSnapshot(): Promise<HomePageSnapshot> {
         ? darkroomWallpapers.map((wallpaper, index) =>
             wallpaperToDarkroomItem(wallpaper, {
               featured: index === 0,
+              locale,
             }),
           )
         : fallbackSnapshot.darkroomItems,

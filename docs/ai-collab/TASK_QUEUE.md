@@ -6,6 +6,47 @@
 
 ## 进行中
 
+### TASK-033 · 多语言适配（英语 / 日语 / 韩语）
+
+- **状态**: ✅ codex done
+- **内容**: 用户要求继续项目并增加韩语、日语、英语多语言适配；用户明确全权交给 Codex，因此本次直接改动 Claude-owned 公开 UI 文件
+- **Codex 完成**:
+  - 新增 `types/i18n.ts`、`lib/i18n.ts`，支持 `zh-CN`、`en`、`ja`、`ko`，包含 locale 归一化、请求检测、cookie/header 协议、SEO metadata 与核心文案字典
+  - 新增 `lib/i18n-ui.ts`，集中维护首页、Explore、暗室页、详情页等公开 UI 的中英日韩文案
+  - 新增 `GET/POST /api/i18n`，前端可读取完整字典并持久化 `lumen_locale`
+  - 默认语言已设为英文；`middleware.ts` 现在会根据 `?locale` 与 `lumen_locale` cookie 写入 `x-lumen-locale`、`Content-Language` 与语言 cookie，不再用浏览器 `Accept-Language` 把首访自动切回中文
+  - `app/layout.tsx` 根 metadata 与 `<html lang>` 已按请求 locale 输出；公开页、登录布局、Dashboard layout 已把 locale 传给 Header/Footer
+  - `/api/home`、`/api/wallpapers/facets`、`/api/wallpapers/download-presets`、`/api/wallpapers/[id]/seo` 支持 `locale=zh-CN|en|ja|ko`
+  - 新增 `hooks/use-i18n.ts`，供客户端组件读取 `messages`、`supportedLocales` 和切换语言
+  - 新增 `components/layout/language-switcher.tsx`，Header 内可直接切换简中/英语/日语/韩语，并刷新当前页面写入 `?locale=...`
+  - Header/Footer、首页主要区块、Explore 列表与筛选、暗室页、壁纸详情页关键文案已接入本地化
+  - 新增 `e2e/i18n-api.spec.ts` 与 `e2e/i18n-ui.spec.ts` 覆盖字典、公开 API、本地化首页与语言切换器
+- **接口 / 类型说明**:
+  - 语言切换器调用 `setLocale("en" | "ja" | "ko" | "zh-CN")`，或 `POST /api/i18n { locale }`；URL 参数 `?locale=en` 也会被 middleware 写入 cookie
+  - 共享类型变更：`HomePageSnapshot` 新增 `locale: SupportedLocale`
+  - 公开接口示例：`/api/wallpapers/facets?locale=ja`、`/api/wallpapers/download-presets?locale=ko`、`/api/home?locale=en`
+  - Dashboard、上传工作台和管理台深层页面仍可继续沿用本次新增的 i18n 基础设施逐页替换业务文案；本次优先完成公开浏览与下载发现路径
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - `pnpm build`
+  - `playwright test e2e/i18n-api.spec.ts e2e/i18n-ui.spec.ts --project=desktop-chromium`
+  - 全项目 Playwright 同时跑移动 Safari 时失败于本机缺 WebKit 可执行文件 `/Users/hk/Library/Caches/ms-playwright/webkit-2272/pw_run.sh`，桌面 Chromium 全部通过
+
+### TASK-032 · 上传工作台 UI 精致度打磨
+
+- **状态**: ✅ codex done
+- **内容**: 用户要求继续把 UI 打磨得更精致，Codex 接管 Claude-owned 上传工作台视觉细节
+- **Codex 完成**:
+  - `components/creator/upload-studio-form.tsx`：发布按钮增加内层高光、状态点和更稳定的高度，让主操作更像 soft glass 主按钮
+  - `components/creator/upload-studio-form.tsx`：底部状态提示改成带标题、状态点、状态徽标和诊断 CTA 的精致告警/提示块，减少大段错误文字的粗糙感
+  - `components/creator/upload-studio-form.tsx`：队列卡片增加微进度条，成功/失败/当前项状态更易扫读
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - Playwright 本地模拟上传失败态，桌面截图 `/private/tmp/lumen-upload-ui-polish.png` 无水平溢出
+  - Playwright 移动视口 `/creator/studio` 截图 `/private/tmp/lumen-upload-ui-mobile.png` 无水平溢出
+
 ### TASK-031 · 全项目审查修复与线上上传排查
 
 - **状态**: ✅ codex done

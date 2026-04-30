@@ -12,11 +12,22 @@ import {
   matchesWallpaperResolution,
 } from "@/lib/explore";
 import {
+  DEFAULT_LOCALE,
+  getExploreCategoryCopy,
+  getExploreOptionCopy,
+  getI18nMessages,
+  translateStaticTerm,
+} from "@/lib/i18n";
+import {
   getPreferredWallpaperFile,
   getWallpaperDisplayTitle,
   getWallpaperPreviewUrl,
 } from "@/lib/wallpaper-presenters";
-import { getWallpaperByIdOrSlug, listPublishedWallpapers } from "@/lib/wallpapers";
+import type { SupportedLocale } from "@/types/i18n";
+import {
+  getWallpaperByIdOrSlug,
+  listPublishedWallpapers,
+} from "@/lib/wallpapers";
 import type {
   Wallpaper,
   WallpaperExploreFacetOption,
@@ -82,19 +93,50 @@ function createFixedOption(
   };
 }
 
+function localizeFixedOption(
+  option: {
+    description?: string;
+    label: string;
+    value: string;
+  },
+  options: {
+    count: number;
+    group: "aspect" | "media" | "orientation" | "resolution" | "sort";
+    locale: SupportedLocale;
+  },
+) {
+  const copy = getExploreOptionCopy(
+    options.locale,
+    options.group,
+    option.value,
+  );
+
+  return createFixedOption(
+    {
+      ...option,
+      description: copy?.description ?? option.description,
+      label: copy?.label ?? option.label,
+    },
+    options.count,
+  );
+}
+
 function createCountedOptions(
   counts: Map<string, number>,
   options?: {
     limit?: number;
+    locale?: SupportedLocale;
     swatches?: boolean;
   },
 ): WallpaperExploreFacetOption[] {
   return [...counts.entries()]
-    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .sort(
+      (left, right) => right[1] - left[1] || left[0].localeCompare(right[0]),
+    )
     .slice(0, options?.limit)
     .map(([value, count]) => ({
       count,
-      label: value,
+      label: translateStaticTerm(value, options?.locale ?? DEFAULT_LOCALE),
       ...(options?.swatches ? { swatch: value } : {}),
       value,
     }));
@@ -118,7 +160,7 @@ function getTagTerms(wallpaper: Wallpaper) {
     .filter((term) => !STOP_STYLE_TERMS.has(normalizeFacetValue(term)));
 }
 
-function getSeoDescription(wallpaper: Wallpaper) {
+function getSeoDescription(wallpaper: Wallpaper, locale: SupportedLocale) {
   const normalizedDescription = wallpaper.description?.trim();
 
   if (
@@ -128,6 +170,7 @@ function getSeoDescription(wallpaper: Wallpaper) {
     return normalizedDescription;
   }
 
+  const messages = getI18nMessages(locale);
   const terms = [
     ...wallpaper.aiTags,
     ...wallpaper.tags,
@@ -137,17 +180,24 @@ function getSeoDescription(wallpaper: Wallpaper) {
     .filter(Boolean)
     .slice(0, 5);
 
-  return `${getWallpaperDisplayTitle(wallpaper)} · ${terms.join(" · ") || "高质感壁纸"} · 来自 Lumen 的 4K 高清壁纸。`;
+  return `${getWallpaperDisplayTitle(wallpaper, locale)} · ${
+    terms.map((term) => translateStaticTerm(term, locale)).join(" · ") ||
+    messages.wallpaper.curated
+  } · ${messages.wallpaper.seoDescriptionFallback}`;
 }
 
-function getSeoKeywords(wallpaper: Wallpaper) {
+function getSeoKeywords(wallpaper: Wallpaper, locale: SupportedLocale) {
+  const messages = getI18nMessages(locale);
+
   return [
-    getWallpaperDisplayTitle(wallpaper),
-    ...wallpaper.aiTags,
-    ...wallpaper.tags,
-    wallpaper.aiCategory ?? "",
-    wallpaper.videoUrl ? "动态壁纸" : "静态壁纸",
-    "4K壁纸",
+    getWallpaperDisplayTitle(wallpaper, locale),
+    ...wallpaper.aiTags.map((term) => translateStaticTerm(term, locale)),
+    ...wallpaper.tags.map((term) => translateStaticTerm(term, locale)),
+    translateStaticTerm(wallpaper.aiCategory ?? "", locale),
+    wallpaper.videoUrl
+      ? messages.wallpaper.motionWallpaper
+      : messages.wallpaper.staticWallpaper,
+    messages.wallpaper.seoTitleSuffix,
     "Lumen",
   ]
     .map((term) => term.trim())
@@ -156,14 +206,18 @@ function getSeoKeywords(wallpaper: Wallpaper) {
     .slice(0, 18);
 }
 
-export async function getWallpaperExploreFacets(): Promise<WallpaperExploreFacetsSnapshot> {
+export async function getWallpaperExploreFacets(
+  locale: SupportedLocale = DEFAULT_LOCALE,
+): Promise<WallpaperExploreFacetsSnapshot> {
   const wallpapers = await listPublishedWallpapers({
     limit: FACET_WALLPAPER_LIMIT,
   });
   const colorCounts = new Map<string, number>();
   const styleCounts = new Map<string, number>();
   const tagCounts = new Map<string, number>();
-  const motionCount = wallpapers.filter((wallpaper) => wallpaper.videoUrl).length;
+  const motionCount = wallpapers.filter(
+    (wallpaper) => wallpaper.videoUrl,
+  ).length;
 
   for (const wallpaper of wallpapers) {
     const seenColors = new Set<string>();
@@ -202,18 +256,23 @@ export async function getWallpaperExploreFacets(): Promise<WallpaperExploreFacet
   return {
     filters: {
       aspect: EXPLORE_ASPECT_OPTIONS.map((option) =>
-        createFixedOption(
-          option,
-          wallpapers.filter((wallpaper) =>
+        localizeFixedOption(option, {
+          count: wallpapers.filter((wallpaper) =>
             matchesWallpaperAspect(wallpaper, option.value),
           ).length,
-        ),
+          group: "aspect",
+          locale,
+        }),
       ),
       category: EXPLORE_CATEGORIES.map((category) =>
         createFixedOption(
           {
-            description: category.description,
-            label: category.label,
+            description:
+              getExploreCategoryCopy(locale, category.slug)?.description ??
+              category.description,
+            label:
+              getExploreCategoryCopy(locale, category.slug)?.label ??
+              category.label,
             value: category.slug,
           },
           wallpapers.filter((wallpaper) =>
@@ -226,41 +285,51 @@ export async function getWallpaperExploreFacets(): Promise<WallpaperExploreFacet
         swatches: true,
       }),
       media: EXPLORE_MEDIA_OPTIONS.map((option) =>
-        createFixedOption(
-          option,
-          option.value === "all"
-            ? wallpapers.length
-            : wallpapers.filter((wallpaper) =>
-                matchesWallpaperMedia(wallpaper, {
-                  media: option.value,
-                }),
-              ).length,
-        ),
+        localizeFixedOption(option, {
+          count:
+            option.value === "all"
+              ? wallpapers.length
+              : wallpapers.filter((wallpaper) =>
+                  matchesWallpaperMedia(wallpaper, {
+                    media: option.value,
+                  }),
+                ).length,
+          group: "media",
+          locale,
+        }),
       ),
       orientation: EXPLORE_ORIENTATION_OPTIONS.map((option) =>
-        createFixedOption(
-          option,
-          wallpapers.filter((wallpaper) =>
+        localizeFixedOption(option, {
+          count: wallpapers.filter((wallpaper) =>
             matchesWallpaperOrientation(wallpaper, option.value),
           ).length,
-        ),
+          group: "orientation",
+          locale,
+        }),
       ),
       resolution: EXPLORE_RESOLUTION_OPTIONS.map((option) =>
-        createFixedOption(
-          option,
-          wallpapers.filter((wallpaper) =>
+        localizeFixedOption(option, {
+          count: wallpapers.filter((wallpaper) =>
             matchesWallpaperResolution(wallpaper, option.value),
           ).length,
-        ),
+          group: "resolution",
+          locale,
+        }),
       ),
       sort: EXPLORE_SORT_OPTIONS.map((option) =>
-        createFixedOption(option, wallpapers.length),
+        localizeFixedOption(option, {
+          count: wallpapers.length,
+          group: "sort",
+          locale,
+        }),
       ),
       style: createCountedOptions(styleCounts, {
         limit: TOP_STYLE_LIMIT,
+        locale,
       }),
       tag: createCountedOptions(tagCounts, {
         limit: TOP_TAG_LIMIT,
+        locale,
       }),
     },
     generatedAt: new Date().toISOString(),
@@ -274,6 +343,7 @@ export async function getWallpaperExploreFacets(): Promise<WallpaperExploreFacet
 
 export async function getWallpaperSeoSnapshot(
   identifier: string,
+  locale: SupportedLocale = DEFAULT_LOCALE,
 ): Promise<WallpaperSeoSnapshot | null> {
   const wallpaper = await getWallpaperByIdOrSlug(identifier);
 
@@ -281,9 +351,11 @@ export async function getWallpaperSeoSnapshot(
     return null;
   }
 
+  const messages = getI18nMessages(locale);
   const siteBaseUrl = getSiteBaseUrl();
-  const title = `${getWallpaperDisplayTitle(wallpaper)} - Lumen 高清壁纸`;
-  const description = getSeoDescription(wallpaper);
+  const displayTitle = getWallpaperDisplayTitle(wallpaper, locale);
+  const title = `${displayTitle} - ${messages.wallpaper.seoTitleSuffix}`;
+  const description = getSeoDescription(wallpaper, locale);
   const canonicalUrl = `${siteBaseUrl}/wallpaper/${encodeURIComponent(wallpaper.slug)}`;
   const preferredFile = getPreferredWallpaperFile(wallpaper);
   const imageUrl =
@@ -291,12 +363,12 @@ export async function getWallpaperSeoSnapshot(
       ? preferredFile.url
       : (getWallpaperPreviewUrl(wallpaper, "large") ?? null);
   const image = {
-    alt: getWallpaperDisplayTitle(wallpaper),
+    alt: displayTitle,
     height: preferredFile?.height ?? wallpaper.height,
     url: imageUrl,
     width: preferredFile?.width ?? wallpaper.width,
   };
-  const keywords = getSeoKeywords(wallpaper);
+  const keywords = getSeoKeywords(wallpaper, locale);
   const creatorName = wallpaper.creator?.username ?? "Lumen";
 
   return {
@@ -318,7 +390,7 @@ export async function getWallpaperSeoSnapshot(
       license: wallpaper.licenseVersion
         ? `${siteBaseUrl}/license/${encodeURIComponent(wallpaper.licenseVersion)}`
         : undefined,
-      name: getWallpaperDisplayTitle(wallpaper),
+      name: displayTitle,
       url: canonicalUrl,
       width: image.width,
     },
@@ -342,7 +414,7 @@ export async function getWallpaperSeoSnapshot(
     source: {
       id: wallpaper.id,
       slug: wallpaper.slug,
-      title: getWallpaperDisplayTitle(wallpaper),
+      title: displayTitle,
     },
     title,
     twitter: {

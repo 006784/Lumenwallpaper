@@ -9,26 +9,33 @@ import { SearchSection } from "@/components/sections/search-section";
 import { TickerStrip } from "@/components/sections/ticker-strip";
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
 import { getHomePageSnapshot } from "@/lib/home";
+import { getLocaleFromHeaders } from "@/lib/i18n";
+import { headers } from "next/headers";
 
 export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 
 export default async function HomePage() {
-  const snapshot = await getHomePageSnapshot();
+  const locale = getLocaleFromHeaders(headers());
+  const snapshot = await getHomePageSnapshot(locale);
 
   return (
     <>
-      <HeroSection filmRows={snapshot.heroFilmRows} />
-      <TickerStrip />
-      <MoodBoardSection cards={snapshot.moodCards} />
-      <IosSpotlightSection wallpapers={snapshot.iosWallpapers} />
+      <HeroSection filmRows={snapshot.heroFilmRows} locale={locale} />
+      <TickerStrip locale={locale} />
+      <MoodBoardSection cards={snapshot.moodCards} locale={locale} />
+      <IosSpotlightSection
+        locale={locale}
+        wallpapers={snapshot.iosWallpapers}
+      />
       <EditorialSection
         feature={snapshot.editorialFeature}
         items={snapshot.editorialItems}
+        locale={locale}
       />
-      <CategoryStrip />
-      <SearchSection />
-      <DarkroomSection items={snapshot.darkroomItems} />
-      <JoinSection />
+      <CategoryStrip locale={locale} />
+      <SearchSection locale={locale} />
+      <DarkroomSection items={snapshot.darkroomItems} locale={locale} />
+      <JoinSection locale={locale} />
     </>
   );
 }

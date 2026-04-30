@@ -3,12 +3,18 @@
 import { useState } from "react";
 
 import { useDragScroll } from "@/hooks/use-drag-scroll";
-import { categories } from "@/lib/data/home";
+import { getLocalizedCategories } from "@/lib/data/home";
 import { CategoryBlock } from "@/components/wallpaper/category-block";
+import type { SupportedLocale } from "@/types/i18n";
 
-export function CategoryStrip() {
+type CategoryStripProps = {
+  locale: SupportedLocale;
+};
+
+export function CategoryStrip({ locale }: CategoryStripProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(2);
   const ref = useDragScroll<HTMLDivElement>();
+  const categories = getLocalizedCategories(locale);
 
   return (
     <section

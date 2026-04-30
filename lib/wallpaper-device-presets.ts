@@ -3,6 +3,8 @@ import type {
   WallpaperDevicePresetGroup,
   WallpaperDevicePresetPlatform,
 } from "@/types/wallpaper";
+import { DEFAULT_LOCALE } from "@/lib/i18n";
+import type { SupportedLocale } from "@/types/i18n";
 
 function createPreset(input: {
   height: number;
@@ -179,8 +181,81 @@ export const WALLPAPER_DEVICE_PRESET_GROUPS: WallpaperDevicePresetGroup[] = [
   },
 ];
 
-export function listWallpaperDevicePresets() {
-  return WALLPAPER_DEVICE_PRESET_GROUPS;
+const DEVICE_PRESET_LABELS = {
+  "zh-CN": {
+    groups: {
+      android: "Android",
+      ipad: "iPad",
+      iphone: "iPhone",
+      mac: "Mac",
+      windows: "Windows",
+    },
+    presets: {
+      "ipad-portrait": "iPad 竖屏",
+      "windows-ultrawide": "Windows 带鱼屏",
+    },
+  },
+  en: {
+    groups: {
+      android: "Android",
+      ipad: "iPad",
+      iphone: "iPhone",
+      mac: "Mac",
+      windows: "Windows",
+    },
+    presets: {
+      "ipad-portrait": "iPad Portrait",
+      "windows-ultrawide": "Windows Ultrawide",
+    },
+  },
+  ja: {
+    groups: {
+      android: "Android",
+      ipad: "iPad",
+      iphone: "iPhone",
+      mac: "Mac",
+      windows: "Windows",
+    },
+    presets: {
+      "ipad-portrait": "iPad 縦向き",
+      "windows-ultrawide": "Windows ウルトラワイド",
+    },
+  },
+  ko: {
+    groups: {
+      android: "Android",
+      ipad: "iPad",
+      iphone: "iPhone",
+      mac: "Mac",
+      windows: "Windows",
+    },
+    presets: {
+      "ipad-portrait": "iPad 세로",
+      "windows-ultrawide": "Windows 울트라와이드",
+    },
+  },
+} satisfies Record<
+  SupportedLocale,
+  {
+    groups: Record<WallpaperDevicePresetPlatform, string>;
+    presets: Partial<Record<string, string>>;
+  }
+>;
+
+export function listWallpaperDevicePresets(
+  locale: SupportedLocale = DEFAULT_LOCALE,
+) {
+  const labels = DEVICE_PRESET_LABELS[locale];
+  const presetLabels = labels.presets as Partial<Record<string, string>>;
+
+  return WALLPAPER_DEVICE_PRESET_GROUPS.map((group) => ({
+    ...group,
+    label: labels.groups[group.platform],
+    presets: group.presets.map((preset) => ({
+      ...preset,
+      label: presetLabels[preset.id] ?? preset.label,
+    })),
+  }));
 }
 
 export function getWallpaperDevicePreset(id: string) {
