@@ -10,6 +10,8 @@ import type {
   NavLink,
   TickerItem,
 } from "@/types/home";
+import { getLocalizedHomeDataCopy } from "@/lib/i18n-ui";
+import type { SupportedLocale } from "@/types/i18n";
 
 export const navLinks: NavLink[] = [
   { label: "探索", href: "/explore" },
@@ -17,6 +19,17 @@ export const navLinks: NavLink[] = [
   { label: "创作者", href: "/creator/studio" },
   { label: "4K 库", href: "/explore" },
 ];
+
+export function getLocalizedNavLinks(locale: SupportedLocale): NavLink[] {
+  const copy = getLocalizedHomeDataCopy(locale);
+
+  return [
+    { label: copy.nav.explore, href: "/explore" },
+    { label: copy.nav.darkroom, href: "/darkroom" },
+    { label: copy.nav.creator, href: "/creator/studio" },
+    { label: copy.nav.library, href: "/explore" },
+  ];
+}
 
 export const footerColumns: FooterColumn[] = [
   {
@@ -48,11 +61,57 @@ export const footerColumns: FooterColumn[] = [
   },
 ];
 
+export function getLocalizedFooterColumns(
+  locale: SupportedLocale,
+): FooterColumn[] {
+  const copy = getLocalizedHomeDataCopy(locale);
+
+  return [
+    {
+      title: copy.footerColumns.explore,
+      links: [
+        { label: copy.footerLinks.mood, href: "/explore" },
+        { label: copy.footerLinks.darkroom, href: "/darkroom" },
+        { label: copy.footerLinks.popular, href: "/explore" },
+        { label: copy.footerLinks.random, href: "/explore" },
+      ],
+    },
+    {
+      title: copy.footerColumns.creator,
+      links: [
+        { label: copy.footerLinks.upload, href: "/creator/studio" },
+        { label: copy.footerLinks.revenue, href: "/creator/studio" },
+        { label: copy.footerLinks.copyright, href: "/creator/studio" },
+        { label: copy.footerLinks.guide, href: "/creator/studio" },
+      ],
+    },
+    {
+      title: copy.footerColumns.about,
+      links: [
+        { label: copy.footerLinks.about, href: "/explore" },
+        { label: copy.footerLinks.privacy, href: "/explore" },
+        { label: copy.footerLinks.terms, href: "/explore" },
+        { label: copy.footerLinks.contact, href: "/explore" },
+      ],
+    },
+  ];
+}
+
 export const heroStats: HeroStat[] = [
   { value: "48K+", label: "精选壁纸" },
   { value: "2.1M", label: "月活用户" },
   { value: "3,200", label: "创作者" },
 ];
+
+export function getLocalizedHeroStats(locale: SupportedLocale): HeroStat[] {
+  const copy = getLocalizedHomeDataCopy(locale);
+
+  return [
+    { value: "48K+", label: copy.stats.wallpapers },
+    { value: "2.1M", label: copy.stats.monthlyUsers },
+    { value: "3,200", label: copy.stats.creators },
+  ];
+}
 
 export const heroFilmRows: FilmCellData[][] = [
   [
@@ -129,6 +188,23 @@ export const tickerItems: TickerItem[] = [
   { text: "摄影师作品" },
   { text: "暗色系", tone: "gold" },
 ];
+
+export function getLocalizedTickerItems(locale: SupportedLocale): TickerItem[] {
+  const copy = getLocalizedHomeDataCopy(locale);
+
+  return [
+    { text: copy.ticker.latest },
+    { text: copy.ticker.k4, tone: "gold" },
+    { text: copy.ticker.nature },
+    { text: copy.ticker.trending, tone: "red" },
+    { text: copy.ticker.minimal },
+    { text: copy.ticker.ai, tone: "gold" },
+    { text: copy.ticker.space },
+    { text: copy.ticker.cyberpunk, tone: "red" },
+    { text: copy.ticker.photographer },
+    { text: copy.ticker.dark, tone: "gold" },
+  ];
+}
 
 export const moodCards: MoodCardData[] = [
   {
@@ -296,6 +372,22 @@ export const categories: CategoryData[] = [
   { gradient: "ember", label: "暗色系", count: "4.8K", href: "/explore/dark" },
 ];
 
+export function getLocalizedCategories(
+  locale: SupportedLocale,
+): CategoryData[] {
+  const copy = getLocalizedHomeDataCopy(locale);
+  const categoryLabels = copy.categories as Record<string, string>;
+
+  return categories.map((category) => {
+    const key = category.href.split("/").pop() ?? "";
+
+    return {
+      ...category,
+      label: categoryLabels[key] ?? category.label,
+    };
+  });
+}
+
 export const searchTags = [
   "全部",
   "暗夜",
@@ -309,6 +401,24 @@ export const searchTags = [
   "赛博",
   "AI 生成",
 ];
+
+export function getLocalizedSearchTags(locale: SupportedLocale) {
+  const copy = getLocalizedHomeDataCopy(locale);
+
+  return [
+    copy.searchTags.all,
+    copy.searchTags.night,
+    copy.searchTags.minimal,
+    copy.searchTags.gradient,
+    copy.searchTags.nature,
+    copy.searchTags.space,
+    copy.searchTags.city,
+    copy.searchTags.abstract,
+    copy.searchTags.japanese,
+    copy.searchTags.cyber,
+    copy.searchTags.ai,
+  ];
+}
 
 export const darkroomItems: DarkroomItem[] = [
   {

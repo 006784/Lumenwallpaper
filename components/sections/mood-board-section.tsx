@@ -5,13 +5,18 @@ import Link from "next/link";
 import { DraggableStrip } from "@/components/ui/draggable-strip";
 import { Reveal } from "@/components/ui/reveal";
 import { MoodCard } from "@/components/wallpaper/mood-card";
+import { getHomeUiCopy } from "@/lib/i18n-ui";
 import type { MoodCardData } from "@/types/home";
+import type { SupportedLocale } from "@/types/i18n";
 
 type MoodBoardSectionProps = {
   cards: MoodCardData[];
+  locale: SupportedLocale;
 };
 
-export function MoodBoardSection({ cards }: MoodBoardSectionProps) {
+export function MoodBoardSection({ cards, locale }: MoodBoardSectionProps) {
+  const copy = getHomeUiCopy(locale);
+
   return (
     <section className="px-5 py-12 sm:px-6 md:px-10 md:py-16">
       <Reveal
@@ -24,22 +29,24 @@ export function MoodBoardSection({ cards }: MoodBoardSectionProps) {
             <div>
               <p className="mb-5 inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-muted">
                 <span className="h-px w-7 bg-current opacity-40" />
-                01 · 情绪版
+                {copy.mood.eyebrow}
               </p>
               <h2 className="max-w-[8em] font-body text-[clamp(2rem,4vw,3.4rem)] font-semibold leading-[1.02]">
-                按<span className="text-red">心情</span>找壁纸
+                {copy.mood.titlePrefix}
+                <span className="text-red">{copy.mood.titleAccent}</span>
+                {copy.mood.titleSuffix}
               </h2>
               <p className="mt-5 text-sm leading-7 text-muted">
-                保留静态壁纸，把氛围、角色和色彩放到同一个浏览节奏里。
+                {copy.mood.body}
               </p>
             </div>
             <Link className="section-entry-link mt-7 w-fit" href="/explore">
-              进入情绪版
+              {copy.mood.cta}
               <span aria-hidden>↗</span>
             </Link>
           </div>
 
-          <div className="min-w-0 overflow-hidden rounded-[24px] bg-white/24 px-2 py-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.56)]">
+          <div className="bg-white/24 min-w-0 overflow-hidden rounded-[24px] px-2 py-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.56)]">
             <DraggableStrip
               className="pb-1"
               trackClassName="flex w-max gap-3 md:gap-4"

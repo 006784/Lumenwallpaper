@@ -1,40 +1,46 @@
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { DarkroomCard } from "@/components/wallpaper/darkroom-card";
+import { getHomeUiCopy } from "@/lib/i18n-ui";
 import type { DarkroomItem } from "@/types/home";
+import type { SupportedLocale } from "@/types/i18n";
 import Link from "next/link";
 
 type DarkroomSectionProps = {
   items: DarkroomItem[];
+  locale: SupportedLocale;
 };
 
-export function DarkroomSection({ items }: DarkroomSectionProps) {
+export function DarkroomSection({ items, locale }: DarkroomSectionProps) {
+  const copy = getHomeUiCopy(locale);
+
   return (
     <section className="px-5 py-14 sm:px-6 md:px-10 md:py-section">
       <Reveal className="mb-10 text-ink">
         <SectionHeading
-          eyebrow="04 — 暗室精选"
+          eyebrow={copy.darkroom.eyebrow}
           hint={
             <span className="text-right leading-5 text-muted">
-              每周策展
+              {copy.darkroom.hintLine1}
               <br />
-              编辑团队推荐
+              {copy.darkroom.hintLine2}
             </span>
           }
           title={
             <>
-              让高反差与
+              {copy.darkroom.titleLine1}
               <br />
-              <span className="text-red">低照度</span> 留下来
+              <span className="text-red">{copy.darkroom.titleAccent}</span>{" "}
+              {copy.darkroom.titleLine2}
             </>
           }
         />
         <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">
-          这一组更强调夜色、戏剧光影和更深的氛围密度。它不追求轻快，而是把画面压进更像暗房冲印的观看环境里。
+          {copy.darkroom.body}
         </p>
         <div className="mt-6">
           <Link className="section-entry-link" href="/darkroom">
-            进入暗室精选
+            {copy.darkroom.cta}
             <span aria-hidden>↗</span>
           </Link>
         </div>
@@ -49,11 +55,7 @@ export function DarkroomSection({ items }: DarkroomSectionProps) {
         {items.map((item) => (
           <div
             key={item.title}
-            className={
-              item.featured
-                ? "sm:col-span-2 lg:row-span-2"
-                : ""
-            }
+            className={item.featured ? "sm:col-span-2 lg:row-span-2" : ""}
           >
             <DarkroomCard item={item} />
           </div>

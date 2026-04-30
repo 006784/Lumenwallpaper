@@ -9,7 +9,9 @@ import {
   type DownloadProgressCallback,
 } from "@/components/wallpaper/DownloadPanel";
 import { WallpaperReportPanel } from "@/components/wallpaper/wallpaper-report-panel";
+import { translateStaticTerm } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import type { SupportedLocale } from "@/types/i18n";
 import type {
   WallpaperDownloadOption,
   WallpaperFavoriteSnapshot,
@@ -43,6 +45,7 @@ type WallpaperDetailSidebarProps = {
   initialDownloadsCount: number;
   initialLikesCount: number;
   loginHref: string;
+  locale: SupportedLocale;
   previewUrl: string | null;
   slug: string;
   tags: string[];
@@ -62,6 +65,7 @@ export function WallpaperDetailSidebar({
   initialDownloadsCount,
   initialLikesCount,
   loginHref,
+  locale,
   previewUrl,
   slug,
   tags,
@@ -77,12 +81,135 @@ export function WallpaperDetailSidebar({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isDownloadPanelOpen, setIsDownloadPanelOpen] = useState(false);
+  const labels =
+    locale === "zh-CN"
+      ? {
+          aiCaption: "AI 描述",
+          aiDetected: "AI 识别",
+          authMissing: "本地认证尚未配置，收藏功能需要先接入登录环境。",
+          backExplore: "返回探索",
+          colors: "主色调",
+          creator: "创作者",
+          dimensions: "尺寸",
+          download: "下载",
+          downloadConfig: "打开下载配置",
+          downloadFailed: "下载失败，请稍后重试。",
+          downloadHint:
+            "进入暗房导出面板后，可切换原图、4K 与 WebP，选择裁切比例并缓存常用下载配置。",
+          favorite: "加入收藏",
+          favoriteFailed: "收藏操作失败，请稍后重试。",
+          favorited: "♥ 已收藏",
+          favorites: "收藏",
+          fileSizeUnknown: "大小未知",
+          library: "查看个人库",
+          loginToFavorite: "登录后收藏",
+          original: "原图",
+          processing: "处理中",
+          saveConfig: "下载配置已缓存。",
+          tiers: (count: number, best: string) =>
+            `当前可下载 ${count} 档 · 最高 ${best}`,
+          unrecorded: "未记录",
+          unfavorite: "取消收藏",
+        }
+      : locale === "ja"
+        ? {
+            aiCaption: "AI 説明",
+            aiDetected: "AI 認識",
+            authMissing:
+              "ローカル認証が未設定です。お気に入り機能にはログイン環境が必要です。",
+            backExplore: "探索に戻る",
+            colors: "主な色",
+            creator: "クリエイター",
+            dimensions: "サイズ",
+            download: "ダウンロード",
+            downloadConfig: "ダウンロード設定を開く",
+            downloadFailed:
+              "ダウンロードに失敗しました。後でもう一度お試しください。",
+            downloadHint:
+              "暗室エクスポートパネルで原画、4K、WebP を切り替え、切り抜き比率とよく使う設定を保存できます。",
+            favorite: "お気に入りに追加",
+            favoriteFailed:
+              "お気に入りの更新に失敗しました。後でもう一度お試しください。",
+            favorited: "♥ お気に入り済み",
+            favorites: "お気に入り",
+            fileSizeUnknown: "サイズ不明",
+            library: "ライブラリを見る",
+            loginToFavorite: "ログインして保存",
+            original: "原画",
+            processing: "処理中",
+            saveConfig: "ダウンロード設定を保存しました。",
+            tiers: (count: number, best: string) =>
+              `ダウンロード ${count} 種 · 最高 ${best}`,
+            unrecorded: "未記録",
+            unfavorite: "お気に入り解除",
+          }
+        : locale === "ko"
+          ? {
+              aiCaption: "AI 설명",
+              aiDetected: "AI 인식",
+              authMissing:
+                "로컬 인증이 아직 설정되지 않았습니다. 즐겨찾기 기능에는 로그인 환경이 필요합니다.",
+              backExplore: "탐색으로 돌아가기",
+              colors: "주요 색상",
+              creator: "크리에이터",
+              dimensions: "크기",
+              download: "다운로드",
+              downloadConfig: "다운로드 설정 열기",
+              downloadFailed:
+                "다운로드에 실패했습니다. 잠시 후 다시 시도하세요.",
+              downloadHint:
+                "다크룸 내보내기 패널에서 원본, 4K, WebP를 전환하고 자르기 비율과 자주 쓰는 설정을 저장할 수 있습니다.",
+              favorite: "즐겨찾기에 추가",
+              favoriteFailed:
+                "즐겨찾기 상태를 업데이트하지 못했습니다. 잠시 후 다시 시도하세요.",
+              favorited: "♥ 즐겨찾기됨",
+              favorites: "즐겨찾기",
+              fileSizeUnknown: "크기 알 수 없음",
+              library: "라이브러리 보기",
+              loginToFavorite: "로그인 후 저장",
+              original: "원본",
+              processing: "처리 중",
+              saveConfig: "다운로드 설정을 저장했습니다.",
+              tiers: (count: number, best: string) =>
+                `다운로드 ${count}개 · 최고 ${best}`,
+              unrecorded: "기록 없음",
+              unfavorite: "즐겨찾기 해제",
+            }
+          : {
+              aiCaption: "AI description",
+              aiDetected: "AI detected",
+              authMissing:
+                "Local auth is not configured yet. Favorites require a login environment.",
+              backExplore: "Back to Explore",
+              colors: "Primary colors",
+              creator: "Creator",
+              dimensions: "Size",
+              download: "Downloads",
+              downloadConfig: "Open download settings",
+              downloadFailed: "Download failed. Please try again later.",
+              downloadHint:
+                "Use the darkroom export panel to switch between original, 4K, and WebP, choose crop ratios, and save common download settings.",
+              favorite: "Add to favorites",
+              favoriteFailed: "Favorite update failed. Please try again later.",
+              favorited: "♥ Favorited",
+              favorites: "Favorites",
+              fileSizeUnknown: "Unknown size",
+              library: "View library",
+              loginToFavorite: "Log in to save",
+              original: "Original",
+              processing: "Processing",
+              saveConfig: "Download settings saved.",
+              tiers: (count: number, best: string) =>
+                `${count} download tiers · best ${best}`,
+              unrecorded: "Not recorded",
+              unfavorite: "Remove favorite",
+            };
 
   const favoritePath = `/api/wallpapers/${encodeURIComponent(identifier)}/favorite`;
 
   function formatFileSize(sizeBytes: number | null) {
     if (!sizeBytes || sizeBytes <= 0) {
-      return "大小未知";
+      return labels.fileSizeUnknown;
     }
 
     const units = ["B", "KB", "MB", "GB"];
@@ -194,7 +321,7 @@ export function WallpaperDetailSidebar({
         error?: string;
       } | null;
 
-      throw new Error(payload?.error ?? "下载失败，请稍后重试。");
+      throw new Error(payload?.error ?? labels.downloadFailed);
     }
 
     const countHeader = response.headers.get("X-Wallpaper-Downloads-Count");
@@ -274,7 +401,7 @@ export function WallpaperDetailSidebar({
     ratio: string;
     lockOn: boolean;
   }) {
-    setFeedback("下载配置已缓存。");
+    setFeedback(labels.saveConfig);
   }
 
   useEffect(() => {
@@ -330,7 +457,8 @@ export function WallpaperDetailSidebar({
       | ApiFailure;
 
     if (!response.ok || !("data" in payload)) {
-      const message = "error" in payload ? payload.error : "收藏状态更新失败。";
+      const message =
+        "error" in payload ? payload.error : labels.favoriteFailed;
       const code = "code" in payload ? payload.code : "UNKNOWN_ERROR";
 
       throw new Error(`${code}:${message}`);
@@ -358,14 +486,14 @@ export function WallpaperDetailSidebar({
           error instanceof Error &&
           error.message.startsWith("AUTH_NOT_CONFIGURED:")
         ) {
-          setFeedback("本地认证尚未配置，收藏功能需要先接入登录环境。");
+          setFeedback(labels.authMissing);
           return;
         }
 
         setFeedback(
           error instanceof Error
             ? error.message.replace(/^[A-Z_]+:/, "")
-            : "收藏操作失败，请稍后重试。",
+            : labels.favoriteFailed,
         );
       });
     });
@@ -382,26 +510,26 @@ export function WallpaperDetailSidebar({
         </p>
         <p>
           <span className="mr-2 uppercase tracking-[0.18em] text-ink">
-            尺寸
+            {labels.dimensions}
           </span>
-          {width && height ? `${width} × ${height}` : "未记录"}
+          {width && height ? `${width} × ${height}` : labels.unrecorded}
         </p>
         <p>
           <span className="mr-2 uppercase tracking-[0.18em] text-ink">
-            下载
+            {labels.download}
           </span>
           {downloadsCount}
         </p>
         <p>
           <span className="mr-2 uppercase tracking-[0.18em] text-ink">
-            收藏
+            {labels.favorites}
           </span>
           {likesCount}
         </p>
         {creatorUsername ? (
           <p>
             <span className="mr-2 uppercase tracking-[0.18em] text-ink">
-              创作者
+              {labels.creator}
             </span>
             <Link
               className="underline decoration-ink/40 underline-offset-4 transition hover:text-ink hover:decoration-ink focus-visible:decoration-ink focus-visible:outline-none"
@@ -423,7 +551,7 @@ export function WallpaperDetailSidebar({
                   className="glass-chip px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:text-ink focus-visible:text-ink focus-visible:outline-none"
                   href={`/explore?tag=${encodeURIComponent(tag)}`}
                 >
-                  {tag}
+                  {translateStaticTerm(tag, locale)}
                 </Link>
               ))}
             </div>
@@ -431,7 +559,7 @@ export function WallpaperDetailSidebar({
           {aiTags.length > 0 ? (
             <div>
               <p className="mb-2 text-[9px] uppercase tracking-[0.3em] text-muted/50">
-                AI 识别
+                {labels.aiDetected}
               </p>
               <div className="flex flex-wrap gap-2">
                 {aiTags.slice(0, 8).map((tag) => (
@@ -440,7 +568,7 @@ export function WallpaperDetailSidebar({
                     className="glass-chip px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted/70 transition hover:text-muted focus-visible:outline-none"
                     href={`/explore?tag=${encodeURIComponent(tag)}`}
                   >
-                    {tag}
+                    {translateStaticTerm(tag, locale)}
                   </Link>
                 ))}
               </div>
@@ -452,7 +580,7 @@ export function WallpaperDetailSidebar({
       {colors.length > 0 ? (
         <div className="mt-6">
           <p className="mb-3 text-[9px] uppercase tracking-[0.3em] text-muted/50">
-            主色调
+            {labels.colors}
           </p>
           <div className="flex flex-wrap gap-2">
             {colors.slice(0, 8).map((color) => {
@@ -480,7 +608,7 @@ export function WallpaperDetailSidebar({
       {aiCaption ? (
         <div className="glass-surface-soft mt-6 px-4 py-4">
           <p className="mb-2 text-[9px] uppercase tracking-[0.3em] text-muted/50">
-            AI 描述
+            {labels.aiCaption}
           </p>
           <p className="text-sm leading-6 text-muted/80">{aiCaption}</p>
         </div>
@@ -491,8 +619,7 @@ export function WallpaperDetailSidebar({
           <div className="glass-surface-soft space-y-3 p-4 sm:p-5">
             <div className="rounded-[18px] bg-white/45 px-4 py-3 shadow-[inset_4px_4px_10px_rgba(37,58,62,0.08),inset_-4px_-4px_10px_rgba(255,255,255,0.86)]">
               <p className="text-xs leading-6 text-muted">
-                进入暗房导出面板后，可切换原图、4K 与
-                WebP，选择裁切比例并缓存常用下载配置。
+                {labels.downloadHint}
               </p>
             </div>
             <button
@@ -504,18 +631,20 @@ export function WallpaperDetailSidebar({
                 setIsDownloadPanelOpen(true);
               }}
             >
-              打开下载配置
+              {labels.downloadConfig}
             </button>
             {downloadOptions.length > 0 ? (
               <p className="text-[10px] uppercase tracking-[0.22em] text-muted">
-                当前可下载 {downloadOptions.length} 档 · 最高{" "}
-                {downloadOptions.find((option) => option.variant === "4k")
-                  ? "4K"
-                  : downloadOptions.some(
-                        (option) => option.variant === "original",
-                      )
-                    ? "原图"
-                    : formatFileSize(downloadOptions[0]?.sizeBytes ?? null)}
+                {labels.tiers(
+                  downloadOptions.length,
+                  downloadOptions.find((option) => option.variant === "4k")
+                    ? "4K"
+                    : downloadOptions.some(
+                          (option) => option.variant === "original",
+                        )
+                      ? labels.original
+                      : formatFileSize(downloadOptions[0]?.sizeBytes ?? null),
+                )}
               </p>
             ) : null}
           </div>
@@ -525,12 +654,12 @@ export function WallpaperDetailSidebar({
           <button
             aria-label={
               isPending
-                ? "处理中"
+                ? labels.processing
                 : didHydrateAuthState && !isSignedIn
-                  ? "登录后收藏"
+                  ? labels.loginToFavorite
                   : isFavorited
-                    ? "取消收藏"
-                    : "加入收藏"
+                    ? labels.unfavorite
+                    : labels.favorite
             }
             className={cn(
               "inline-flex min-h-[48px] w-full justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] transition focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto",
@@ -543,25 +672,25 @@ export function WallpaperDetailSidebar({
             type="button"
           >
             {isPending
-              ? "处理中"
+              ? labels.processing
               : didHydrateAuthState && !isSignedIn
-                ? "登录后收藏"
+                ? labels.loginToFavorite
                 : isFavorited
-                  ? "♥ 已收藏"
-                  : "加入收藏"}
+                  ? labels.favorited
+                  : labels.favorite}
           </button>
           <Link
             className="glass-control inline-flex min-h-[48px] w-full justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition sm:w-auto"
             href="/explore"
           >
-            返回探索
+            {labels.backExplore}
           </Link>
           {didHydrateAuthState && isSignedIn ? (
             <Link
               className="glass-control inline-flex min-h-[48px] w-full justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition sm:w-auto"
               href="/library"
             >
-              查看个人库
+              {labels.library}
             </Link>
           ) : null}
         </div>

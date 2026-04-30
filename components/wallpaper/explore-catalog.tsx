@@ -17,13 +17,18 @@ import {
   isFeaturedFilterEnabled,
   isMotionFilterEnabled,
 } from "@/lib/explore";
+import { getExploreCategoryCopy, getExploreOptionCopy } from "@/lib/i18n";
+import { getExploreUiCopy } from "@/lib/i18n-ui";
+import type { SupportedLocale } from "@/types/i18n";
 
 type ExploreCatalogProps = {
   categorySlug?: string;
+  locale: SupportedLocale;
 };
 
 type ExploreCatalogLoadingProps = {
   categorySlug?: string;
+  locale: SupportedLocale;
 };
 
 function buildExploreHref(
@@ -79,10 +84,15 @@ function buildExploreApiHref(
     sort?: string;
     tag?: string;
   },
+  locale: SupportedLocale,
 ) {
   const params = new URLSearchParams();
   params.set("withMeta", "true");
-  params.set("page", String(nextValues.page && nextValues.page > 0 ? nextValues.page : 1));
+  params.set("locale", locale);
+  params.set(
+    "page",
+    String(nextValues.page && nextValues.page > 0 ? nextValues.page : 1),
+  );
 
   if (nextValues.q) {
     params.set("q", nextValues.q);
@@ -114,6 +124,7 @@ function buildExploreApiHref(
 function ExploreSummary({
   count,
   featuredOnly,
+  locale,
   motionOnly,
   page,
   pageSize,
@@ -123,6 +134,7 @@ function ExploreSummary({
 }: {
   count: number;
   featuredOnly: boolean;
+  locale: SupportedLocale;
   motionOnly: boolean;
   page: number;
   pageSize: number;
@@ -130,19 +142,20 @@ function ExploreSummary({
   total: number;
   totalPages: number;
 }) {
+  const copy = getExploreUiCopy(locale);
+  const sortLabel =
+    getExploreOptionCopy(locale, "sort", sort)?.label ??
+    EXPLORE_SORT_OPTIONS.find((item) => item.value === sort)?.label;
+
   return (
     <div className="glass-surface-soft grid gap-2 px-4 py-4 text-[10px] uppercase tracking-[0.2em] text-muted sm:max-w-[18rem]">
+      <span>{copy.pageCount({ page, total, totalPages })}</span>
+      <span>{copy.pageSize({ count, pageSize })}</span>
       <span>
-        共 {total} 件 · 第 {page}/{totalPages} 页
+        {copy.sortLabel} {sortLabel}
       </span>
-      <span>
-        本页 {count} 件 · 每页 {pageSize} 件
-      </span>
-      <span>
-        排序 {EXPLORE_SORT_OPTIONS.find((item) => item.value === sort)?.label}
-      </span>
-      <span>{featuredOnly ? "仅看精选" : "全目录"}</span>
-      <span>{motionOnly ? "动态壁纸" : "静态与动态混合"}</span>
+      <span>{featuredOnly ? copy.featuredOff : copy.allFilters}</span>
+      <span>{motionOnly ? copy.motionOnly : copy.motionMixed}</span>
     </div>
   );
 }
@@ -165,12 +178,17 @@ function ExploreCardSkeleton() {
 
 export function ExploreCatalogLoading({
   categorySlug,
+  locale,
 }: ExploreCatalogLoadingProps) {
   const category = getExploreCategory(categorySlug);
-  const heading = category ? category.label : "探索整本目录";
+  const copy = getExploreUiCopy(locale);
+  const heading = category
+    ? (getExploreCategoryCopy(locale, category.slug)?.label ?? category.label)
+    : copy.allDirectory;
   const description = category
-    ? category.description
-    : "按关键词、标签、分类、动态壁纸和热度筛选壁纸目录。结果优先读取真实数据，并兼容 AI 标签与人工标签。";
+    ? (getExploreCategoryCopy(locale, category.slug)?.description ??
+      category.description)
+    : copy.defaultDescription;
 
   return (
     <section className="glass-panel-grid relative overflow-hidden px-5 pb-8 pt-24 sm:px-6 md:px-10 md:pb-12 md:pt-28">
@@ -190,6 +208,7 @@ export function ExploreCatalogLoading({
           <ExploreSummary
             count={0}
             featuredOnly={false}
+            locale={locale}
             motionOnly={false}
             page={1}
             pageSize={24}
@@ -209,12 +228,13 @@ export function ExploreCatalogLoading({
   );
 }
 
-export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
+export function ExploreCatalog({ categorySlug, locale }: ExploreCatalogProps) {
   const searchParams = useSearchParams();
   const category = getExploreCategory(categorySlug);
+  const copy = getExploreUiCopy(locale);
   const query = searchParams.get("q")?.trim() || "";
   const tagValue = searchParams.get("tag")?.trim() || "";
-  const tag = tagValue && tagValue !== "全部" ? tagValue : undefined;
+  const tag = tagValue && tagValue !== copy.allTag ? tagValue : undefined;
   const sort = getExploreSort(searchParams.get("sort") ?? undefined);
   const featuredOnly = isFeaturedFilterEnabled(
     searchParams.get("featured") ?? undefined,
@@ -238,14 +258,18 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
     setError(null);
 
     fetch(
-      buildExploreApiHref(category?.slug, {
-        q: query || undefined,
-        tag,
-        sort,
-        featured: featuredOnly,
-        motion: motionOnly,
-        page,
-      }),
+      buildExploreApiHref(
+        category?.slug,
+        {
+          q: query || undefined,
+          tag,
+          sort,
+          featured: featuredOnly,
+          motion: motionOnly,
+          page,
+        },
+        locale,
+      ),
       {
         signal: controller.signal,
       },
@@ -255,7 +279,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
           const payload = (await response
             .json()
             .catch(() => null)) as ApiErrorResponse | null;
-          throw new Error(payload?.error ?? "探索目录加载失败。");
+          throw new Error(payload?.error ?? copy.loadingError);
         }
 
         const payload =
@@ -268,9 +292,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
         }
 
         setError(
-          fetchError instanceof Error
-            ? fetchError.message
-            : "探索目录加载失败。",
+          fetchError instanceof Error ? fetchError.message : copy.loadingError,
         );
       })
       .finally(() => {
@@ -282,7 +304,18 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
     return () => {
       controller.abort();
     };
-  }, [category?.slug, featuredOnly, motionOnly, page, query, retryNonce, sort, tag]);
+  }, [
+    category?.slug,
+    copy.loadingError,
+    featuredOnly,
+    locale,
+    motionOnly,
+    page,
+    query,
+    retryNonce,
+    sort,
+    tag,
+  ]);
 
   const wallpapers = result?.wallpapers ?? [];
   const currentPage = result?.page ?? page;
@@ -292,10 +325,13 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
   const hasNextPage = result?.hasNextPage ?? currentPage < totalPages;
   const hasPreviousPage = result?.hasPreviousPage ?? currentPage > 1;
   const pageSize = result?.pageSize ?? 24;
-  const heading = category ? category.label : "探索整本目录";
+  const heading = category
+    ? (getExploreCategoryCopy(locale, category.slug)?.label ?? category.label)
+    : copy.allDirectory;
   const description = category
-    ? category.description
-    : "按关键词、标签、分类、动态壁纸和热度筛选壁纸目录。结果优先读取真实数据，并兼容 AI 标签与人工标签。";
+    ? (getExploreCategoryCopy(locale, category.slug)?.description ??
+      category.description)
+    : copy.defaultDescription;
 
   return (
     <section className="glass-panel-grid relative overflow-hidden px-5 pb-8 pt-24 sm:px-6 md:px-10 md:pb-12 md:pt-28">
@@ -315,6 +351,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
           <ExploreSummary
             count={count}
             featuredOnly={featuredOnly}
+            locale={locale}
             motionOnly={motionOnly}
             page={currentPage}
             pageSize={pageSize}
@@ -331,24 +368,24 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
           method="get"
         >
           <input
-            className="glass-field min-w-0 px-4 py-3 text-[18px] outline-none placeholder:text-muted transition"
+            className="glass-field min-w-0 px-4 py-3 text-[18px] outline-none transition placeholder:text-muted"
             defaultValue={query}
             name="q"
-            placeholder="搜索标题、描述、AI 标签或创作者…"
+            placeholder={copy.searchPlaceholder}
             type="text"
           />
           <input
-            className="glass-field min-w-0 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.2em] outline-none placeholder:text-muted transition"
+            className="glass-field min-w-0 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.2em] outline-none transition placeholder:text-muted"
             defaultValue={tag}
             name="tag"
-            placeholder="标签，如 自然 / 赛博 / 晨雾"
+            placeholder={copy.tagPlaceholder}
             type="text"
           />
           <button
             className="glass-primary px-5 py-3 font-mono text-[12px] uppercase tracking-[0.22em] focus-visible:outline-none"
             type="submit"
           >
-            搜索目录
+            {copy.searchSubmit}
           </button>
           {featuredOnly ? (
             <input name="featured" type="hidden" value="true" />
@@ -364,25 +401,9 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
         {!tag ? (
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="shrink-0 text-[9px] uppercase tracking-[0.32em] text-muted/50">
-              热门标签
+              {copy.popularTags}
             </span>
-            {[
-              "户外",
-              "自然风景",
-              "海边",
-              "蓝天",
-              "夏日",
-              "唯美",
-              "清新",
-              "人像",
-              "城市",
-              "极简",
-              "暗夜",
-              "宇宙",
-              "霓虹",
-              "渐变",
-              "像素",
-            ].map((topic) => (
+            {copy.topicTags.map((topic) => (
               <Link
                 key={topic}
                 className="glass-chip px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:text-ink"
@@ -414,7 +435,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
               motion: motionOnly,
             })}
           >
-            全部分类
+            {copy.allCategories}
           </Link>
           {EXPLORE_CATEGORIES.map((item) => {
             const isActive = item.slug === category?.slug;
@@ -435,7 +456,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                   motion: motionOnly,
                 })}
               >
-                {item.label}
+                {getExploreCategoryCopy(locale, item.slug)?.label ?? item.label}
               </Link>
             );
           })}
@@ -460,9 +481,13 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                   featured: featuredOnly,
                   motion: motionOnly,
                 })}
-                title={item.description}
+                title={
+                  getExploreOptionCopy(locale, "sort", item.value)
+                    ?.description ?? item.description
+                }
               >
-                {item.label}
+                {getExploreOptionCopy(locale, "sort", item.value)?.label ??
+                  item.label}
               </Link>
             );
           })}
@@ -480,7 +505,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
               motion: !motionOnly,
             })}
           >
-            {motionOnly ? "Motion 开启" : "仅看 Motion"}
+            {motionOnly ? copy.motionOn : copy.motionOff}
           </Link>
           <Link
             className={
@@ -496,14 +521,14 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
               motion: motionOnly,
             })}
           >
-            {featuredOnly ? "精选开启" : "仅看精选"}
+            {featuredOnly ? copy.featuredOn : copy.featuredOff}
           </Link>
         </div>
 
         {query || tag || category || featuredOnly || motionOnly ? (
           <div className="mt-6 flex flex-wrap items-center gap-2">
             <span className="text-[9px] uppercase tracking-[0.3em] text-muted/60">
-              当前筛选
+              {copy.currentFilters}
             </span>
             {query ? (
               <Link
@@ -514,7 +539,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                   featured: featuredOnly,
                   motion: motionOnly,
                 })}
-                title="清除关键词"
+                title={copy.clearKeyword}
               >
                 {query}
                 <span aria-hidden className="text-[8px] opacity-50">
@@ -531,7 +556,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                   featured: featuredOnly,
                   motion: motionOnly,
                 })}
-                title="清除标签"
+                title={copy.clearTag}
               >
                 #{tag}
                 <span aria-hidden className="text-[8px] opacity-50">
@@ -549,7 +574,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                   featured: featuredOnly,
                   motion: motionOnly,
                 })}
-                title="清除分类"
+                title={copy.clearCategory}
               >
                 {category.label}
                 <span aria-hidden className="text-[8px] opacity-50">
@@ -567,9 +592,9 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                   featured: false,
                   motion: motionOnly,
                 })}
-                title="取消精选过滤"
+                title={copy.clearFeatured}
               >
-                精选
+                {copy.featuredOff}
                 <span aria-hidden className="text-[8px] opacity-50">
                   ✕
                 </span>
@@ -585,7 +610,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                   featured: featuredOnly,
                   motion: false,
                 })}
-                title="取消动态壁纸过滤"
+                title={copy.motionOnly}
               >
                 Motion
                 <span aria-hidden className="text-[8px] opacity-50">
@@ -597,7 +622,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
               className="ml-1 text-[9px] uppercase tracking-[0.24em] text-muted/50 underline underline-offset-4 transition hover:text-red"
               href={buildExploreHref(undefined, {})}
             >
-              清空全部
+              {copy.clearAll}
             </Link>
           </div>
         ) : null}
@@ -609,7 +634,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             </span>
             <div>
               <p className="font-display text-[22px] italic text-ink/50">
-                探索目录暂时失联
+                {copy.errorTitle}
               </p>
               <p className="mt-2 max-w-md text-[11px] uppercase tracking-[0.18em] text-muted/70">
                 {error}
@@ -622,7 +647,13 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
               }}
               type="button"
             >
-              重新加载
+              {locale === "zh-CN"
+                ? "重新加载"
+                : locale === "ja"
+                  ? "再読み込み"
+                  : locale === "ko"
+                    ? "다시 불러오기"
+                    : "Reload"}
             </button>
           </div>
         ) : isLoading && !result ? (
@@ -663,45 +694,48 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                     page: currentPage - 1,
                   })}
                 >
-                  ← 上一页
+                  {copy.previousPage}
                 </Link>
 
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(totalPages, 7) }, (_, index) => {
-                    const pageNum =
-                      totalPages <= 7
+                  {Array.from(
+                    { length: Math.min(totalPages, 7) },
+                    (_, index) => {
+                      const pageNum =
+                        totalPages <= 7
                           ? index + 1
                           : currentPage <= 4
                             ? index + 1
-                          : currentPage >= totalPages - 3
-                            ? totalPages - 6 + index
-                            : currentPage - 3 + index;
+                            : currentPage >= totalPages - 3
+                              ? totalPages - 6 + index
+                              : currentPage - 3 + index;
 
-                    if (pageNum < 1 || pageNum > totalPages) {
-                      return null;
-                    }
+                      if (pageNum < 1 || pageNum > totalPages) {
+                        return null;
+                      }
 
-                    return (
-                      <Link
-                        key={pageNum}
-                        className={
-                          pageNum === currentPage
-                            ? "glass-chip-active flex h-9 w-9 items-center justify-center font-mono text-[10px]"
-                            : "glass-chip flex h-9 w-9 items-center justify-center font-mono text-[10px] text-muted transition hover:text-ink"
-                        }
-                        href={buildExploreHref(category?.slug, {
-                          q: query || undefined,
-                          tag,
-                          sort,
-                          featured: featuredOnly,
-                          motion: motionOnly,
-                          page: pageNum,
-                        })}
-                      >
-                        {pageNum}
-                      </Link>
-                    );
-                  })}
+                      return (
+                        <Link
+                          key={pageNum}
+                          className={
+                            pageNum === currentPage
+                              ? "glass-chip-active flex h-9 w-9 items-center justify-center font-mono text-[10px]"
+                              : "glass-chip flex h-9 w-9 items-center justify-center font-mono text-[10px] text-muted transition hover:text-ink"
+                          }
+                          href={buildExploreHref(category?.slug, {
+                            q: query || undefined,
+                            tag,
+                            sort,
+                            featured: featuredOnly,
+                            motion: motionOnly,
+                            page: pageNum,
+                          })}
+                        >
+                          {pageNum}
+                        </Link>
+                      );
+                    },
+                  )}
                 </div>
 
                 <Link
@@ -720,7 +754,7 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
                     page: currentPage + 1,
                   })}
                 >
-                  下一页 →
+                  {copy.nextPage}
                 </Link>
               </div>
             ) : null}
@@ -732,17 +766,17 @@ export function ExploreCatalog({ categorySlug }: ExploreCatalogProps) {
             </span>
             <div>
               <p className="font-display text-[22px] italic text-ink/40">
-                没有命中的作品
+                {copy.emptyTitle}
               </p>
               <p className="mt-2 max-w-sm text-[11px] uppercase tracking-[0.18em] text-muted/60">
-                换一个关键词或清空筛选条件
+                {copy.emptyBody}
               </p>
             </div>
             <Link
               className="glass-control px-5 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition"
               href={buildExploreHref(undefined, {})}
             >
-              清空筛选
+              {copy.clearAll}
             </Link>
           </div>
         )}

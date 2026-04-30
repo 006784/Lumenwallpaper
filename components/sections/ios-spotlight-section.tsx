@@ -1,54 +1,65 @@
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Reveal } from "@/components/ui/reveal";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
+import { getHomeUiCopy } from "@/lib/i18n-ui";
+import type { SupportedLocale } from "@/types/i18n";
 import type { Wallpaper } from "@/types/wallpaper";
 import Link from "next/link";
 
 type IosSpotlightSectionProps = {
+  locale: SupportedLocale;
   wallpapers: Wallpaper[];
 };
 
 export function IosSpotlightSection({
+  locale,
   wallpapers,
 }: IosSpotlightSectionProps) {
   if (wallpapers.length === 0) {
     return null;
   }
 
+  const copy = getHomeUiCopy(locale);
   const [featuredWallpaper, ...restWallpapers] = wallpapers;
 
   return (
     <section className="px-5 py-12 sm:px-6 md:px-10 md:py-16">
       <Reveal className="mb-8">
         <SectionHeading
-          eyebrow="02 — iOS 专区"
+          eyebrow={copy.ios.eyebrow}
           hint={
-            <span className="leading-5 text-right">
-              竖屏优先
+            <span className="text-right leading-5">
+              {copy.ios.hintLine1}
               <br />
-              锁屏与主屏更顺手
+              {copy.ios.hintLine2}
             </span>
           }
           title={
             <>
-              为 <em className="not-italic italic text-red">iPhone</em> 准备的
+              {copy.ios.titleLine1}
               <br />
-              竖版精选
+              <em className="italic not-italic text-red">
+                {copy.ios.titleLine2}
+              </em>
             </>
           }
         />
         <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">
-          优先挑选更适合锁屏与主屏排版的竖版作品，这一组也会使用更高分辨率封面，避免手机专区的卡片发虚。
+          {copy.ios.body}
         </p>
         <div className="mt-6">
           <Link className="section-entry-link" href="/explore?sort=latest">
-            进入 iOS 专区
+            {copy.ios.cta}
             <span aria-hidden>↗</span>
           </Link>
         </div>
       </Reveal>
 
-      <Reveal className="grid items-start gap-5 lg:grid-cols-[0.72fr_1.28fr]" y={24} duration={0.7}>
+      <Reveal
+        className="grid items-start gap-5 lg:grid-cols-[0.72fr_1.28fr]"
+        y={24}
+        duration={0.7}
+      >
         <div className="space-y-5">
           <div className="mx-auto max-w-[280px] sm:max-w-[300px] lg:max-w-[320px]">
             <WallpaperGridCard
@@ -59,10 +70,10 @@ export function IosSpotlightSection({
           </div>
           <div className="glass-surface-soft px-5 py-4">
             <p className="text-[10px] uppercase tracking-[0.32em] text-muted">
-              iOS Curation Note
+              {copy.ios.noteTitle}
             </p>
             <p className="mt-3 text-sm leading-6 text-muted">
-              这里更关注时间组件、通知栏和主体留白的平衡，让壁纸在 iPhone 上更顺手，也更适合直接保存使用。
+              {copy.ios.noteBody}
             </p>
           </div>
         </div>

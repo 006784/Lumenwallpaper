@@ -8,6 +8,12 @@ import type {
   MoodShape,
   WallpaperCoverSource,
 } from "@/types/home";
+import {
+  DEFAULT_LOCALE,
+  getI18nMessages,
+  translateStaticTerm,
+} from "@/lib/i18n";
+import type { SupportedLocale } from "@/types/i18n";
 import type {
   Wallpaper,
   WallpaperDownloadOption,
@@ -101,7 +107,9 @@ function hashInput(value: string) {
   return hash;
 }
 
-export function getWallpaperGradientKey(wallpaper: Pick<Wallpaper, "slug" | "tags" | "colors">): GradientKey {
+export function getWallpaperGradientKey(
+  wallpaper: Pick<Wallpaper, "slug" | "tags" | "colors">,
+): GradientKey {
   const slugPrefix = wallpaper.slug?.split("-")[0] ?? "";
 
   if (GRADIENT_SEQUENCE.includes(slugPrefix as GradientKey)) {
@@ -132,15 +140,11 @@ export function isVideoWallpaperFile(file: WallpaperFile) {
 
 function getWallpaperFileSourceWidth(file: WallpaperFile) {
   return (
-    file.width ??
-    RESPONSIVE_SOURCE_VARIANT_FALLBACK_WIDTH[file.variant] ??
-    0
+    file.width ?? RESPONSIVE_SOURCE_VARIANT_FALLBACK_WIDTH[file.variant] ?? 0
   );
 }
 
-function getDominantDimension(
-  file: Pick<WallpaperFile, "width" | "height">,
-) {
+function getDominantDimension(file: Pick<WallpaperFile, "width" | "height">) {
   return Math.max(file.width ?? 0, file.height ?? 0);
 }
 
@@ -164,9 +168,7 @@ function getDownloadOptionLabel(file: WallpaperFile, includeVideo: boolean) {
   return "标清";
 }
 
-export function getPreferredWallpaperFile(
-  wallpaper: Pick<Wallpaper, "files">,
-) {
+export function getPreferredWallpaperFile(wallpaper: Pick<Wallpaper, "files">) {
   return getWallpaperFileByPriority(wallpaper, ARTWORK_FILE_VARIANT_PRIORITY);
 }
 
@@ -194,7 +196,9 @@ export function getWallpaperCoverSources(
 ): WallpaperCoverSource[] {
   const bestByWidth = new Map<number, WallpaperFile>();
 
-  for (const file of wallpaper.files.filter((candidate) => !isVideoWallpaperFile(candidate))) {
+  for (const file of wallpaper.files.filter(
+    (candidate) => !isVideoWallpaperFile(candidate),
+  )) {
     const width = getWallpaperFileSourceWidth(file);
 
     if (!width) {
@@ -221,7 +225,9 @@ export function getWallpaperCoverSources(
 }
 
 export function getWallpaperDownloadFile(wallpaper: Pick<Wallpaper, "files">) {
-  const includesVideo = wallpaper.files.some((file) => isVideoWallpaperFile(file));
+  const includesVideo = wallpaper.files.some((file) =>
+    isVideoWallpaperFile(file),
+  );
 
   if (includesVideo) {
     return (
@@ -230,7 +236,8 @@ export function getWallpaperDownloadFile(wallpaper: Pick<Wallpaper, "files">) {
           files: wallpaper.files.filter(isVideoWallpaperFile),
         },
         RECOMMENDED_VIDEO_DOWNLOAD_PRIORITY,
-      ) ?? getWallpaperFileByPriority(wallpaper, RECOMMENDED_VIDEO_DOWNLOAD_PRIORITY)
+      ) ??
+      getWallpaperFileByPriority(wallpaper, RECOMMENDED_VIDEO_DOWNLOAD_PRIORITY)
     );
   }
 
@@ -288,7 +295,9 @@ export function getWallpaperDownloadOptions(
   });
 }
 
-export function getWallpaperShape(wallpaper: Pick<Wallpaper, "width" | "height">): MoodShape {
+export function getWallpaperShape(
+  wallpaper: Pick<Wallpaper, "width" | "height">,
+): MoodShape {
   const width = wallpaper.width ?? 0;
   const height = wallpaper.height ?? 0;
 
@@ -313,12 +322,19 @@ export function getWallpaperShape(wallpaper: Pick<Wallpaper, "width" | "height">
   return "portrait";
 }
 
-export function getWallpaperMeta(wallpaper: Pick<Wallpaper, "tags" | "width" | "height">) {
-  const primaryTag = wallpaper.tags[0] ?? "精选";
+export function getWallpaperMeta(
+  wallpaper: Pick<Wallpaper, "tags" | "width" | "height">,
+  locale: SupportedLocale = DEFAULT_LOCALE,
+) {
+  const messages = getI18nMessages(locale);
+  const primaryTag = translateStaticTerm(
+    wallpaper.tags[0] ?? messages.wallpaper.curatedShort,
+    locale,
+  );
   const resolution =
     wallpaper.width && wallpaper.height
       ? `${Math.max(wallpaper.width, wallpaper.height)}p`
-      : "高清";
+      : messages.wallpaper.hd;
 
   return `${primaryTag} · ${resolution}`;
 }
@@ -329,7 +345,9 @@ function formatCompactCount(value: number) {
 
 function getWallpaperResolutionLabel(
   wallpaper: Pick<Wallpaper, "width" | "height">,
+  locale: SupportedLocale = DEFAULT_LOCALE,
 ) {
+  const messages = getI18nMessages(locale);
   const dominantSize = Math.max(wallpaper.width ?? 0, wallpaper.height ?? 0);
 
   if (dominantSize >= 5120) {
@@ -344,7 +362,7 @@ function getWallpaperResolutionLabel(
     return "2K";
   }
 
-  return "高清";
+  return messages.wallpaper.hd;
 }
 
 function looksLikeImportedFilename(value: string) {
@@ -368,43 +386,68 @@ function looksLikeImportedFilename(value: string) {
 
 function getPrimaryWallpaperLabel(
   wallpaper: Pick<Wallpaper, "aiCategory" | "aiTags" | "tags">,
+  locale: SupportedLocale = DEFAULT_LOCALE,
 ) {
-  return wallpaper.aiCategory ?? wallpaper.aiTags[0] ?? wallpaper.tags[0] ?? "精选";
+  const messages = getI18nMessages(locale);
+
+  return translateStaticTerm(
+    wallpaper.aiCategory ??
+      wallpaper.aiTags[0] ??
+      wallpaper.tags[0] ??
+      messages.wallpaper.curatedShort,
+    locale,
+  );
 }
 
 export function getWallpaperDisplayTitle(
   wallpaper: Pick<Wallpaper, "aiTags" | "tags" | "title">,
+  locale: SupportedLocale = DEFAULT_LOCALE,
 ) {
-  const aiLabel = wallpaper.aiTags.filter(Boolean).slice(0, 3).join(" · ");
+  const messages = getI18nMessages(locale);
+  const aiLabel = wallpaper.aiTags
+    .filter(Boolean)
+    .slice(0, 3)
+    .map((term) => translateStaticTerm(term, locale))
+    .join(" · ");
 
   if (aiLabel.trim().length > 0) {
     return aiLabel;
   }
 
-  const tagLabel = wallpaper.tags.filter(Boolean).slice(0, 3).join(" · ");
+  const tagLabel = wallpaper.tags
+    .filter(Boolean)
+    .slice(0, 3)
+    .map((term) => translateStaticTerm(term, locale))
+    .join(" · ");
 
   if (tagLabel.trim().length > 0) {
     return tagLabel;
   }
 
   if (looksLikeImportedFilename(wallpaper.title)) {
-    return "精选壁纸";
+    return messages.wallpaper.curated;
   }
 
   return wallpaper.title;
 }
 
-function getEditorialDescription(wallpaper: Wallpaper) {
+function getEditorialDescription(
+  wallpaper: Wallpaper,
+  locale: SupportedLocale = DEFAULT_LOCALE,
+) {
+  const messages = getI18nMessages(locale);
+
   return (
     wallpaper.description?.trim() ||
     wallpaper.aiCaption?.trim() ||
-    `${wallpaper.creator?.username ?? "Lumen"} 上传的精选壁纸，已进入本周首页推荐。`
+    `${wallpaper.creator?.username ?? "Lumen"} · ${messages.wallpaper.curated}`
   );
 }
 
 export function wallpaperToMoodCard(
   wallpaper: Wallpaper,
   index: number,
+  locale: SupportedLocale = DEFAULT_LOCALE,
 ): MoodCardData {
   return {
     id: wallpaper.id,
@@ -413,19 +456,22 @@ export function wallpaperToMoodCard(
     coverSources: getWallpaperCoverSources(wallpaper),
     shape: getWallpaperShape(wallpaper),
     number: String(index + 1).padStart(3, "0"),
-    name: getWallpaperDisplayTitle(wallpaper),
-    meta: getWallpaperMeta(wallpaper),
+    name: getWallpaperDisplayTitle(wallpaper, locale),
+    meta: getWallpaperMeta(wallpaper, locale),
     href: `/wallpaper/${wallpaper.slug}`,
     videoUrl: wallpaper.videoUrl,
     aiTags: wallpaper.aiTags.slice(0, 3),
   };
 }
 
-export function wallpaperToFilmCell(wallpaper: Wallpaper): FilmCellData {
+export function wallpaperToFilmCell(
+  wallpaper: Wallpaper,
+  locale: SupportedLocale = DEFAULT_LOCALE,
+): FilmCellData {
   return {
     gradient: getWallpaperGradientKey(wallpaper),
     href: `/wallpaper/${wallpaper.slug}`,
-    label: getWallpaperDisplayTitle(wallpaper),
+    label: getWallpaperDisplayTitle(wallpaper, locale),
     previewUrl: getWallpaperPreviewUrl(wallpaper, "medium"),
     videoUrl: wallpaper.videoUrl ?? undefined,
   };
@@ -433,12 +479,17 @@ export function wallpaperToFilmCell(wallpaper: Wallpaper): FilmCellData {
 
 export function wallpaperToEditorialFeature(
   wallpaper: Wallpaper,
+  locale: SupportedLocale = DEFAULT_LOCALE,
 ): EditorialFeature {
+  const messages = getI18nMessages(locale);
+
   return {
     gradient: getWallpaperGradientKey(wallpaper),
-    title: getWallpaperDisplayTitle(wallpaper),
-    description: getEditorialDescription(wallpaper),
-    eyebrow: wallpaper.featured ? "编辑推荐 · 本周" : "编辑推荐",
+    title: getWallpaperDisplayTitle(wallpaper, locale),
+    description: getEditorialDescription(wallpaper, locale),
+    eyebrow: wallpaper.featured
+      ? messages.wallpaper.editorPickThisWeek
+      : messages.wallpaper.editorPick,
     href: `/wallpaper/${wallpaper.slug}`,
     previewUrl: getWallpaperPreviewUrl(wallpaper, "large"),
     coverSources: getWallpaperCoverSources(wallpaper),
@@ -449,12 +500,15 @@ export function wallpaperToEditorialFeature(
 export function wallpaperToEditorialItem(
   wallpaper: Wallpaper,
   index: number,
+  locale: SupportedLocale = DEFAULT_LOCALE,
 ): EditorialItem {
+  const messages = getI18nMessages(locale);
+
   return {
     gradient: getWallpaperGradientKey(wallpaper),
     number: `NO.${String(index + 2).padStart(2, "0")}`,
-    title: getWallpaperDisplayTitle(wallpaper),
-    meta: `${getPrimaryWallpaperLabel(wallpaper)} · ${getWallpaperResolutionLabel(wallpaper)} · ${formatCompactCount(wallpaper.downloadsCount)} 次下载`,
+    title: getWallpaperDisplayTitle(wallpaper, locale),
+    meta: `${getPrimaryWallpaperLabel(wallpaper, locale)} · ${getWallpaperResolutionLabel(wallpaper, locale)} · ${formatCompactCount(wallpaper.downloadsCount)} ${messages.wallpaper.downloads}`,
     href: `/wallpaper/${wallpaper.slug}`,
     previewUrl: getWallpaperPreviewUrl(wallpaper, "medium"),
     coverSources: getWallpaperCoverSources(wallpaper),
@@ -466,17 +520,21 @@ export function wallpaperToDarkroomItem(
   wallpaper: Wallpaper,
   options?: {
     featured?: boolean;
+    locale?: SupportedLocale;
   },
 ): DarkroomItem {
+  const locale = options?.locale ?? DEFAULT_LOCALE;
+  const messages = getI18nMessages(locale);
+
   return {
     gradient: getWallpaperGradientKey(wallpaper),
-    title: getWallpaperDisplayTitle(wallpaper),
-    meta: `${getPrimaryWallpaperLabel(wallpaper)} · ${getWallpaperResolutionLabel(wallpaper)}`,
+    title: getWallpaperDisplayTitle(wallpaper, locale),
+    meta: `${getPrimaryWallpaperLabel(wallpaper, locale)} · ${getWallpaperResolutionLabel(wallpaper, locale)}`,
     href: `/wallpaper/${wallpaper.slug}`,
     previewUrl: getWallpaperPreviewUrl(wallpaper, "large"),
     coverSources: getWallpaperCoverSources(wallpaper),
     videoUrl: wallpaper.videoUrl,
-    badge: options?.featured ? "本周最佳" : undefined,
+    badge: options?.featured ? messages.wallpaper.bestThisWeek : undefined,
     featured: options?.featured ?? false,
     aiTags: wallpaper.aiTags.slice(0, 3),
   };

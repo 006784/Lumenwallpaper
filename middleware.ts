@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { PRIVATE_NO_STORE_CACHE_CONTROL } from "@/lib/cache";
+import {
+  getLocaleResponseHeaders,
+  getLocaleCookieValue,
+  LOCALE_COOKIE_NAME,
+  LOCALE_REQUEST_HEADER,
+  resolveLocale,
+} from "@/lib/i18n";
 
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
@@ -53,6 +60,7 @@ function shouldDisableCaching(request: NextRequest) {
     pathname.startsWith("/api/auth/") ||
     pathname === "/api/email/send" ||
     pathname === "/api/health" ||
+    pathname === "/api/i18n" ||
     pathname === "/api/notifications" ||
     pathname.startsWith("/api/notifications/") ||
     pathname === "/api/reports" ||
@@ -66,6 +74,16 @@ function shouldDisableCaching(request: NextRequest) {
 
 export function middleware(request: NextRequest) {
   const host = request.headers.get("host")?.toLowerCase() ?? "";
+  const queryLocale = request.nextUrl.searchParams.get("locale");
+  const locale = resolveLocale({
+    acceptLanguage: request.headers.get("accept-language"),
+    cookieHeader: request.headers.get("cookie"),
+    headerLocale: request.headers.get(LOCALE_REQUEST_HEADER),
+    searchLocale: queryLocale,
+  });
+  const requestHeaders = new Headers(request.headers);
+
+  requestHeaders.set(LOCALE_REQUEST_HEADER, locale);
 
   if (host === "www.byteify.icu") {
     const redirectUrl = new URL(request.url);
@@ -75,10 +93,31 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl, 308);
   }
 
-  const response = NextResponse.next();
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     response.headers.set(key, value);
+  }
+
+  for (const [key, value] of Object.entries(getLocaleResponseHeaders(locale))) {
+    response.headers.set(key, value);
+  }
+
+  if (
+    queryLocale &&
+    getLocaleCookieValue(request.headers.get("cookie")) !== locale
+  ) {
+    response.cookies.set(LOCALE_COOKIE_NAME, locale, {
+      httpOnly: false,
+      maxAge: 60 * 60 * 24 * 365,
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
   }
 
   if (request.nextUrl.protocol === "https:") {

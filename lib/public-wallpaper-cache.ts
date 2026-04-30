@@ -7,6 +7,7 @@ import {
   getWallpaperSeoSnapshot,
 } from "@/lib/wallpaper-discovery";
 import { getWallpaperDisplayTitle } from "@/lib/wallpaper-presenters";
+import type { SupportedLocale } from "@/types/i18n";
 import type {
   WallpaperAspectFilter,
   WallpaperListFiltersSnapshot,
@@ -161,10 +162,12 @@ export async function getCachedWallpaperTrustSnapshot(identifier: string) {
   )();
 }
 
-export async function getCachedWallpaperExploreFacets() {
+export async function getCachedWallpaperExploreFacets(
+  locale?: SupportedLocale,
+) {
   return unstable_cache(
-    async () => getWallpaperExploreFacets(),
-    ["wallpapers:facets", PUBLIC_WALLPAPER_CACHE_VERSION],
+    async () => getWallpaperExploreFacets(locale),
+    ["wallpapers:facets", PUBLIC_WALLPAPER_CACHE_VERSION, locale ?? "default"],
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
       tags: ["wallpapers", "wallpapers:explore", "wallpapers:facets"],
@@ -172,10 +175,18 @@ export async function getCachedWallpaperExploreFacets() {
   )();
 }
 
-export async function getCachedWallpaperSeoSnapshot(identifier: string) {
+export async function getCachedWallpaperSeoSnapshot(
+  identifier: string,
+  locale?: SupportedLocale,
+) {
   return unstable_cache(
-    async () => getWallpaperSeoSnapshot(identifier),
-    ["wallpaper:seo", PUBLIC_WALLPAPER_CACHE_VERSION, identifier],
+    async () => getWallpaperSeoSnapshot(identifier, locale),
+    [
+      "wallpaper:seo",
+      PUBLIC_WALLPAPER_CACHE_VERSION,
+      identifier,
+      locale ?? "default",
+    ],
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
       tags: ["wallpapers", "wallpapers:seo", `wallpaper:${identifier}`],

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
@@ -11,7 +12,12 @@ import {
   getWallpaperPreviewUrl,
   getWallpaperCoverSources,
 } from "@/lib/wallpaper-presenters";
-import { getCachedPublishedWallpapers, getCachedWallpaperByIdentifier } from "@/lib/public-wallpaper-cache";
+import { getLocaleFromHeaders, translateStaticTerm } from "@/lib/i18n";
+import { getWallpaperPageCopy } from "@/lib/i18n-ui";
+import {
+  getCachedPublishedWallpapers,
+  getCachedWallpaperByIdentifier,
+} from "@/lib/public-wallpaper-cache";
 import { WallpaperDetailSidebar } from "@/components/wallpaper/wallpaper-detail-sidebar";
 import { WallpaperVideoPlayer } from "@/components/wallpaper/wallpaper-video-player";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
@@ -80,46 +86,65 @@ function getVisibleWallpaperDescription(value: string | null) {
 export async function generateMetadata({
   params,
 }: WallpaperPageProps): Promise<Metadata> {
+  const locale = getLocaleFromHeaders(headers());
+  const copy = getWallpaperPageCopy(locale);
   const wallpaper = await getCachedWallpaperByIdentifier(params.id);
 
   if (!wallpaper) {
     return {
-      title: "壁纸未找到",
+      title: copy.notFoundTitle,
     };
   }
 
   const preferredFile = getPreferredWallpaperFile(wallpaper);
-  const tagLine = wallpaper.tags[0] ?? wallpaper.aiCategory ?? "高质感壁纸";
-  const visibleDescription = getVisibleWallpaperDescription(wallpaper.description);
+  const tagLine = translateStaticTerm(
+    wallpaper.tags[0] ??
+      wallpaper.aiCategory ??
+      (locale === "zh-CN"
+        ? "高质感壁纸"
+        : locale === "ja"
+          ? "高品質な壁紙"
+          : locale === "ko"
+            ? "고품질 배경화면"
+            : "high-quality wallpaper"),
+    locale,
+  );
+  const displayTitle = getWallpaperDisplayTitle(wallpaper, locale);
+  const visibleDescription = getVisibleWallpaperDescription(
+    wallpaper.description,
+  );
   const openGraphImage =
     preferredFile?.url && !preferredFile.url.startsWith("data:")
       ? preferredFile.url
       : undefined;
 
   return {
-    title: wallpaper.title,
+    title: displayTitle,
     description:
-      visibleDescription ??
-      `${wallpaper.title} · ${tagLine} · 来自 Lumen 的高质感壁纸详情页。`,
+      visibleDescription ?? copy.seoFallback({ tagLine, title: displayTitle }),
     openGraph: {
-      title: wallpaper.title,
+      title: displayTitle,
       description:
         visibleDescription ??
-        `${wallpaper.title} · ${tagLine} · 来自 Lumen 的高质感壁纸详情页。`,
+        copy.seoFallback({ tagLine, title: displayTitle }),
       images: openGraphImage ? [{ url: openGraphImage }] : undefined,
     },
   };
 }
 
 export default async function WallpaperPage({ params }: WallpaperPageProps) {
+  const locale = getLocaleFromHeaders(headers());
+  const copy = getWallpaperPageCopy(locale);
   const wallpaper = await getCachedWallpaperByIdentifier(params.id);
 
   if (!wallpaper) {
     notFound();
   }
 
-  const displayTitle = getWallpaperDisplayTitle(wallpaper);
-  const visibleDescription = getVisibleWallpaperDescription(wallpaper.description);
+  const displayTitle = getWallpaperDisplayTitle(wallpaper, locale);
+  const visibleDescription = getVisibleWallpaperDescription(
+    wallpaper.description,
+  );
   const preferredFile = getPreferredWallpaperFile(wallpaper);
   const posterUrl = getWallpaperPreviewUrl(wallpaper);
   const downloadFile = getWallpaperDownloadFile(wallpaper);
@@ -181,7 +206,7 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
           )}
           <div className="glass-surface-soft self-start px-5 py-6 md:px-7 md:py-7">
             <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-red">
-              Wallpaper Detail
+              {copy.detailEyebrow}
             </p>
             <h1 className="font-body text-[clamp(2.1rem,5vw,3.8rem)] font-semibold leading-[1.02] tracking-normal">
               {displayTitle}
@@ -205,6 +230,7 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
               initialDownloadsCount={wallpaper.downloadsCount}
               initialLikesCount={wallpaper.likesCount}
               loginHref={`/login?next=/wallpaper/${encodeURIComponent(wallpaper.slug)}`}
+              locale={locale}
               previewUrl={posterUrl ?? preferredFile?.url ?? null}
               slug={wallpaper.slug}
               tags={wallpaper.tags}
@@ -221,17 +247,23 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
             <div className="mb-8 flex items-baseline justify-between gap-4">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.35em] text-red">
-                  {relatedTag ? `更多 #${relatedTag}` : "热门推荐"}
+                  {relatedTag
+                    ? copy.moreTag(translateStaticTerm(relatedTag, locale))
+                    : copy.relatedPopular}
                 </p>
                 <h2 className="mt-3 font-body text-[clamp(1.7rem,3vw,2.6rem)] font-semibold leading-tight tracking-normal">
-                  你可能也喜欢
+                  {copy.relatedHeading}
                 </h2>
               </div>
               <a
                 className="glass-control shrink-0 px-4 py-2 text-[10px] uppercase tracking-[0.28em] text-muted transition hover:text-ink"
-                href={relatedTag ? `/explore?tag=${encodeURIComponent(relatedTag)}` : "/explore"}
+                href={
+                  relatedTag
+                    ? `/explore?tag=${encodeURIComponent(relatedTag)}`
+                    : "/explore"
+                }
               >
-                查看全部 ↗
+                {copy.all}
               </a>
             </div>
             <div className="wallpaper-card-grid">

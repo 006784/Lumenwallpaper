@@ -5,15 +5,24 @@ import { useRef } from "react";
 
 import { Reveal } from "@/components/ui/reveal";
 import { cn } from "@/lib/utils";
-import { searchTags } from "@/lib/data/home";
+import { getLocalizedSearchTags } from "@/lib/data/home";
 import { EXPLORE_CATEGORIES, EXPLORE_SORT_OPTIONS } from "@/lib/explore";
+import { getExploreCategoryCopy, getExploreOptionCopy } from "@/lib/i18n";
+import { getHomeUiCopy } from "@/lib/i18n-ui";
+import type { SupportedLocale } from "@/types/i18n";
 
-export function SearchSection() {
+type SearchSectionProps = {
+  locale: SupportedLocale;
+};
+
+export function SearchSection({ locale }: SearchSectionProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const copy = getHomeUiCopy(locale);
+  const searchTags = getLocalizedSearchTags(locale);
 
   function handleTagClick(tag: string) {
     if (inputRef.current) {
-      inputRef.current.value = tag === "全部" ? "" : tag;
+      inputRef.current.value = tag === copy.search.allTag ? "" : tag;
     }
   }
 
@@ -21,12 +30,14 @@ export function SearchSection() {
     <section className="px-4 py-14 md:px-10 md:py-20">
       <Reveal className="mx-auto grid max-w-[1500px] gap-8 lg:grid-cols-[0.76fr_1.24fr]">
         <div className="space-y-5">
-          <p className="text-[11px] uppercase text-red">Discovery console</p>
+          <p className="text-[11px] uppercase text-red">
+            {copy.search.eyebrow}
+          </p>
           <h2 className="max-w-xl font-body text-[clamp(2rem,5vw,4.4rem)] font-semibold leading-[1.02]">
-            把“随便看看”变成可控筛选。
+            {copy.search.title}
           </h2>
           <p className="max-w-lg text-sm leading-7 text-muted md:text-base">
-            关键词、分类、排序和精选状态都已经接到探索页。先从这里输入意图，再进入完整目录继续缩小范围。
+            {copy.search.body}
           </p>
         </div>
 
@@ -37,21 +48,21 @@ export function SearchSection() {
             method="get"
           >
             <label className="sr-only" htmlFor="discovery-search">
-              描述你想要的画面
+              {copy.search.inputLabel}
             </label>
             <input
               ref={inputRef}
               id="discovery-search"
               className="glass-field min-h-[58px] min-w-0 px-4 text-base outline-none transition placeholder:text-muted/70"
               name="q"
-              placeholder="例如：安静的森林、深色办公桌面、蓝色极简..."
+              placeholder={copy.search.placeholder}
               type="search"
             />
             <button
               className="glass-primary min-h-[58px] px-6 text-[12px] uppercase"
               type="submit"
             >
-              搜索目录
+              {copy.search.submit}
             </button>
           </form>
 
@@ -66,7 +77,7 @@ export function SearchSection() {
                     : "bg-transparent text-ink",
                 )}
                 href={
-                  tag === "全部"
+                  tag === copy.search.allTag
                     ? "/explore"
                     : `/explore?q=${encodeURIComponent(tag)}`
                 }
@@ -79,7 +90,9 @@ export function SearchSection() {
 
           <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <div className="glass-surface-soft p-4">
-              <p className="text-[10px] uppercase text-muted">分类</p>
+              <p className="text-[10px] uppercase text-muted">
+                {copy.search.categoryTitle}
+              </p>
               <div className="mt-3 grid gap-2">
                 {EXPLORE_CATEGORIES.slice(0, 4).map((category) => (
                   <Link
@@ -87,7 +100,8 @@ export function SearchSection() {
                     className="flex items-center justify-between text-sm text-ink transition hover:text-red"
                     href={category.href}
                   >
-                    {category.label}
+                    {getExploreCategoryCopy(locale, category.slug)?.label ??
+                      category.label}
                     <span aria-hidden>+</span>
                   </Link>
                 ))}
@@ -99,14 +113,21 @@ export function SearchSection() {
                 key={option.value}
                 className="glass-surface-soft p-4 transition hover:-translate-y-0.5"
                 href={`/explore?sort=${option.value}`}
-                title={option.description}
+                title={
+                  getExploreOptionCopy(locale, "sort", option.value)
+                    ?.description ?? option.description
+                }
               >
-                <span className="text-[10px] uppercase text-muted">排序</span>
+                <span className="text-[10px] uppercase text-muted">
+                  {copy.search.sortTitle}
+                </span>
                 <span className="mt-3 block text-lg font-semibold">
-                  {option.label}
+                  {getExploreOptionCopy(locale, "sort", option.value)?.label ??
+                    option.label}
                 </span>
                 <span className="mt-2 block text-xs leading-5 text-muted">
-                  {option.description}
+                  {getExploreOptionCopy(locale, "sort", option.value)
+                    ?.description ?? option.description}
                 </span>
               </Link>
             ))}

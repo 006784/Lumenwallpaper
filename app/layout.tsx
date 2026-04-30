@@ -1,34 +1,46 @@
 import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
+import { headers } from "next/headers";
 
 import { ObservabilityWidgets } from "@/components/layout/observability-widgets";
 import { SmoothScrollProvider } from "@/components/layout/smooth-scroll-provider";
 import { ThemeProvider } from "@/components/layout/theme-provider";
-import { THEME_COLOR_DARK, THEME_COLOR_LIGHT, THEME_INIT_SCRIPT } from "@/lib/theme";
+import {
+  getLocaleFromHeaders,
+  getLocalizedSiteMetadata,
+  localeToHtmlLang,
+} from "@/lib/i18n";
+import {
+  THEME_COLOR_DARK,
+  THEME_COLOR_LIGHT,
+  THEME_INIT_SCRIPT,
+} from "@/lib/theme";
 import "@/styles/globals.css";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXTAUTH_URL ?? "http://localhost:3000"),
-  title: {
-    default: "Lumen",
-    template: "%s · Lumen",
-  },
-  description:
-    "Lumen 是一个以胶卷美学与高端杂志排版为语言的壁纸发现与分享平台。",
-  openGraph: {
-    title: "Lumen",
-    description:
-      "Lumen 是一个以胶卷美学与高端杂志排版为语言的壁纸发现与分享平台。",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Lumen",
-    description:
-      "Lumen 是一个以胶卷美学与高端杂志排版为语言的壁纸发现与分享平台。",
-  },
-};
+export function generateMetadata(): Metadata {
+  const locale = getLocaleFromHeaders(headers());
+  const metadata = getLocalizedSiteMetadata(locale);
+
+  return {
+    metadataBase: new URL(process.env.NEXTAUTH_URL ?? "http://localhost:3000"),
+    title: {
+      default: metadata.title,
+      template: `%s · ${metadata.title}`,
+    },
+    description: metadata.description,
+    openGraph: {
+      title: metadata.title,
+      description: metadata.description,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: metadata.title,
+      description: metadata.description,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   colorScheme: "light dark",
@@ -43,11 +55,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = getLocaleFromHeaders(headers());
+
   return (
     <html
       suppressHydrationWarning
       className={`${GeistSans.variable} ${GeistMono.variable}`}
-      lang="zh-CN"
+      lang={localeToHtmlLang(locale)}
     >
       <head>
         {/* Anti-flash: apply theme class synchronously before first paint */}

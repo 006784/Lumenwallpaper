@@ -6,13 +6,15 @@ import {
 } from "@/lib/api";
 import { getPublicApiCacheHeaders } from "@/lib/cache";
 import { getHomePageSnapshot } from "@/lib/home";
+import { getLocaleResponseHeaders, getRequestLocale } from "@/lib/i18n";
 
 export async function GET(request: Request) {
   const logger = createRouteLogger("/api/home", request);
+  const locale = getRequestLocale(request);
 
   try {
     logger.start();
-    const snapshot = await getHomePageSnapshot();
+    const snapshot = await getHomePageSnapshot(locale);
     logger.done("home.snapshot.loaded", {
       darkroomCount: snapshot.darkroomItems.length,
       editorialCount: snapshot.editorialItems.length,
@@ -22,7 +24,10 @@ export async function GET(request: Request) {
     });
 
     return jsonSuccess(snapshot, {
-      headers: getPublicApiCacheHeaders(true),
+      headers: {
+        ...getPublicApiCacheHeaders(true),
+        ...getLocaleResponseHeaders(locale),
+      },
       message: "Home snapshot loaded.",
     });
   } catch (error) {
