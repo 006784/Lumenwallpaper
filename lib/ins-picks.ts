@@ -485,6 +485,7 @@ export async function getInsPickCollectionWallpapers(options: {
   }
 
   const allWallpapers = await getCachedPublishedWallpapers({
+    includeInsPicks: true,
     limit: INS_PICKS_CANDIDATE_LIMIT,
     sort: "latest",
   });
@@ -503,6 +504,7 @@ async function buildInsPicksSnapshot(options: {
 } = {}): Promise<InsPicksSnapshot> {
   const [allWallpapers, allCollections] = await Promise.all([
     getCachedPublishedWallpapers({
+      includeInsPicks: true,
       limit: INS_PICKS_CANDIDATE_LIMIT,
       sort: "latest",
     }),

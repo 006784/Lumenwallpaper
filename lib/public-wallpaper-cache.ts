@@ -28,7 +28,7 @@ import {
   listWallpapersByCreator,
 } from "@/lib/wallpapers";
 
-const PUBLIC_WALLPAPER_CACHE_VERSION = "v4";
+const PUBLIC_WALLPAPER_CACHE_VERSION = "v5";
 
 function normalizeWallpaperTags(tags: string[]) {
   return tags.map((tag) => (tag === "手动导入" ? "像素" : tag));
@@ -57,6 +57,7 @@ function serializeWallpaperListOptions(
     category: options.category ?? null,
     color: options.color ?? null,
     featured: options.featured ?? null,
+    includeInsPicks: options.includeInsPicks ?? null,
     limit: options.limit ?? null,
     media: options.media ?? null,
     minHeight: options.minHeight ?? null,
@@ -75,12 +76,17 @@ function serializeWallpaperListOptions(
 export async function getCachedPublishedWallpapers(
   options: Omit<WallpaperListOptions, "status"> = {},
 ) {
+  const listOptions = {
+    includeInsPicks: false,
+    ...options,
+  };
+
   return unstable_cache(
-    async () => (await listPublishedWallpapers(options)).map(withDisplayTitle),
+    async () => (await listPublishedWallpapers(listOptions)).map(withDisplayTitle),
     [
       "wallpapers:published",
       PUBLIC_WALLPAPER_CACHE_VERSION,
-      serializeWallpaperListOptions(options),
+      serializeWallpaperListOptions(listOptions),
     ],
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,
@@ -92,12 +98,17 @@ export async function getCachedPublishedWallpapers(
 export async function getCachedFeaturedWallpapers(
   options: Omit<WallpaperListOptions, "featured" | "status"> = {},
 ) {
+  const listOptions = {
+    includeInsPicks: false,
+    ...options,
+  };
+
   return unstable_cache(
-    async () => (await listFeaturedWallpapers(options)).map(withDisplayTitle),
+    async () => (await listFeaturedWallpapers(listOptions)).map(withDisplayTitle),
     [
       "wallpapers:featured",
       PUBLIC_WALLPAPER_CACHE_VERSION,
-      serializeWallpaperListOptions(options),
+      serializeWallpaperListOptions(listOptions),
     ],
     {
       revalidate: PUBLIC_PAGE_REVALIDATE_SECONDS,

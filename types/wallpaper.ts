@@ -103,6 +103,7 @@ export interface WallpaperAssetBackfillResult {
   title: string;
   generatedVariants: WallpaperVariant[];
   extractedColors: string[];
+  aiAnalysisError: string | null;
   aiAnalysisStatus: WallpaperAiAnalysisStatus;
   aiTags: string[];
   aiCategory: string | null;
@@ -176,6 +177,7 @@ export interface WallpaperListOptions {
   aspect?: WallpaperAspectFilter;
   color?: string;
   featured?: boolean;
+  includeInsPicks?: boolean;
   limit?: number;
   media?: WallpaperMediaFilter;
   minHeight?: number;

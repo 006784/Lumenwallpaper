@@ -210,6 +210,7 @@ export async function getWallpaperExploreFacets(
   locale: SupportedLocale = DEFAULT_LOCALE,
 ): Promise<WallpaperExploreFacetsSnapshot> {
   const wallpapers = await listPublishedWallpapers({
+    includeInsPicks: false,
     limit: FACET_WALLPAPER_LIMIT,
   });
   const colorCounts = new Map<string, number>();

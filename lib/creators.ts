@@ -1,5 +1,9 @@
 import type { CreatorPageSnapshot } from "@/types/creator-api";
-import { getCreatorByUsername, listWallpapersByCreator } from "@/lib/wallpapers";
+import {
+  getCreatorByUsername,
+  isInsPickWallpaper,
+  listWallpapersByCreator,
+} from "@/lib/wallpapers";
 import { getWallpaperDisplayTitle } from "@/lib/wallpaper-presenters";
 
 function summarizeCreatorWallpapers(
@@ -30,7 +34,9 @@ export async function getCreatorPageSnapshot(
     return null;
   }
 
-  const wallpapers = await listWallpapersByCreator(creator.username);
+  const wallpapers = (await listWallpapersByCreator(creator.username)).filter(
+    (wallpaper) => !isInsPickWallpaper(wallpaper),
+  );
   const displayWallpapers = wallpapers.map((wallpaper) => ({
     ...wallpaper,
     tags: normalizeWallpaperTags(wallpaper.tags),

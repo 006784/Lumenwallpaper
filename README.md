@@ -231,6 +231,7 @@ curl https://byteify.icu/api/openclaw/health \
 - 批量重命名
 - 批量审核 / 状态更新
 - AI 重分析
+- AI 批量重打标签
 - R2 扫描导入
 - 资产回填
 - 举报审核
@@ -270,6 +271,20 @@ AI_VISION_OPENAI_MODEL=gpt-5-mini
 Gemini 使用 Google 官方 OpenAI-compatible endpoint；如果本地调用返回区域限制错误，可以把同一组环境变量配置到 Vercel 生产环境后在线上执行识图。
 
 如果你要接入别的国内或国外模型，只要它兼容 OpenAI Chat Completions 协议，就可以填进 `AI_VISION_CUSTOM_1_*` 或 `AI_VISION_CUSTOM_2_*`。
+
+现有照片可以通过 OpenClaw 管理接口小批量重打标签。建议先 dry run，再按 `nextOffset` 分批继续：
+
+```bash
+curl https://byteify.icu/api/openclaw/wallpapers/reanalyze \
+  -H "Authorization: Bearer $OPENCLAW_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"all","limit":5,"offset":0,"dryRun":true}'
+
+curl https://byteify.icu/api/openclaw/wallpapers/reanalyze \
+  -H "Authorization: Bearer $OPENCLAW_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"all","limit":5,"offset":0}'
+```
 
 ## 速率限制
 

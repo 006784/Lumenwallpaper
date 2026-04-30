@@ -1173,6 +1173,33 @@ function wallpaperMatchesSearch(
   ].some((value) => normalizeSearchValue(value).includes(normalizedSearch));
 }
 
+function normalizeInsPickMarker(value: string) {
+  return value
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[.#_@/\\|()[\]{}:;'"，。、“”‘’·・\-\s]+/g, "");
+}
+
+export function isInsPickWallpaper(wallpaper: Wallpaper) {
+  const tagSet = new Set(
+    [...wallpaper.tags, ...wallpaper.aiTags]
+      .map(normalizeInsPickMarker)
+      .filter(Boolean),
+  );
+  const filePaths = wallpaper.files.flatMap((file) => [
+    file.storagePath,
+    file.url,
+  ]);
+
+  return (
+    tagSet.has("ins") ||
+    tagSet.has("instagrampost") ||
+    filePaths.some((value) =>
+      normalizeInsPickMarker(value).includes("inspicks"),
+    )
+  );
+}
+
 function filterWallpapers(
   wallpapers: Wallpaper[],
   options: Pick<
@@ -1181,6 +1208,7 @@ function filterWallpapers(
     | "category"
     | "color"
     | "featured"
+    | "includeInsPicks"
     | "media"
     | "minHeight"
     | "minWidth"
@@ -1199,6 +1227,7 @@ function filterWallpapers(
 
     return (
       matchesFeatured &&
+      (options.includeInsPicks !== false || !isInsPickWallpaper(wallpaper)) &&
       matchesWallpaperMedia(wallpaper, {
         media: options.media,
         motion: options.motion,
@@ -2251,6 +2280,7 @@ export async function backfillWallpaperAssets(
       title: wallpaper.title,
       generatedVariants: [],
       extractedColors: wallpaper.colors,
+      aiAnalysisError: wallpaper.aiAnalysisError,
       aiAnalysisStatus: wallpaper.aiAnalysisStatus,
       aiTags: wallpaper.aiTags,
       aiCategory: wallpaper.aiCategory,
@@ -2347,6 +2377,7 @@ export async function backfillWallpaperAssets(
     title: wallpaper.title,
     generatedVariants,
     extractedColors: wallpaper.colors,
+    aiAnalysisError: wallpaper.aiAnalysisError,
     aiAnalysisStatus: wallpaper.aiAnalysisStatus,
     aiTags: wallpaper.aiTags,
     aiCategory: wallpaper.aiCategory,
@@ -2567,6 +2598,7 @@ export async function listWallpapers(options: WallpaperListOptions = {}) {
         category: options.category,
         color: options.color,
         featured: options.featured,
+        includeInsPicks: options.includeInsPicks,
         media: options.media,
         minHeight: options.minHeight,
         minWidth: options.minWidth,
@@ -2629,6 +2661,7 @@ export async function listWallpapers(options: WallpaperListOptions = {}) {
       category: options.category,
       color: options.color,
       featured: options.featured,
+      includeInsPicks: options.includeInsPicks,
       media: options.media,
       minHeight: options.minHeight,
       minWidth: options.minWidth,
@@ -2679,9 +2712,12 @@ export async function getSimilarWallpapers(
   }
 
   const perGroupLimit = Math.max(1, Math.min(options.limit ?? 6, 12));
-  const candidates = (await listPublishedWallpapers({ limit: 1000 })).filter(
-    (wallpaper) => wallpaper.id !== source.id,
-  );
+  const candidates = (
+    await listPublishedWallpapers({
+      includeInsPicks: false,
+      limit: 1000,
+    })
+  ).filter((wallpaper) => wallpaper.id !== source.id);
 
   const ranked = rankSimilarWallpapers(source, candidates);
   const groups = [

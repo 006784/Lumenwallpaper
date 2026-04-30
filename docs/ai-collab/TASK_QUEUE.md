@@ -6,6 +6,27 @@
 
 ## 进行中
 
+### TASK-039 · 现有照片 AI 批量重打标签
+
+- **状态**: ✅ codex done
+- **内容**: 用户询问能否将现有照片全部重新打标签，并要求 INS 专区照片不要出现在专区外
+- **Codex 完成**:
+  - 新增 `POST /api/openclaw/wallpapers/reanalyze` 管理接口，使用 OpenClaw API key 鉴权，绕开公开单张分析接口的用户级限流
+  - 支持 `status: published|processing|rejected|all`、`limit`、`offset`、`dryRun`，以及显式 `identifiers` 小批量重跑
+  - 每批最多 10 张，默认 5 张；接口只选择照片（`motion=false`），并通过 `forceAi: true` 强制刷新 AI 标签、分类、caption 和 provider 信息
+  - 返回 `nextOffset`、成功结果与失败清单，方便 Vercel 环境下分批继续
+  - OpenClaw 工具清单与 README 已补充批量重打标签说明
+  - 新增 INS 照片识别规则：带 `ins` / `instagram-post` 标签，或 R2 路径包含 `ins-picks` 的作品视为 INS 专区照片
+  - 首页、Explore、公开 facets、相似推荐、创作者公开页和普通公开壁纸缓存默认排除 INS 专区照片；`/ins` 与 `/ins/[collection]` 显式包含，确保专区内仍能聚合展示
+  - 公开壁纸缓存版本从 `v4` 提升到 `v5`，让线上缓存刷新后立即应用隔离规则
+- **验证**:
+  - 待运行 `pnpm type-check`
+  - 待运行 `pnpm lint`
+- **上线/运行建议**:
+  - 先在 Vercel 配置新的 `AI_VISION_GEMINI_API_KEY` 与 `AI_VISION_PROVIDER_ORDER=gemini,qwen,kimi,openrouter,openai,custom_1,custom_2`
+  - 先 dry run：`POST /api/openclaw/wallpapers/reanalyze {"status":"all","limit":5,"offset":0,"dryRun":true}`
+  - 再按返回的 `nextOffset` 分批执行真实重打标签，避免单次请求超时
+
 ### TASK-038 · Gemini AI 打标签升级
 
 - **状态**: ✅ codex done

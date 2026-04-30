@@ -329,6 +329,30 @@ export const openClawToolDefinitions: OpenClawToolDefinition[] = [
     },
   },
   {
+    name: "openclaw_reanalyze_wallpapers",
+    description: "Re-run AI analysis for a small batch of existing photo wallpapers.",
+    method: "POST",
+    path: "/api/openclaw/wallpapers/reanalyze",
+    inputSchema: {
+      type: "object",
+      properties: {
+        identifiers: {
+          type: "array",
+          items: { type: "string" },
+          maxItems: 25,
+        },
+        status: {
+          type: "string",
+          enum: ["published", "processing", "rejected", "all"],
+        },
+        limit: { type: "integer", minimum: 1, maximum: 10 },
+        offset: { type: "integer", minimum: 0 },
+        dryRun: { type: "boolean" },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
     name: "openclaw_detect_duplicate_wallpapers",
     description: "Find duplicate wallpapers grouped by shared R2 asset ID or fallback fingerprint.",
     method: "GET",
