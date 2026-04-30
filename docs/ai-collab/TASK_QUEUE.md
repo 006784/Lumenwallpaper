@@ -6,6 +6,24 @@
 
 ## 进行中
 
+### TASK-038 · Gemini AI 打标签升级
+
+- **状态**: ✅ codex done
+- **内容**: 用户反馈现有壁纸 AI 标签不准确，希望验证并接入 Gemini API 用于打标签
+- **Codex 完成**:
+  - 已用用户提供的 Gemini key 做最小连通性测试；Google 返回 `User location is not supported for the API use`，说明当前本机调用出口区域不被 Gemini API 支持，未能在本机完成真实打标签请求
+  - `lib/wallpaper-ai.ts` 新增内置 `gemini` provider，使用 Google 官方 OpenAI-compatible endpoint `https://generativelanguage.googleapis.com/v1beta/openai`
+  - 默认 provider 顺序升级为 `gemini,qwen,kimi,openrouter,openai,custom_1,custom_2`，配置 `AI_VISION_GEMINI_API_KEY` 后会优先尝试 Gemini，失败时继续 fallback 到其他 provider
+  - AI 识图 prompt 已收紧：标签优先描述主体、场景、风格、色彩、光线、构图和情绪；避免“高清/壁纸/图片”等泛词；人物标签只标注可见事实，不凭图猜姓名
+  - 健康检查已把 Gemini 纳入 AI provider 计数；`.env.example` 与 README 已补 Gemini 配置示例
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+- **上线配置**:
+  - 需要在 Vercel 环境变量中设置 `AI_VISION_PROVIDER_ORDER=gemini,qwen,kimi,openrouter,openai,custom_1,custom_2`
+  - 设置 `AI_VISION_GEMINI_API_KEY` 为轮换后的 Gemini key；当前聊天里出现过的 key 建议作废并重新生成
+  - 可选设置 `AI_VISION_GEMINI_MODEL=gemini-2.5-flash`
+
 ### TASK-037 · 登录长期会话优化
 
 - **状态**: ✅ codex done

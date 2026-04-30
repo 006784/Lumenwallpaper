@@ -16,6 +16,7 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 
 function getConfiguredAiProviderCount() {
   return [
+    process.env.AI_VISION_GEMINI_API_KEY,
     process.env.AI_VISION_QWEN_API_KEY,
     process.env.AI_VISION_KIMI_API_KEY,
     process.env.AI_VISION_OPENROUTER_API_KEY,

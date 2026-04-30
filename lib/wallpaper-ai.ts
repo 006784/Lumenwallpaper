@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const DEFAULT_PROVIDER_ORDER = [
+  "gemini",
   "qwen",
   "kimi",
   "openrouter",
@@ -55,6 +56,11 @@ type VisionProviderResult = WallpaperAiMetadata & {
 };
 
 const PROVIDER_PRESETS: Record<string, ProviderPreset> = {
+  gemini: {
+    label: "Gemini 2.5 Flash",
+    model: "gemini-2.5-flash",
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+  },
   qwen: {
     label: "Qwen 3.5 Flash",
     model: "qwen3.5-flash",
@@ -231,14 +237,16 @@ function createAnalysisPrompt(input: {
   const description = input.description?.trim();
 
   return [
-    "请分析这张壁纸预览图，只返回一个 JSON 对象，不要输出任何额外解释。",
+    "请仔细分析这张壁纸预览图，只返回一个 JSON 对象，不要输出任何额外解释。",
     'JSON 结构固定为：{"category":"nature|city|abstract|architecture|illustration|anime|space|minimal|people|other","caption":"一句中文短描述","tags":["中文标签1","中文标签2"]}',
     "要求：",
-    "1. tags 返回 5 到 10 个中文短标签，去重，不要带井号。",
+    "1. tags 返回 6 到 10 个中文短标签，去重，不要带井号。",
     "2. caption 控制在 24 个中文字符以内。",
     "3. category 必须从给定枚举里选择一个。",
-    "4. 不要输出分辨率、尺寸、水印、UI 元素。",
-    "5. 如果信息不足，也要给出最合理的分类和标签。",
+    "4. tags 优先描述画面主体、场景、风格、色彩、光线、构图和情绪，避免“高清”“壁纸”“图片”等泛词。",
+    "5. 不要输出分辨率、尺寸、水印、UI 元素。",
+    "6. 如果有人物，只标注可见事实，例如人像、女性、男性、舞台、街拍、肖像；除非标题/描述明确给出姓名，否则不要猜测具体人物姓名。",
+    "7. 如果信息不足，也要给出最合理的分类和标签，但不要编造不存在的物体。",
     `标题参考：${input.title}`,
     description ? `描述参考：${description}` : "描述参考：无",
   ].join("\n");

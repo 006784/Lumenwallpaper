@@ -243,8 +243,12 @@ curl https://byteify.icu/api/openclaw/health \
 在 `.env.local` 中按顺序填写可用 provider。系统会按 `AI_VISION_PROVIDER_ORDER` 从前到后尝试，只要有一家成功就会写入 AI 标签；全部失败也不会影响上传主流程。
 
 ```env
-AI_VISION_PROVIDER_ORDER=qwen,kimi,openrouter,openai,custom_1,custom_2
+AI_VISION_PROVIDER_ORDER=gemini,qwen,kimi,openrouter,openai,custom_1,custom_2
 AI_VISION_TIMEOUT_MS=12000
+
+AI_VISION_GEMINI_API_KEY=
+AI_VISION_GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+AI_VISION_GEMINI_MODEL=gemini-2.5-flash
 
 AI_VISION_QWEN_API_KEY=
 AI_VISION_QWEN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
@@ -262,6 +266,8 @@ AI_VISION_OPENAI_API_KEY=
 AI_VISION_OPENAI_BASE_URL=https://api.openai.com/v1
 AI_VISION_OPENAI_MODEL=gpt-5-mini
 ```
+
+Gemini 使用 Google 官方 OpenAI-compatible endpoint；如果本地调用返回区域限制错误，可以把同一组环境变量配置到 Vercel 生产环境后在线上执行识图。
 
 如果你要接入别的国内或国外模型，只要它兼容 OpenAI Chat Completions 协议，就可以填进 `AI_VISION_CUSTOM_1_*` 或 `AI_VISION_CUSTOM_2_*`。
 
