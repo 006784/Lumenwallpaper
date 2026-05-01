@@ -6,6 +6,17 @@
 
 ## 进行中
 
+### TASK-040 · 放开 INS 合集创建权限
+
+- **状态**: ✅ codex done
+- **内容**: 用户反馈创建 INS 公开合集时返回 `Only editor accounts can create public INS pick collections.`，要求所有人都可以创建合集
+- **Codex 完成**:
+  - `POST /api/ins-picks/collections` 保留登录鉴权，未登录仍返回 401
+  - 移除 editor-only 权限判断，所有已登录用户都可以创建自定义 INS 人物合集
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+
 ### TASK-039 · 现有照片 AI 批量重打标签
 
 - **状态**: ✅ codex done

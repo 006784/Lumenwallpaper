@@ -7,7 +7,7 @@ import {
   jsonError,
   jsonSuccess,
 } from "@/lib/api";
-import { getCurrentUser, isAuthConfigured, isEditorUser } from "@/lib/auth";
+import { getCurrentUser, isAuthConfigured } from "@/lib/auth";
 import {
   buildInsPickUploadMetadata,
   createCustomInsPickCollection,
@@ -89,13 +89,6 @@ export async function POST(request: Request) {
     return jsonError("Please sign in before creating INS pick collections.", {
       status: 401,
       code: "AUTH_REQUIRED",
-    });
-  }
-
-  if (!isEditorUser(currentUser)) {
-    return jsonError("Only editor accounts can create public INS pick collections.", {
-      status: 403,
-      code: "INS_PICK_COLLECTION_FORBIDDEN",
     });
   }
 
