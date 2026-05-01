@@ -5,9 +5,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
+import { MotionPreviewLayer } from "@/components/wallpaper/motion-preview-layer";
+import { WallpaperCoverImage } from "@/components/wallpaper/wallpaper-cover-image";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
 import type { ApiErrorResponse, ApiSuccessResponse } from "@/types/api";
-import type { WallpaperListPageResult } from "@/types/wallpaper";
+import type { Wallpaper, WallpaperListPageResult } from "@/types/wallpaper";
 import {
   DEFAULT_EXPLORE_SORT,
   EXPLORE_CATEGORIES,
@@ -19,6 +21,12 @@ import {
 } from "@/lib/explore";
 import { getExploreCategoryCopy, getExploreOptionCopy } from "@/lib/i18n";
 import { getExploreUiCopy } from "@/lib/i18n-ui";
+import {
+  getWallpaperCoverSources,
+  getWallpaperDisplayTitle,
+  getWallpaperMeta,
+  getWallpaperPreviewUrl,
+} from "@/lib/wallpaper-presenters";
 import type { SupportedLocale } from "@/types/i18n";
 
 type ExploreCatalogProps = {
@@ -170,6 +178,122 @@ function ExploreCardSkeleton() {
         <div className="flex gap-2">
           <span className="h-6 w-16 animate-pulse rounded-full bg-ink/5" />
           <span className="h-6 w-12 animate-pulse rounded-full bg-ink/5" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MotionSpotlight({
+  locale,
+  wallpapers,
+}: {
+  locale: SupportedLocale;
+  wallpapers: Wallpaper[];
+}) {
+  const featured = wallpapers.find((wallpaper) => wallpaper.videoUrl);
+  const title = featured ? getWallpaperDisplayTitle(featured) : "Motion";
+  const previewUrl = featured ? getWallpaperPreviewUrl(featured, "large") : null;
+  const coverSources = featured ? getWallpaperCoverSources(featured) : undefined;
+
+  return (
+    <div className="glass-surface-soft mt-7 overflow-hidden p-3 md:p-4">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.28fr)_minmax(280px,0.72fr)]">
+        <Link
+          className="group relative min-h-[420px] overflow-hidden rounded-[26px] bg-ink text-paper md:min-h-[520px]"
+          href={featured ? `/wallpaper/${featured.slug}` : "/explore?motion=true"}
+        >
+          {featured && previewUrl ? (
+            <>
+              <WallpaperCoverImage
+                alt={title}
+                sources={coverSources}
+                gradient="night"
+                imageClassName="brightness-[.82] saturate-[1.05]"
+                sizes="(max-width: 1024px) 100vw, 62vw"
+                src={previewUrl}
+              />
+              {featured.videoUrl ? (
+                <MotionPreviewLayer
+                  className="transition-transform duration-card group-hover:scale-[1.035]"
+                  videoUrl={featured.videoUrl}
+                />
+              ) : null}
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(190,74,54,0.28),transparent_32%),linear-gradient(135deg,#102728,#101514_52%,#2c2119)]" />
+          )}
+
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.18)_44%,rgba(0,0,0,0.78))]" />
+          <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-paper/20 bg-black/30 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-paper/72 backdrop-blur-md">
+            <span className="h-1.5 w-1.5 rounded-full bg-red shadow-[0_0_12px_rgba(190,74,54,0.95)]" />
+            Motion
+          </div>
+          <div className="absolute right-4 top-4 rounded-full border border-paper/20 bg-black/24 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-paper/56 backdrop-blur-md">
+            {String(wallpapers.length).padStart(2, "0")} loops
+          </div>
+
+          <div className="absolute inset-x-0 bottom-0 px-5 pb-5 pt-24 md:px-7 md:pb-7">
+            <p className="text-[10px] uppercase tracking-[0.34em] text-paper/48">
+              {locale === "zh-CN"
+                ? "动态专区"
+                : locale === "ja"
+                  ? "モーション"
+                  : locale === "ko"
+                    ? "모션"
+                    : "Motion gallery"}
+            </p>
+            <h2 className="mt-2 max-w-2xl font-body text-[clamp(2rem,5vw,4.4rem)] font-semibold leading-[0.98] tracking-normal text-paper">
+              {title}
+            </h2>
+            {featured ? (
+              <p className="mt-3 max-w-xl text-sm leading-6 text-paper/58">
+                {getWallpaperMeta(featured)}
+              </p>
+            ) : null}
+          </div>
+        </Link>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          {wallpapers.slice(1, 5).map((wallpaper) => (
+            <Link
+              key={wallpaper.id}
+              className="group grid min-h-[122px] grid-cols-[88px_1fr] gap-3 overflow-hidden rounded-[22px] border border-ink/8 bg-white/58 p-2 shadow-[0_16px_36px_rgba(37,58,62,0.1)] backdrop-blur transition duration-card hover:-translate-y-0.5 hover:bg-white/72"
+              href={`/wallpaper/${wallpaper.slug}`}
+            >
+              <div className="relative overflow-hidden rounded-[16px] bg-ink">
+                <WallpaperCoverImage
+                  alt={getWallpaperDisplayTitle(wallpaper)}
+                  sources={getWallpaperCoverSources(wallpaper)}
+                  gradient="night"
+                  imageClassName="brightness-[.86] saturate-[1.05]"
+                  sizes="96px"
+                  src={getWallpaperPreviewUrl(wallpaper, "medium")}
+                />
+                {wallpaper.videoUrl ? (
+                  <MotionPreviewLayer videoUrl={wallpaper.videoUrl} />
+                ) : null}
+              </div>
+              <div className="flex min-w-0 flex-col justify-between py-1 pr-1">
+                <div>
+                  <p className="line-clamp-2 font-body text-[15px] font-semibold leading-tight text-ink">
+                    {getWallpaperDisplayTitle(wallpaper)}
+                  </p>
+                  <p className="mt-1 text-[8px] uppercase tracking-[0.2em] text-muted">
+                    {getWallpaperMeta(wallpaper)}
+                  </p>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <span className="glass-chip px-2 py-1 font-mono text-[8px] uppercase tracking-[0.18em] text-muted">
+                    Live
+                  </span>
+                  <span className="text-[13px] text-muted transition group-hover:text-red">
+                    ↗
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </div>
@@ -627,6 +751,10 @@ export function ExploreCatalog({ categorySlug, locale }: ExploreCatalogProps) {
           </div>
         ) : null}
 
+        {motionOnly && wallpapers.length > 0 ? (
+          <MotionSpotlight locale={locale} wallpapers={wallpapers} />
+        ) : null}
+
         {error ? (
           <div className="glass-surface mt-10 flex flex-col items-center gap-6 px-6 py-16 text-center">
             <span className="select-none font-mono text-[40px] leading-none text-red/30">
@@ -672,7 +800,12 @@ export function ExploreCatalog({ categorySlug, locale }: ExploreCatalogProps) {
               }
             >
               {wallpapers.map((wallpaper) => (
-                <WallpaperGridCard key={wallpaper.id} wallpaper={wallpaper} />
+                <WallpaperGridCard
+                  key={wallpaper.id}
+                  aspectRatio={motionOnly ? "aspect-[9/16]" : undefined}
+                  imageQuality={motionOnly ? "medium" : "default"}
+                  wallpaper={wallpaper}
+                />
               ))}
             </div>
 

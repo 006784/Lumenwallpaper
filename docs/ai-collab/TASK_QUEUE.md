@@ -6,6 +6,20 @@
 
 ## 进行中
 
+### TASK-042 · 动态专区 UI/UX 统一优化
+
+- **状态**: ✅ codex done
+- **内容**: 用户反馈动态专区太丑，要求动态专区 UI/UX 与其他页面统一
+- **Codex 完成**:
+  - `/explore?motion=true` 增加动态专区专属 spotlight：大画面实时预览、右侧精选条、统一 soft glass 外框和 Lumen 胶片式信息层级
+  - 动态筛选页列表卡片切换为更适合视频壁纸的 9:16 封面比例
+  - `WallpaperGridCard` 对动态壁纸增加统一的 Live 徽标、loop 信息条、深色玻璃卡片和更清晰的视频遮罩
+  - `WallpaperVideoPlayer` 从硬黑边/emoji 控件改为 glass surface、圆角视频框、Live 状态、统一文字按钮和 hover 控制栏
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - 本地 `playwright screenshot http://localhost:3000/explore?motion=true /tmp/lumen-motion-explore.png` 通过；当前本地库无动态壁纸，所以只能验证空态和页面编译，真实动态内容需在线上/有 motion 数据环境复查
+
 ### TASK-041 · Google Cloud Vision 与 Cloud Tasks 接入
 
 - **状态**: ✅ codex done

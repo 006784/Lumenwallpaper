@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 
+import { cn } from "@/lib/utils";
+
 type WallpaperVideoPlayerProps = {
   posterUrl?: string | null;
   videoUrl: string;
@@ -37,54 +39,62 @@ export function WallpaperVideoPlayer({
   }
 
   return (
-    <div className="group relative overflow-hidden border-frame border-ink bg-ink">
-      <video
-        ref={videoRef}
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="aspect-[4/5] w-full object-cover"
-        poster={posterUrl ?? undefined}
-        src={videoUrl}
-      />
+    <div className="glass-surface group relative overflow-hidden p-3 lg:sticky lg:top-24">
+      <div className="relative overflow-hidden rounded-[26px] bg-ink">
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="aspect-[4/5] w-full object-cover"
+          poster={posterUrl ?? undefined}
+          src={videoUrl}
+        />
 
-      {/* CRT 扫描线 */}
-      <div className="scanlines pointer-events-none absolute inset-0 z-10 opacity-[0.04]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.08)_44%,rgba(0,0,0,0.68))]" />
 
-      {/* 悬停控制栏 */}
-      <div className="absolute inset-x-0 bottom-0 z-20 flex items-center gap-3 bg-gradient-to-t from-black/90 to-transparent px-5 pb-5 pt-14 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-        <p className="mr-auto text-[9px] uppercase tracking-[0.3em] text-paper/50">
-          {title} · 动态壁纸
-        </p>
+        <div className="absolute left-4 top-4 z-20 inline-flex items-center gap-2 rounded-full border border-paper/20 bg-black/34 px-3 py-1.5 backdrop-blur-md">
+          <span
+            className={cn(
+              "inline-block h-1.5 w-1.5 rounded-full",
+              paused ? "bg-paper/35" : "live-dot bg-red",
+            )}
+          />
+          <span className="font-mono text-[8px] uppercase tracking-[0.26em] text-paper/66">
+            {paused ? "Paused" : "Live"}
+          </span>
+        </div>
 
-        {/* 静音切换 */}
-        <button
-          aria-label={muted ? "取消静音" : "静音"}
-          className="flex h-8 w-8 items-center justify-center border border-paper/20 text-[11px] text-paper/60 backdrop-blur-sm transition hover:border-paper/50 hover:text-paper"
-          type="button"
-          onClick={toggleMute}
-        >
-          {muted ? "🔇" : "🔊"}
-        </button>
+        <div className="absolute right-4 top-4 z-20 rounded-full border border-paper/20 bg-black/28 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.24em] text-paper/52 backdrop-blur-md">
+          Loop
+        </div>
 
-        {/* 播放/暂停 */}
-        <button
-          aria-label={paused ? "继续播放" : "暂停"}
-          className="flex h-8 w-8 items-center justify-center border border-paper/20 text-[10px] text-paper/60 backdrop-blur-sm transition hover:border-paper/50 hover:text-paper"
-          type="button"
-          onClick={togglePause}
-        >
-          {paused ? "▶" : "⏸"}
-        </button>
-      </div>
+        <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/88 via-black/48 to-transparent px-4 pb-4 pt-20 opacity-100 transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100">
+          <p className="mb-3 line-clamp-1 text-[9px] uppercase tracking-[0.28em] text-paper/48">
+            {title} · Motion wallpaper
+          </p>
 
-      {/* 动态标识 */}
-      <div className="absolute left-3 top-3 z-20 inline-flex items-center gap-1.5 border border-paper/20 bg-black/50 px-2 py-1 backdrop-blur-sm">
-        <span className="live-dot inline-block h-[5px] w-[5px] rounded-full bg-gold" />
-        <span className="font-mono text-[8px] uppercase tracking-[0.28em] text-paper/60">
-          Live
-        </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              aria-label={paused ? "继续播放" : "暂停"}
+              className="rounded-full border border-paper/22 bg-paper/8 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-paper/72 backdrop-blur-md transition hover:border-paper/45 hover:text-paper"
+              type="button"
+              onClick={togglePause}
+            >
+              {paused ? "Play" : "Pause"}
+            </button>
+            <button
+              aria-label={muted ? "取消静音" : "静音"}
+              className="rounded-full border border-paper/22 bg-paper/8 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.2em] text-paper/72 backdrop-blur-md transition hover:border-paper/45 hover:text-paper"
+              type="button"
+              onClick={toggleMute}
+            >
+              {muted ? "Muted" : "Sound"}
+            </button>
+            <span className="ml-auto hidden h-px min-w-[80px] flex-1 bg-paper/18 sm:block" />
+          </div>
+        </div>
       </div>
     </div>
   );
