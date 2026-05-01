@@ -31,6 +31,7 @@ import type { SupportedLocale } from "@/types/i18n";
 
 type ExploreCatalogProps = {
   categorySlug?: string;
+  initialResult?: WallpaperListPageResult;
   locale: SupportedLocale;
 };
 
@@ -352,7 +353,11 @@ export function ExploreCatalogLoading({
   );
 }
 
-export function ExploreCatalog({ categorySlug, locale }: ExploreCatalogProps) {
+export function ExploreCatalog({
+  categorySlug,
+  initialResult,
+  locale,
+}: ExploreCatalogProps) {
   const searchParams = useSearchParams();
   const category = getExploreCategory(categorySlug);
   const copy = getExploreUiCopy(locale);
@@ -370,9 +375,11 @@ export function ExploreCatalog({ categorySlug, locale }: ExploreCatalogProps) {
     1,
     Number.parseInt(searchParams.get("page") ?? "1", 10) || 1,
   );
-  const [result, setResult] = useState<WallpaperListPageResult | null>(null);
+  const [result, setResult] = useState<WallpaperListPageResult | null>(
+    initialResult ?? null,
+  );
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialResult);
   const [retryNonce, setRetryNonce] = useState(0);
 
   useEffect(() => {
