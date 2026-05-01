@@ -11,6 +11,7 @@ import {
   getCachedCreatorPageSnapshot,
   getCachedPublishedWallpapers,
 } from "@/lib/public-wallpaper-cache";
+import { createPublicPageMetadata } from "@/lib/site-url";
 
 export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 
@@ -25,22 +26,23 @@ export async function generateMetadata({
 }: CreatorPageProps): Promise<Metadata> {
   const snapshot = await getCachedCreatorPageSnapshot(params.username);
   if (!snapshot) {
-    return { title: `@${params.username}` };
+    return createPublicPageMetadata({
+      path: `/creator/${params.username}`,
+      title: `@${params.username}`,
+      description: "Lumen creator profile.",
+    });
   }
   const { creator, stats } = snapshot;
   const description =
     creator.bio ??
     `查看 @${creator.username} 在 Lumen 发布的 ${stats.totalWallpapers} 件壁纸作品。`;
 
-  return {
+  return createPublicPageMetadata({
+    path: `/creator/${creator.username}`,
     title: `@${creator.username}`,
     description,
-    openGraph: {
-      title: `@${creator.username} — Lumen`,
-      description,
-      ...(creator.avatarUrl ? { images: [creator.avatarUrl] } : {}),
-    },
-  };
+    image: creator.avatarUrl,
+  });
 }
 
 export async function generateStaticParams() {

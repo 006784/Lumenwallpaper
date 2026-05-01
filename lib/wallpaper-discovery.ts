@@ -18,6 +18,7 @@ import {
   getI18nMessages,
   translateStaticTerm,
 } from "@/lib/i18n";
+import { getSiteBaseUrl } from "@/lib/site-url";
 import {
   getPreferredWallpaperFile,
   getWallpaperDisplayTitle,
@@ -35,7 +36,6 @@ import type {
   WallpaperSeoSnapshot,
 } from "@/types/wallpaper";
 
-const DEFAULT_SITE_URL = "https://byteify.icu";
 const FACET_WALLPAPER_LIMIT = 1000;
 const TOP_COLOR_LIMIT = 16;
 const TOP_STYLE_LIMIT = 18;
@@ -50,14 +50,6 @@ const STOP_STYLE_TERMS = new Set([
   "壁纸",
   "精选",
 ]);
-
-function getSiteBaseUrl() {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    process.env.NEXTAUTH_URL ??
-    DEFAULT_SITE_URL
-  ).replace(/\/+$/, "");
-}
 
 function normalizeFacetValue(value: string | null | undefined) {
   return value?.trim().toLowerCase() ?? "";

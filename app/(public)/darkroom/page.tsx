@@ -6,6 +6,7 @@ import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
 import { getLocaleFromHeaders } from "@/lib/i18n";
 import { getDarkroomPageCopy } from "@/lib/i18n-ui";
 import { getCachedFeaturedWallpapers } from "@/lib/public-wallpaper-cache";
+import { createPublicPageMetadata } from "@/lib/site-url";
 
 export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 
@@ -13,7 +14,8 @@ export function generateMetadata(): Metadata {
   const locale = getLocaleFromHeaders(headers());
   const copy = getDarkroomPageCopy(locale);
 
-  return {
+  return createPublicPageMetadata({
+    path: "/darkroom",
     title:
       locale === "zh-CN"
         ? "暗室精选"
@@ -23,7 +25,7 @@ export function generateMetadata(): Metadata {
             ? "다크룸 픽"
             : "Darkroom Picks",
     description: copy.description,
-  };
+  });
 }
 
 export default async function DarkroomPage() {

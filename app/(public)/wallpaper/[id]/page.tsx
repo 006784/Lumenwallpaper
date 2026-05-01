@@ -18,6 +18,7 @@ import {
   getCachedPublishedWallpapers,
   getCachedWallpaperByIdentifier,
 } from "@/lib/public-wallpaper-cache";
+import { createPublicPageMetadata } from "@/lib/site-url";
 import { WallpaperDetailSidebar } from "@/components/wallpaper/wallpaper-detail-sidebar";
 import { WallpaperVideoPlayer } from "@/components/wallpaper/wallpaper-video-player";
 import { WallpaperGridCard } from "@/components/wallpaper/wallpaper-grid-card";
@@ -118,18 +119,16 @@ export async function generateMetadata({
       ? preferredFile.url
       : undefined;
 
-  return {
+  const description =
+    visibleDescription ?? copy.seoFallback({ tagLine, title: displayTitle });
+
+  return createPublicPageMetadata({
+    path: `/wallpaper/${wallpaper.slug}`,
     title: displayTitle,
-    description:
-      visibleDescription ?? copy.seoFallback({ tagLine, title: displayTitle }),
-    openGraph: {
-      title: displayTitle,
-      description:
-        visibleDescription ??
-        copy.seoFallback({ tagLine, title: displayTitle }),
-      images: openGraphImage ? [{ url: openGraphImage }] : undefined,
-    },
-  };
+    description,
+    image: openGraphImage,
+    type: "article",
+  });
 }
 
 export default async function WallpaperPage({ params }: WallpaperPageProps) {

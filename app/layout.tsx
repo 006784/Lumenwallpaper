@@ -10,6 +10,7 @@ import {
   getLocalizedSiteMetadata,
   localeToHtmlLang,
 } from "@/lib/i18n";
+import { getPageAlternates, getSiteUrl } from "@/lib/site-url";
 import {
   THEME_COLOR_DARK,
   THEME_COLOR_LIGHT,
@@ -22,21 +23,35 @@ export function generateMetadata(): Metadata {
   const metadata = getLocalizedSiteMetadata(locale);
 
   return {
-    metadataBase: new URL(process.env.NEXTAUTH_URL ?? "http://localhost:3000"),
+    metadataBase: new URL(getSiteUrl("/")),
     title: {
       default: metadata.title,
       template: `%s · ${metadata.title}`,
     },
     description: metadata.description,
+    applicationName: "Lumen",
+    alternates: getPageAlternates("/"),
+    icons: {
+      icon: [
+        { url: "/icon.svg", type: "image/svg+xml" },
+        { url: "/favicon.ico", type: "image/svg+xml" },
+      ],
+      shortcut: "/favicon.ico",
+      apple: "/icon.svg",
+    },
+    manifest: "/manifest.webmanifest",
     openGraph: {
       title: metadata.title,
       description: metadata.description,
       type: "website",
+      url: getSiteUrl("/"),
+      images: [{ url: getSiteUrl("/opengraph-image") }],
     },
     twitter: {
       card: "summary_large_image",
       title: metadata.title,
       description: metadata.description,
+      images: [getSiteUrl("/opengraph-image")],
     },
   };
 }

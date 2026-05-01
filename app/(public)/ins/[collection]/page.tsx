@@ -10,6 +10,7 @@ import {
   getCachedInsPicksSnapshot,
   getInsPickCollection,
 } from "@/lib/ins-picks";
+import { createPublicPageMetadata } from "@/lib/site-url";
 
 type InsPickCollectionPageProps = {
   params: {
@@ -34,10 +35,11 @@ export async function generateMetadata({
 
   const localized = copy.collections.details[collection.slug];
 
-  return {
+  return createPublicPageMetadata({
+    path: collection.href,
     title: `${collection.label} · ${copy.metadata.title}`,
     description: localized?.description ?? collection.description,
-  };
+  });
 }
 
 export default async function InsPickCollectionPage({

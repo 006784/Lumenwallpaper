@@ -6,6 +6,24 @@
 
 ## 进行中
 
+### TASK-043 · 正式站网页规范化与 SEO/PWA 优化
+
+- **状态**: ✅ codex done
+- **内容**: 用户要求一次性修复网页作为正式站仍不规范的地方
+- **Codex 完成**:
+  - 新增统一站点 URL helper，`robots.txt`、`sitemap.xml`、根 metadata、壁纸 SEO API 共用 `NEXT_PUBLIC_SITE_URL` / `NEXTAUTH_URL` / `VERCEL_URL` 的规范化来源
+  - 新增真实 `app/favicon.ico`，修复浏览器和爬虫请求 `/favicon.ico` 返回 404 的问题
+  - 新增 `app/manifest.ts`，输出 `/manifest.webmanifest`，支持移动端添加到主屏幕和 PWA 基础信息
+  - 新增 `app/opengraph-image.tsx`，为首页和没有专属图片的公开页面提供默认分享图
+  - 根 layout 补齐 `applicationName`、manifest、icons、默认 OG/Twitter image、canonical 和多语言 alternates
+  - Explore、分类页、暗室、INS、INS 人物、创作者、壁纸详情页补齐 canonical、多语言 alternates、OG/Twitter 元数据
+  - `sitemap.xml` 对 Supabase 瞬时读取失败增加降级，数据库内容拉不到时仍输出核心静态 URL，不再导致生产构建失败
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - `pnpm build`（通过；本地 Supabase 读取仍出现 transient `fetch failed` 重试日志，sitemap 已降级不阻断构建）
+  - 本地生产 server 验证 `/favicon.ico`、`/manifest.webmanifest`、`/opengraph-image` 返回 200
+
 ### TASK-042 · 动态专区 UI/UX 统一优化
 
 - **状态**: ✅ codex done

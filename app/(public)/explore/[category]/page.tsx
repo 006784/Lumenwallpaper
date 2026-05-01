@@ -12,6 +12,7 @@ import { PUBLIC_PAGE_REVALIDATE_SECONDS } from "@/lib/cache";
 import { EXPLORE_CATEGORIES, getExploreCategory } from "@/lib/explore";
 import { getExploreCategoryCopy, getLocaleFromHeaders } from "@/lib/i18n";
 import { getExploreUiCopy } from "@/lib/i18n-ui";
+import { createPublicPageMetadata } from "@/lib/site-url";
 
 export const revalidate = PUBLIC_PAGE_REVALIDATE_SECONDS;
 export const dynamicParams = false;
@@ -40,14 +41,15 @@ export function generateMetadata({
 
   const categoryCopy = getExploreCategoryCopy(locale, category.slug);
 
-  return {
+  return createPublicPageMetadata({
+    path: category.href,
     title: `${categoryCopy?.label ?? category.label} · ${
       getExploreUiCopy(locale).allDirectory
     }`,
     description:
       categoryCopy?.description ??
       `${category.description} 在 Lumen 中继续探索 ${category.label} 相关的高质感壁纸。`,
-  };
+  });
 }
 
 export default function ExploreCategoryPage({
