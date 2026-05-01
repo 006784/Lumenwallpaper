@@ -220,7 +220,9 @@ function extractJsonCandidate(content: string) {
   const end = source.lastIndexOf("}");
 
   if (start === -1 || end === -1 || end <= start) {
-    throw new Error("Provider did not return a JSON object.");
+    throw new Error(
+      `Provider did not return a JSON object: ${trimmed.slice(0, 220)}`,
+    );
   }
 
   return source.slice(start, end + 1);
@@ -327,6 +329,7 @@ async function callOpenAiCompatibleVisionProvider(
         model: provider.model,
         temperature: 0.1,
         max_tokens: 400,
+        response_format: { type: "json_object" },
         messages: [
           {
             role: "system",
