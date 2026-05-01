@@ -529,6 +529,10 @@ export function ExploreCatalog({
           ) : null}
         </form>
 
+        {motionOnly && wallpapers.length > 0 ? (
+          <MotionSpotlight locale={locale} wallpapers={wallpapers} />
+        ) : null}
+
         {!tag ? (
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="shrink-0 text-[9px] uppercase tracking-[0.32em] text-muted/50">
@@ -756,10 +760,6 @@ export function ExploreCatalog({
               {copy.clearAll}
             </Link>
           </div>
-        ) : null}
-
-        {motionOnly && wallpapers.length > 0 ? (
-          <MotionSpotlight locale={locale} wallpapers={wallpapers} />
         ) : null}
 
         {error ? (
