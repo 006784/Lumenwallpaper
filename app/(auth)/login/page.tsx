@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
 import { LoginForm } from "@/components/auth/login-form";
 import { PagePlaceholder } from "@/components/ui/page-placeholder";
@@ -7,12 +8,20 @@ import {
   isAuthConfigured,
   normalizeRedirectPath,
 } from "@/lib/auth";
+import { createPublicPageMetadata } from "@/lib/site-url";
 
 type LoginPageProps = {
   searchParams?: {
     next?: string;
   };
 };
+
+export const metadata: Metadata = createPublicPageMetadata({
+  path: "/login",
+  title: "Login to Lumen",
+  description:
+    "Sign in to Lumen with a secure email magic link and keep your current device signed in.",
+});
 
 export default function LoginPage({ searchParams }: LoginPageProps) {
   const redirectPath = normalizeRedirectPath(searchParams?.next);

@@ -6,6 +6,23 @@
 
 ## 进行中
 
+### TASK-044 · 正式域上线核验、域名收口与产品验收
+
+- **状态**: ✅ codex done
+- **内容**: 用户要求一起完成正式域名上线核验、Vercel 调试域 301/308 收口、Lighthouse/可访问性审计、产品侧验收
+- **Codex 完成**:
+  - 正式域 `https://byteify.icu` 核验通过：`/favicon.ico`、`/manifest.webmanifest`、`/opengraph-image`、`/robots.txt`、`/sitemap.xml` 均可访问
+  - `middleware.ts` 将 `www.byteify.icu` 与 `lumen-wallpaper.vercel.app` 统一 308 跳转到 `https://byteify.icu`，避免正式域和 Vercel 调试域重复收录
+  - 登录页补齐 canonical / OG / Twitter metadata，修复 Lighthouse 对 `/login` 的 canonical 提示
+  - fallback 壁纸预览 API 支持内置 fallback slug，修复首页 fallback 预览请求 404 导致 Lighthouse console error
+  - 下载 E2E 改为从公开 API 动态获取真实已发布壁纸，避免固定旧 slug 缺失导致假失败，并兼容中英文下载按钮文案
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - `pnpm build`（通过；本地 Supabase 读取仍有 transient `fetch failed` 重试日志，sitemap 已降级不阻断构建）
+  - 正式域 Lighthouse JSON 已生成到 `/tmp/lumen-lighthouse/`；公开页 accessibility 100，SEO 92，主要剩余性能问题为 LCP/TBT/Speed Index
+  - `PLAYWRIGHT_BASE_URL=https://byteify.icu playwright test e2e/download.spec.ts e2e/ins-picks.spec.ts e2e/upload.spec.ts e2e/auth.spec.ts --project=desktop-chromium`：24 passed
+
 ### TASK-043 · 正式站网页规范化与 SEO/PWA 优化
 
 - **状态**: ✅ codex done

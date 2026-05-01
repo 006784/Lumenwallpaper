@@ -1,10 +1,32 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 
-const SMOKE_WALLPAPER_PATH = "/wallpaper/beauty-photo-0112";
+async function getSmokeWallpaperIdentifier(page: Page) {
+  const response = await page.request.get("/api/wallpapers?limit=1");
+
+  if (!response.ok()) {
+    test.skip(true, "当前环境无法读取公开壁纸列表，跳过下载面板测试");
+  }
+
+  const payload = (await response.json()) as {
+    data?: Array<{
+      id?: string;
+      slug?: string;
+    }>;
+  };
+  const wallpaper = payload.data?.[0];
+  const identifier = wallpaper?.slug ?? wallpaper?.id;
+
+  if (!identifier) {
+    test.skip(true, "当前环境没有公开壁纸，跳过下载面板测试");
+  }
+
+  return identifier;
+}
 
 async function gotoSmokeWallpaper(page: Page) {
-  const response = await page.goto(SMOKE_WALLPAPER_PATH, {
+  const identifier = await getSmokeWallpaperIdentifier(page);
+  const response = await page.goto(`/wallpaper/${identifier}`, {
     waitUntil: "domcontentloaded",
   });
 
@@ -15,7 +37,7 @@ async function gotoSmokeWallpaper(page: Page) {
   await expect(page.locator("main")).toBeVisible();
 
   return {
-    identifier: SMOKE_WALLPAPER_PATH.split("/").pop() ?? "beauty-photo-0112",
+    identifier,
     response,
   };
 }
@@ -61,7 +83,7 @@ test.describe("壁纸浏览与下载", () => {
     await gotoSmokeWallpaper(page);
 
     const openDownloadButton = page
-      .getByRole("button", { name: "打开下载配置" })
+      .getByRole("button", { name: /打开下载配置|Open download settings/i })
       .first();
     await expect(openDownloadButton).toHaveAttribute(
       "data-download-ready",
@@ -69,9 +91,9 @@ test.describe("壁纸浏览与下载", () => {
     );
     await openDownloadButton.click();
 
-    await expect(page.getByText("DARKROOM EXPORT")).toBeVisible();
+    await expect(page.getByText("DARKROOM EXPORT", { exact: true })).toBeVisible();
     await expect(
-      page.getByRole("heading", { level: 2, name: "下载配置" }),
+      page.getByRole("heading", { level: 2, name: /下载配置|Download settings/i }),
     ).toBeVisible();
 
     const webpButton = page.getByRole("button", { name: "WebP" });
@@ -104,7 +126,7 @@ test.describe("壁纸浏览与下载", () => {
     expect(ratioStyles.backgroundImage).toContain("linear-gradient");
     expect(ratioStyles.color).toBe("rgb(255, 255, 255)");
     expect(Number.parseFloat(ratioStyles.borderRadius)).toBeGreaterThan(10);
-    await expect(page.getByText("下载壁纸")).toBeVisible();
+    await expect(page.getByText(/下载壁纸|Download wallpaper/i)).toBeVisible();
   });
 
   test("下载接口：无效配置返回结构化错误", async ({ page }) => {
@@ -165,7 +187,7 @@ test.describe("壁纸浏览与下载", () => {
     }
 
     const openDownloadButton = page
-      .getByRole("button", { name: "打开下载配置" })
+      .getByRole("button", { name: /打开下载配置|Open download settings/i })
       .first();
     await expect(openDownloadButton).toHaveAttribute(
       "data-download-ready",
@@ -178,18 +200,22 @@ test.describe("壁纸浏览与下载", () => {
 
     await webpButton.click();
     await ratioButton.click();
-    await page.getByRole("button", { name: "缓存配置" }).click();
-    await expect(page.getByRole("button", { name: "已缓存 ✓" })).toBeVisible();
+    await page.getByRole("button", { name: /缓存配置|Cache settings/i }).click();
+    await expect(
+      page.getByRole("button", { name: /已缓存|Cached/i }),
+    ).toBeVisible();
 
     await page.locator("button").filter({ hasText: "✕" }).first().click();
-    await expect(page.getByText("DARKROOM EXPORT")).not.toBeVisible();
+    await expect(
+      page.getByText("DARKROOM EXPORT", { exact: true }),
+    ).not.toBeVisible();
 
     await expect(openDownloadButton).toHaveAttribute(
       "data-download-ready",
       "true",
     );
     await openDownloadButton.click();
-    await expect(page.getByText("DARKROOM EXPORT")).toBeVisible();
+    await expect(page.getByText("DARKROOM EXPORT", { exact: true })).toBeVisible();
 
     await expect
       .poll(async () => {

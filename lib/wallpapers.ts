@@ -1071,7 +1071,7 @@ function getFallbackWallpapers() {
   return moodCards.map((_, index) => createFallbackWallpaper(index));
 }
 
-function getFallbackWallpaperByIdentifier(identifier: string) {
+export function getFallbackWallpaperByIdentifier(identifier: string) {
   return (
     getFallbackWallpapers().find(
       (wallpaper) =>

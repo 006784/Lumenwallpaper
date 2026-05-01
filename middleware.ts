@@ -10,6 +10,9 @@ import {
   resolveLocale,
 } from "@/lib/i18n";
 
+const PRIMARY_HOST = "byteify.icu";
+const REDIRECT_HOSTS = new Set(["www.byteify.icu", "lumen-wallpaper.vercel.app"]);
+
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' https:${
@@ -85,9 +88,9 @@ export function middleware(request: NextRequest) {
 
   requestHeaders.set(LOCALE_REQUEST_HEADER, locale);
 
-  if (host === "www.byteify.icu") {
+  if (REDIRECT_HOSTS.has(host)) {
     const redirectUrl = new URL(request.url);
-    redirectUrl.host = "byteify.icu";
+    redirectUrl.host = PRIMARY_HOST;
     redirectUrl.protocol = "https:";
 
     return NextResponse.redirect(redirectUrl, 308);
