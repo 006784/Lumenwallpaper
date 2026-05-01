@@ -29,7 +29,7 @@ const wallpaperAiMetadataSchema = z.object({
     .nullable()
     .optional()
     .transform((value) => value ?? null),
-  tags: z.array(z.string().trim().min(1).max(32)).min(3).max(12).default([]),
+  tags: z.array(z.string().trim().min(1).max(32)).min(1).max(12).default([]),
 });
 
 type WallpaperAiMetadata = z.infer<typeof wallpaperAiMetadataSchema>;
@@ -328,7 +328,7 @@ async function callOpenAiCompatibleVisionProvider(
       body: JSON.stringify({
         model: provider.model,
         temperature: 0.1,
-        max_tokens: 400,
+        max_tokens: 1000,
         response_format: { type: "json_object" },
         messages: [
           {
