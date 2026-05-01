@@ -28,7 +28,7 @@ import {
   listWallpapersByCreator,
 } from "@/lib/wallpapers";
 
-const PUBLIC_WALLPAPER_CACHE_VERSION = "v5";
+const PUBLIC_WALLPAPER_CACHE_VERSION = "v6";
 
 function normalizeWallpaperTags(tags: string[]) {
   return tags.map((tag) => (tag === "手动导入" ? "像素" : tag));
