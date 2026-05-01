@@ -34,6 +34,11 @@ export const openClawApiEndpoints: OpenClawApiEndpoint[] = [
   },
   {
     method: "POST",
+    path: "/api/openclaw/tasks",
+    description: "Enqueue Google Cloud Tasks for long-running wallpaper operations.",
+  },
+  {
+    method: "POST",
     path: "/api/openclaw/upload/presign",
     description: "Create a presigned R2 upload URL for images or videos.",
   },
@@ -138,6 +143,31 @@ export const openClawToolDefinitions: OpenClawToolDefinition[] = [
     inputSchema: {
       type: "object",
       properties: {},
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "openclaw_enqueue_cloud_task",
+    description: "Enqueue a Google Cloud Task that calls a long-running OpenClaw wallpaper operation asynchronously.",
+    method: "POST",
+    path: "/api/openclaw/tasks",
+    inputSchema: {
+      type: "object",
+      properties: {
+        action: {
+          type: "string",
+          enum: ["reanalyze_wallpapers", "backfill_wallpapers"],
+        },
+        body: {
+          type: "object",
+          additionalProperties: true,
+        },
+        scheduleTime: {
+          type: "string",
+          description: "Optional RFC3339 timestamp for delayed execution.",
+        },
+      },
+      required: ["action"],
       additionalProperties: false,
     },
   },

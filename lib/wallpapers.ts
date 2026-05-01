@@ -38,6 +38,10 @@ import {
 } from "@/lib/resend";
 import { logServerEvent } from "@/lib/monitoring";
 import {
+  analyzeImageWithGoogleVision,
+  isGoogleVisionConfigured,
+} from "@/lib/google-vision";
+import {
   analyzeWallpaperWithFallback,
   type WallpaperAiProviderOverride,
 } from "@/lib/wallpaper-ai";
@@ -833,6 +837,17 @@ function mapWallpaper(
       (row.ai_analysis_status as WallpaperAiAnalysisStatus | null) ?? "skipped",
     aiAnalysisError: row.ai_analysis_error ?? null,
     aiAnalyzedAt: row.ai_analyzed_at ?? null,
+    safetyAdult: row.safety_adult ?? null,
+    safetyCheckedAt: row.safety_checked_at ?? null,
+    safetyError: row.safety_error ?? null,
+    safetyLabels: row.safety_labels ?? [],
+    safetyMedical: row.safety_medical ?? null,
+    safetyProvider: row.safety_provider ?? null,
+    safetyRacy: row.safety_racy ?? null,
+    safetyRiskLevel: row.safety_risk_level ?? null,
+    safetySpoof: row.safety_spoof ?? null,
+    safetyStatus: row.safety_status ?? "skipped",
+    safetyViolence: row.safety_violence ?? null,
     colors: row.colors,
     width: row.width,
     height: row.height,
@@ -1024,6 +1039,17 @@ function createFallbackWallpaper(index: number): Wallpaper {
     aiAnalysisStatus: "skipped",
     aiAnalysisError: null,
     aiAnalyzedAt: null,
+    safetyAdult: null,
+    safetyCheckedAt: null,
+    safetyError: null,
+    safetyLabels: [],
+    safetyMedical: null,
+    safetyProvider: null,
+    safetyRacy: null,
+    safetyRiskLevel: null,
+    safetySpoof: null,
+    safetyStatus: "skipped",
+    safetyViolence: null,
     colors: [],
     width: dimensions.width,
     height: dimensions.height,
@@ -1868,6 +1894,103 @@ async function persistWallpaperAiMetadata(
   }
 }
 
+async function persistWallpaperSafetyMetadata(
+  wallpaperId: string | number,
+  patch: Database["public"]["Tables"]["wallpapers"]["Update"],
+) {
+  try {
+    const client = createSupabaseAdminClient();
+    const { error } = await client
+      .from(wallpapersTable)
+      .update(patch)
+      .eq("id", toDbIdValue(wallpaperId));
+
+    if (error) {
+      throw error;
+    }
+  } catch (error) {
+    console.warn(
+      "[wallpaper-safety] Failed to persist safety metadata:",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
+function shouldHoldWallpaperForSafetyReview(riskLevel: string | null) {
+  return riskLevel === "high" || riskLevel === "blocked";
+}
+
+async function analyzeWallpaperSafety(
+  wallpaperId: string | number,
+  input: {
+    imageUrl: string;
+    holdPublishedForReview?: boolean;
+  },
+) {
+  if (!isGoogleVisionConfigured()) {
+    await persistWallpaperSafetyMetadata(wallpaperId, {
+      safety_error: null,
+      safety_status: "skipped",
+    });
+    return null;
+  }
+
+  await persistWallpaperSafetyMetadata(wallpaperId, {
+    safety_error: null,
+    safety_status: "pending",
+  });
+
+  try {
+    const analysis = await analyzeImageWithGoogleVision(input.imageUrl);
+
+    if (!analysis) {
+      await persistWallpaperSafetyMetadata(wallpaperId, {
+        safety_error: null,
+        safety_status: "skipped",
+      });
+      return null;
+    }
+
+    await persistWallpaperSafetyMetadata(wallpaperId, {
+      safety_adult: analysis.safety?.adult ?? null,
+      safety_checked_at: new Date().toISOString(),
+      safety_error: null,
+      safety_labels: analysis.localizedLabels,
+      safety_medical: analysis.safety?.medical ?? null,
+      safety_provider: "Google Cloud Vision",
+      safety_racy: analysis.safety?.racy ?? null,
+      safety_risk_level: analysis.riskLevel,
+      safety_spoof: analysis.safety?.spoof ?? null,
+      safety_status: "completed",
+      safety_violence: analysis.safety?.violence ?? null,
+      ...(input.holdPublishedForReview &&
+      shouldHoldWallpaperForSafetyReview(analysis.riskLevel)
+        ? {
+            status: "processing" as const,
+          }
+        : {}),
+    });
+
+    return analysis;
+  } catch (error) {
+    await persistWallpaperSafetyMetadata(wallpaperId, {
+      safety_checked_at: new Date().toISOString(),
+      safety_error:
+        error instanceof Error
+          ? error.message.slice(0, 1000)
+          : "Unknown Google Vision safety error.",
+      safety_status: "failed",
+    });
+
+    console.warn(
+      "[wallpaper-safety] Google Vision analysis failed:",
+      error instanceof Error ? error.message : error,
+    );
+
+    return null;
+  }
+}
+
 async function enrichWallpaperWithAiMetadata(
   wallpaperId: string | number,
   input: {
@@ -2409,6 +2532,15 @@ export async function backfillWallpaperAssets(
     forceAi ||
     wallpaper.aiAnalysisStatus !== "completed" ||
     wallpaper.aiTags.length === 0;
+
+  if (aiSourceFile?.url && (forceAi || wallpaper.safetyStatus !== "completed")) {
+    const imageUrl = await getWallpaperAiImageUrl(aiSourceFile);
+
+    await analyzeWallpaperSafety(wallpaper.id, {
+      imageUrl,
+    });
+    wallpaper = (await getWallpaperByIdOrSlug(wallpaper.id)) ?? wallpaper;
+  }
 
   if (aiSourceFile?.url && needsAiBackfill) {
     const imageUrl = await getWallpaperAiImageUrl(aiSourceFile);
@@ -4109,6 +4241,13 @@ export async function createWallpaperRecord(
           : generatedFiles!.variants.find((file) => file.variant === "preview") ??
             generatedFiles!.variants[0] ??
             generatedFiles!.original;
+
+      if (previewFile?.url) {
+        await analyzeWallpaperSafety(wallpaper.id, {
+          holdPublishedForReview: input.status === "published",
+          imageUrl: previewFile.url,
+        });
+      }
 
       if (skipAiEnrichment) {
         await persistWallpaperAiMetadata(wallpaper.id, {

@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import {
+  analyzeImageWithGoogleVision,
+  createVisionLabelFallbackMetadata,
+  isGoogleVisionConfigured,
+} from "@/lib/google-vision";
+
 const DEFAULT_PROVIDER_ORDER = [
   "gemini",
   "qwen",
@@ -209,7 +215,7 @@ function getOverrideWallpaperAiProviders(
 }
 
 export function isWallpaperAiConfigured() {
-  return getConfiguredWallpaperAiProviders().length > 0;
+  return getConfiguredWallpaperAiProviders().length > 0 || isGoogleVisionConfigured();
 }
 
 function extractJsonCandidate(content: string) {
@@ -412,6 +418,34 @@ export async function analyzeWallpaperWithFallback(input: {
     } catch (error) {
       providerErrors.push(
         `${provider.id}: ${
+          error instanceof Error ? error.message : "Unknown provider error."
+        }`,
+      );
+    }
+  }
+
+  if (isGoogleVisionConfigured()) {
+    try {
+      const vision = await analyzeImageWithGoogleVision(input.imageUrl);
+      const fallback = vision
+        ? createVisionLabelFallbackMetadata({
+            description: input.description,
+            labels: vision.localizedLabels,
+            title: input.title,
+          })
+        : null;
+
+      if (fallback) {
+        return {
+          ...fallback,
+          model: "label-detection",
+          providerId: "google_vision",
+          providerLabel: "Google Cloud Vision",
+        } satisfies VisionProviderResult;
+      }
+    } catch (error) {
+      providerErrors.push(
+        `google_vision: ${
           error instanceof Error ? error.message : "Unknown provider error."
         }`,
       );

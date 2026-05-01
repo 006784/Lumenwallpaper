@@ -66,6 +66,17 @@ export interface Wallpaper {
   aiAnalysisStatus: WallpaperAiAnalysisStatus;
   aiAnalysisError: string | null;
   aiAnalyzedAt: string | null;
+  safetyAdult: string | null;
+  safetyCheckedAt: string | null;
+  safetyError: string | null;
+  safetyLabels: string[];
+  safetyMedical: string | null;
+  safetyProvider: string | null;
+  safetyRacy: string | null;
+  safetyRiskLevel: string | null;
+  safetySpoof: string | null;
+  safetyStatus: string;
+  safetyViolence: string | null;
   colors: string[];
   width: number | null;
   height: number | null;

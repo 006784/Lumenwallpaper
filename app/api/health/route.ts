@@ -6,6 +6,8 @@ import {
   shouldEnableVercelAnalytics,
   shouldEnableVercelSpeedInsights,
 } from "@/lib/monitoring";
+import { isGoogleCloudTasksConfigured } from "@/lib/google-cloud-tasks";
+import { isGoogleVisionConfigured } from "@/lib/google-vision";
 import { isR2Configured } from "@/lib/r2";
 import { isResendConfigured } from "@/lib/resend";
 import { isSupabaseConfigured } from "@/lib/supabase";
@@ -19,6 +21,9 @@ function getConfiguredAiProviderCount() {
     process.env.AI_VISION_OPENAI_API_KEY,
     process.env.AI_VISION_CUSTOM_1_API_KEY,
     process.env.AI_VISION_CUSTOM_2_API_KEY,
+    process.env.GOOGLE_CLOUD_VISION_API_KEY ||
+      process.env.GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON ||
+      process.env.GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON_BASE64,
   ].filter(Boolean).length;
 }
 
@@ -42,6 +47,8 @@ export async function GET() {
             resend: isResendConfigured(),
             sentry: isSentryConfigured(),
             supabase: isSupabaseConfigured(),
+            googleCloudTasks: isGoogleCloudTasksConfigured(),
+            googleVision: isGoogleVisionConfigured(),
             vercelAnalytics: shouldEnableVercelAnalytics(),
             vercelSpeedInsights: shouldEnableVercelSpeedInsights(),
           },

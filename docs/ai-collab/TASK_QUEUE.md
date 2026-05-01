@@ -6,6 +6,26 @@
 
 ## 进行中
 
+### TASK-041 · Google Cloud Vision 与 Cloud Tasks 接入
+
+- **状态**: ✅ codex done
+- **内容**: 用户要求先接入 Cloud Vision SafeSearch、Cloud Vision Label Detection fallback、Cloud Tasks
+- **Codex 完成**:
+  - 新增 Google service account OAuth helper，支持 `GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON` / `GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON_BASE64`
+  - 新增 Google Cloud Vision 客户端，支持 `SAFE_SEARCH_DETECTION` 与 `LABEL_DETECTION`；可用 `GOOGLE_CLOUD_VISION_API_KEY` 或 service account 调用
+  - `wallpapers` 新增 `safety_*` 字段用于记录 SafeSearch 风险等级、五类安全分数、标签、错误和检测时间
+  - 上传与 backfill 流程会在配置 Google Vision 后写入安全评分；高风险新上传会从 `published` 转为 `processing` 进入审核
+  - Gemini / 其他生成式 AI 全部失败时，会用 Google Vision Label Detection 生成兜底中文标签和分类
+  - 新增 Google Cloud Tasks 客户端与 `POST /api/openclaw/tasks`，可把 `reanalyze_wallpapers` / `backfill_wallpapers` 排进 Cloud Tasks 异步执行
+  - 健康检查与 OpenClaw 工具清单已暴露 Google Vision / Cloud Tasks 配置状态
+- **验证**:
+  - 待运行 `pnpm type-check`
+  - 待运行 `pnpm lint`
+- **上线配置**:
+  - 先执行迁移 `202604010011_google_cloud_safety.sql`
+  - Vercel 配置 Google Vision key 或 service account 后，上传/回填才会启用安全检测和 label fallback
+  - Cloud Tasks 需要启用 API、创建 queue，并配置 `GOOGLE_CLOUD_TASKS_LOCATION` / `GOOGLE_CLOUD_TASKS_QUEUE` / `GOOGLE_CLOUD_TASKS_TARGET_BASE_URL`
+
 ### TASK-040 · 放开 INS 合集创建权限
 
 - **状态**: ✅ codex done
