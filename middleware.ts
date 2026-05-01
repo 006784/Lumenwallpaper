@@ -88,7 +88,11 @@ export function middleware(request: NextRequest) {
 
   requestHeaders.set(LOCALE_REQUEST_HEADER, locale);
 
-  if (REDIRECT_HOSTS.has(host)) {
+  const shouldRedirectToPrimaryHost =
+    REDIRECT_HOSTS.has(host) ||
+    (process.env.VERCEL_ENV === "production" && host.endsWith(".vercel.app"));
+
+  if (shouldRedirectToPrimaryHost) {
     const redirectUrl = new URL(request.url);
     redirectUrl.host = PRIMARY_HOST;
     redirectUrl.protocol = "https:";
