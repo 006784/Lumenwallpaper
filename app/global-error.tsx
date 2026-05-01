@@ -31,7 +31,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="bg-paper font-body text-ink antialiased">
-        <ErrorShell error={error} onRetry={reset} />
+        <ErrorShell error={error} kind="global-error" onRetry={reset} />
       </body>
     </html>
   );

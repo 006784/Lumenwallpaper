@@ -17,5 +17,5 @@ export default function AppError({ error, reset }: AppErrorProps) {
     Sentry.captureException(error);
   }, [error]);
 
-  return <ErrorShell error={error} onRetry={reset} />;
+  return <ErrorShell error={error} kind="error" onRetry={reset} />;
 }
