@@ -267,11 +267,11 @@ function createAnalysisPrompt(input: {
   const description = input.description?.trim();
 
   return [
-    "请仔细分析这张壁纸预览图，只返回一个 JSON 对象，不要输出任何额外解释。",
+    "请仔细分析这张壁纸预览图，只返回一个单行紧凑 JSON 对象，不要换行、缩进或输出任何额外解释。",
     'JSON 结构固定为：{"category":"nature|city|abstract|architecture|illustration|anime|space|minimal|people|other","caption":"一句中文短描述","tags":["中文标签1","中文标签2"]}',
     "要求：",
-    "1. tags 返回 6 到 10 个中文短标签，去重，不要带井号。",
-    "2. caption 控制在 24 个中文字符以内。",
+    "1. tags 返回 4 到 8 个中文短标签，去重，不要带井号。",
+    "2. caption 控制在 18 个中文字符以内。",
     "3. category 必须从给定枚举里选择一个。",
     "4. tags 优先描述画面主体、场景、风格、色彩、光线、构图和情绪，避免“高清”“壁纸”“图片”等泛词。",
     "5. 不要输出分辨率、尺寸、水印、UI 元素。",
@@ -328,7 +328,7 @@ async function callOpenAiCompatibleVisionProvider(
       body: JSON.stringify({
         model: provider.model,
         temperature: 0.1,
-        max_tokens: 1000,
+        max_tokens: 2048,
         response_format: { type: "json_object" },
         messages: [
           {
