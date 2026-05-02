@@ -27,6 +27,7 @@ Authorization: Bearer <OPENCLAW_API_KEY>
 - `GET /api/openclaw/tools/mcp`
 - `GET /api/openclaw/health`
 - `POST /api/openclaw/upload/presign`
+- `POST /api/openclaw/upload/remote`
 - `GET /api/openclaw/wallpapers`
 - `POST /api/openclaw/wallpapers`
 - `PATCH /api/openclaw/wallpapers/batch`
@@ -82,6 +83,40 @@ curl https://byteify.icu/api/openclaw/upload/presign \
     "filename": "demo.jpg",
     "contentType": "image/jpeg",
     "size": 1048576
+  }'
+```
+
+从 Telegram file URL 或其他远程图片 URL 一步上传并创建壁纸：
+
+```bash
+curl https://byteify.icu/api/openclaw/upload/remote \
+  -X POST \
+  -H "Authorization: Bearer $OPENCLAW_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sourceUrl": "https://api.telegram.org/file/bot.../photos/file_12.jpg",
+    "title": "telegram · wallpaper · 001",
+    "description": "Imported by OpenClaw from Telegram.",
+    "directory": "telegram",
+    "tags": ["telegram", "openclaw"],
+    "status": "published"
+  }'
+```
+
+视频壁纸也可以传 `posterSourceUrl`，用于生成静态封面变体：
+
+```bash
+curl https://byteify.icu/api/openclaw/upload/remote \
+  -X POST \
+  -H "Authorization: Bearer $OPENCLAW_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sourceUrl": "https://example.com/motion.mp4",
+    "posterSourceUrl": "https://example.com/motion-poster.jpg",
+    "title": "motion · telegram · 001",
+    "directory": "motion-videos",
+    "tags": ["motion", "动态", "video"],
+    "status": "published"
   }'
 ```
 
@@ -144,6 +179,14 @@ curl 'https://byteify.icu/api/openclaw/wallpapers/beauty-photo-0112/download?var
 
 ## 上传流程
 
+Telegram/OpenClaw 推荐使用一步式远程上传：
+
+1. 从 Telegram `getFile` 拿到 `file_path`，拼出 `https://api.telegram.org/file/bot<TOKEN>/<file_path>`
+2. 调 `POST /api/openclaw/upload/remote`，传 `sourceUrl + title + tags`
+3. Lumen 会下载远程文件、上传 R2、创建 Supabase 壁纸记录、触发变体生成与 AI 分析
+
+如果 OpenClaw 想自己控制 R2 PUT，可以继续使用三步式：
+
 1. 调 `POST /api/openclaw/upload/presign`
 2. 用返回的 `presignedUrl + headers` 把文件传到 R2
 3. 调 `POST /api/openclaw/wallpapers` 写入壁纸记录
@@ -160,6 +203,7 @@ curl 'https://byteify.icu/api/openclaw/wallpapers/beauty-photo-0112/download?var
 
 - 健康检查
 - 上传签名
+- 远程 URL 一步上传
 - 壁纸增删改查
 - 下载选项与流式下载
 - 重复壁纸检测

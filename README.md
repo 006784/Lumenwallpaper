@@ -224,7 +224,7 @@ curl https://byteify.icu/api/openclaw/health \
 这套接口独立于站内登录态，适合做：
 
 - 健康检查
-- 上传签名 / 下载接口
+- 上传签名 / 远程 URL 一步上传 / 下载接口
 - 创建 / 更新 / 删除壁纸
 - 重复壁纸检测
 - 重复壁纸自动清理（默认保留最新一张）
@@ -238,6 +238,8 @@ curl https://byteify.icu/api/openclaw/health \
 - 工具清单导出（`GET /api/openclaw/tools`）
 - OpenAI Agents 风格导入清单（`GET /api/openclaw/tools/agents`）
 - MCP 风格导入清单（`GET /api/openclaw/tools/mcp`）
+
+Telegram 机器人推荐调用 `POST /api/openclaw/upload/remote`，把 Telegram `getFile` 得到的文件 URL 作为 `sourceUrl` 传入；Lumen 会服务端下载文件、上传 R2、创建壁纸记录，并继续走现有变体生成与 AI 分析流程。视频可额外传 `posterSourceUrl` 生成封面。
 
 ## AI 识图兜底配置
 

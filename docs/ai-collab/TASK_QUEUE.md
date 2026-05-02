@@ -6,6 +6,22 @@
 
 ## 进行中
 
+### TASK-045 · OpenClaw Telegram 远程上传 API
+
+- **状态**: ✅ codex done
+- **内容**: 用户要求让本地 OpenClaw + Telegram 项目可以通过 Lumen API 上传壁纸、下载壁纸等
+- **Codex 完成**:
+  - 保留已有 OpenClaw API Key 鉴权：`Authorization: Bearer <OPENCLAW_API_KEY>`，兼容 `x-openclaw-key` / `x-api-key`
+  - 新增 `POST /api/openclaw/upload/remote`：接收 Telegram/file URL 的 `sourceUrl`，由 Lumen 服务端下载文件、上传 R2、创建壁纸记录，并继续触发现有变体生成、AI 分析、公开缓存刷新
+  - 远程上传支持图片与视频；视频可传 `posterSourceUrl` 生成静态封面变体
+  - OpenClaw 工具清单已补充 `openclaw_upload_remote_wallpaper`，`/api/openclaw/tools`、`/api/openclaw/tools/agents`、`/api/openclaw/tools/mcp` 都会暴露该能力
+  - 文档已补充 Telegram 推荐流程；现有下载接口仍是 `GET /api/openclaw/wallpapers/:id/download`
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - 本地 `POST /api/openclaw/upload/remote` 未带 key 返回 `OPENCLAW_AUTH_REQUIRED`
+  - 静态确认 OpenClaw 工具清单包含 `openclaw_upload_remote_wallpaper`
+
 ### TASK-044 · 正式域上线核验、域名收口与产品验收
 
 - **状态**: ✅ codex done
