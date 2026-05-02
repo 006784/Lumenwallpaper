@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 import Link from "next/link";
 
 import {
@@ -26,6 +30,7 @@ export function WallpaperGridCard({
   aspectRatio = "aspect-[4/5]",
   className,
 }: WallpaperGridCardProps) {
+  const [isPreviewActive, setIsPreviewActive] = useState(false);
   const previewUrl = getWallpaperPreviewUrl(wallpaper, imageQuality);
   const coverSources = getWallpaperCoverSources(wallpaper);
   const gradientKey = getWallpaperGradientKey(wallpaper);
@@ -37,17 +42,21 @@ export function WallpaperGridCard({
   return (
     <Link
       className={cn(
-        "glass-surface-soft group relative h-fit self-start overflow-hidden text-ink transition duration-card hover:-translate-y-1",
+        "glass-surface-soft group relative h-fit self-start overflow-hidden text-ink transition duration-card hover:-translate-y-1 focus-visible:-translate-y-1",
         wallpaper.videoUrl &&
-          "bg-[linear-gradient(180deg,rgba(13,18,18,0.96),rgba(23,34,34,0.9))] text-paper shadow-[0_22px_54px_rgba(8,16,18,0.22)]",
+          "bg-white/58 text-ink shadow-[0_22px_54px_rgba(37,58,62,0.14)]",
         className,
       )}
       href={`/wallpaper/${wallpaper.slug}`}
+      onBlur={() => setIsPreviewActive(false)}
+      onFocus={() => setIsPreviewActive(true)}
+      onMouseEnter={() => setIsPreviewActive(true)}
+      onMouseLeave={() => setIsPreviewActive(false)}
     >
       {wallpaper.videoUrl ? (
-        <div className="absolute left-4 top-4 z-10 inline-flex items-center gap-2 rounded-full border border-paper/20 bg-black/36 px-2.5 py-1 font-mono text-[8px] uppercase tracking-[0.18em] text-paper/80 backdrop-blur-md">
-          <span className="h-1.5 w-1.5 rounded-full bg-red shadow-[0_0_10px_rgba(190,74,54,0.85)]" />
-          Live
+        <div className="absolute left-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full border border-white/35 bg-black/18 px-2.5 py-1 font-mono text-[8px] uppercase tracking-[0.18em] text-paper/74 backdrop-blur-md">
+          <span className="h-1.5 w-1.5 rounded-full bg-red/80" />
+          Motion
         </div>
       ) : null}
 
@@ -55,30 +64,40 @@ export function WallpaperGridCard({
         className={cn(
           aspectRatio,
           "relative m-2.5 overflow-hidden rounded-[18px] sm:m-3",
-          wallpaper.videoUrl && "rounded-[22px]",
+          wallpaper.videoUrl && "rounded-[20px] bg-ink",
         )}
       >
         <WallpaperCoverImage
           alt={displayTitle}
           sources={coverSources}
           gradient={gradientKey}
+          imageClassName={wallpaper.videoUrl ? "brightness-[.96] saturate-[1.04]" : undefined}
           sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
           src={previewUrl}
         />
         <div
           className={
             wallpaper.videoUrl
-              ? "absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(8,10,10,0.08)_42%,rgba(0,0,0,0.48))]"
+              ? "absolute inset-0 bg-[radial-gradient(circle_at_22%_14%,rgba(255,111,77,0.24),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(8,10,10,0.02)_48%,rgba(0,0,0,0.34))]"
               : "absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(23,79,80,0.12))]"
           }
         />
         {wallpaper.videoUrl ? (
-          <MotionPreviewLayer videoUrl={wallpaper.videoUrl} />
+          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[8px] uppercase tracking-[0.28em] text-paper/18 [writing-mode:vertical-rl]">
+            motion
+          </div>
         ) : null}
         {wallpaper.videoUrl ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 px-3 pb-3">
-            <div className="h-px flex-1 bg-paper/20" />
-            <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-paper/70">
+          <MotionPreviewLayer
+            className="transition-transform duration-card group-hover:scale-[1.025] group-focus-visible:scale-[1.025]"
+            isActive={isPreviewActive}
+            videoUrl={wallpaper.videoUrl}
+          />
+        ) : null}
+        {wallpaper.videoUrl ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 px-3 pb-3 opacity-75 transition group-hover:opacity-100">
+            <div className="h-px flex-1 bg-paper/16" />
+            <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-paper/62">
               loop
             </span>
           </div>
@@ -94,7 +113,7 @@ export function WallpaperGridCard({
             <p
               className={cn(
                 "mt-1 text-[9px] uppercase tracking-[0.2em] text-muted",
-                wallpaper.videoUrl && "text-paper/42",
+                wallpaper.videoUrl && "text-muted/80",
               )}
             >
               {getWallpaperMeta(wallpaper)}
@@ -103,7 +122,7 @@ export function WallpaperGridCard({
           <span
             className={cn(
               "shrink-0 font-mono text-[10px] tracking-[0.16em] text-muted",
-              wallpaper.videoUrl && "text-paper/48",
+              wallpaper.videoUrl && "text-muted/70",
             )}
           >
             {wallpaper.downloadsCount}
@@ -116,8 +135,7 @@ export function WallpaperGridCard({
               key={tag}
               className={cn(
                 "glass-chip px-2 py-1 text-[8px] uppercase tracking-[0.14em] text-muted sm:text-[9px]",
-                wallpaper.videoUrl &&
-                  "border-paper/14 bg-paper/8 text-paper/56",
+                wallpaper.videoUrl && "bg-white/55 text-muted",
               )}
             >
               {tag}
@@ -129,7 +147,7 @@ export function WallpaperGridCard({
           <p
             className={cn(
               "text-[11px] text-muted",
-              wallpaper.videoUrl && "text-paper/42",
+              wallpaper.videoUrl && "text-muted/80",
             )}
           >
             by @{wallpaper.creator.username}

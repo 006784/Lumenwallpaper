@@ -7,12 +7,14 @@ import { cn } from "@/lib/utils";
 type MotionPreviewLayerProps = {
   videoUrl: string;
   className?: string;
+  isActive?: boolean;
   videoClassName?: string;
 };
 
 export function MotionPreviewLayer({
   videoUrl,
   className,
+  isActive = true,
   videoClassName,
 }: MotionPreviewLayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,7 +32,9 @@ export function MotionPreviewLayer({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsVisible(entry.isIntersecting && entry.intersectionRatio >= 0.35);
+        setIsVisible(
+          isActive && entry.isIntersecting && entry.intersectionRatio >= 0.35,
+        );
       },
       {
         threshold: [0.35],
@@ -42,7 +46,7 @@ export function MotionPreviewLayer({
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [isActive]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -51,7 +55,7 @@ export function MotionPreviewLayer({
       return;
     }
 
-    if (!isVisible) {
+    if (!isActive || !isVisible) {
       video.pause();
       video.currentTime = 0;
       return;
@@ -62,7 +66,7 @@ export function MotionPreviewLayer({
     if (playPromise && typeof playPromise.catch === "function") {
       playPromise.catch(() => {});
     }
-  }, [isVisible]);
+  }, [isActive, isVisible]);
 
   return (
     <div
@@ -73,7 +77,7 @@ export function MotionPreviewLayer({
         ref={videoRef}
         className={cn(
           "h-full w-full object-cover transition-opacity duration-300 ease-out",
-          isReady ? "opacity-100" : "opacity-0",
+          isActive && isReady ? "opacity-100" : "opacity-0",
           videoClassName,
         )}
         autoPlay

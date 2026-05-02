@@ -192,17 +192,30 @@ function MotionSpotlight({
   locale: SupportedLocale;
   wallpapers: Wallpaper[];
 }) {
+  const [activePreviewId, setActivePreviewId] = useState<string | null>(null);
   const featured = wallpapers.find((wallpaper) => wallpaper.videoUrl);
   const title = featured ? getWallpaperDisplayTitle(featured) : "Motion";
   const previewUrl = featured ? getWallpaperPreviewUrl(featured, "large") : null;
   const coverSources = featured ? getWallpaperCoverSources(featured) : undefined;
 
   return (
-    <div className="glass-surface-soft mt-7 overflow-hidden p-3 md:p-4">
+    <div className="glass-surface-soft mt-6 overflow-hidden p-2.5 md:p-3">
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1.28fr)_minmax(280px,0.72fr)]">
         <Link
-          className="group relative min-h-[420px] overflow-hidden rounded-[26px] bg-ink text-paper md:min-h-[520px]"
+          className="group relative min-h-[390px] overflow-hidden rounded-[24px] bg-ink text-paper md:min-h-[500px]"
           href={featured ? `/wallpaper/${featured.slug}` : "/explore?motion=true"}
+          onBlur={() => setActivePreviewId(null)}
+          onFocus={() => {
+            if (featured) {
+              setActivePreviewId(featured.id);
+            }
+          }}
+          onMouseEnter={() => {
+            if (featured) {
+              setActivePreviewId(featured.id);
+            }
+          }}
+          onMouseLeave={() => setActivePreviewId(null)}
         >
           {featured && previewUrl ? (
             <>
@@ -210,13 +223,14 @@ function MotionSpotlight({
                 alt={title}
                 sources={coverSources}
                 gradient="night"
-                imageClassName="brightness-[.82] saturate-[1.05]"
+                imageClassName="brightness-[.96] contrast-[1.02] saturate-[1.08]"
                 sizes="(max-width: 1024px) 100vw, 62vw"
                 src={previewUrl}
               />
               {featured.videoUrl ? (
                 <MotionPreviewLayer
                   className="transition-transform duration-card group-hover:scale-[1.035]"
+                  isActive={activePreviewId === featured.id}
                   videoUrl={featured.videoUrl}
                 />
               ) : null}
@@ -225,16 +239,16 @@ function MotionSpotlight({
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(190,74,54,0.28),transparent_32%),linear-gradient(135deg,#102728,#101514_52%,#2c2119)]" />
           )}
 
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.18)_44%,rgba(0,0,0,0.78))]" />
-          <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-paper/20 bg-black/30 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-paper/72 backdrop-blur-md">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(255,111,77,0.18),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.08)_42%,rgba(0,0,0,0.64))]" />
+          <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-paper/20 bg-black/20 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-paper/76 backdrop-blur-md">
             <span className="h-1.5 w-1.5 rounded-full bg-red shadow-[0_0_12px_rgba(190,74,54,0.95)]" />
             Motion
           </div>
-          <div className="absolute right-4 top-4 rounded-full border border-paper/20 bg-black/24 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-paper/56 backdrop-blur-md">
+          <div className="absolute right-4 top-4 rounded-full border border-paper/18 bg-black/18 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-paper/60 backdrop-blur-md">
             {String(wallpapers.length).padStart(2, "0")} loops
           </div>
 
-          <div className="absolute inset-x-0 bottom-0 px-5 pb-5 pt-24 md:px-7 md:pb-7">
+          <div className="absolute inset-x-0 bottom-0 px-5 pb-5 pt-24 md:px-7 md:pb-6">
             <p className="text-[10px] uppercase tracking-[0.34em] text-paper/48">
               {locale === "zh-CN"
                 ? "动态专区"
@@ -259,20 +273,28 @@ function MotionSpotlight({
           {wallpapers.slice(1, 5).map((wallpaper) => (
             <Link
               key={wallpaper.id}
-              className="group grid min-h-[122px] grid-cols-[88px_1fr] gap-3 overflow-hidden rounded-[22px] border border-ink/8 bg-white/58 p-2 shadow-[0_16px_36px_rgba(37,58,62,0.1)] backdrop-blur transition duration-card hover:-translate-y-0.5 hover:bg-white/72"
+              className="group grid min-h-[112px] grid-cols-[78px_1fr] gap-3 overflow-hidden rounded-[18px] border border-ink/8 bg-white/54 p-2 shadow-[0_12px_28px_rgba(37,58,62,0.08)] backdrop-blur transition duration-card hover:-translate-y-0.5 hover:bg-white/70"
               href={`/wallpaper/${wallpaper.slug}`}
+              onBlur={() => setActivePreviewId(null)}
+              onFocus={() => setActivePreviewId(wallpaper.id)}
+              onMouseEnter={() => setActivePreviewId(wallpaper.id)}
+              onMouseLeave={() => setActivePreviewId(null)}
             >
-              <div className="relative overflow-hidden rounded-[16px] bg-ink">
+              <div className="relative overflow-hidden rounded-[14px] bg-ink">
                 <WallpaperCoverImage
                   alt={getWallpaperDisplayTitle(wallpaper)}
                   sources={getWallpaperCoverSources(wallpaper)}
                   gradient="night"
-                  imageClassName="brightness-[.86] saturate-[1.05]"
+                  imageClassName="brightness-[.95] contrast-[1.02] saturate-[1.06]"
                   sizes="96px"
                   src={getWallpaperPreviewUrl(wallpaper, "medium")}
                 />
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_24%_18%,rgba(255,111,77,0.24),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.06),rgba(0,0,0,0.14))]" />
                 {wallpaper.videoUrl ? (
-                  <MotionPreviewLayer videoUrl={wallpaper.videoUrl} />
+                  <MotionPreviewLayer
+                    isActive={activePreviewId === wallpaper.id}
+                    videoUrl={wallpaper.videoUrl}
+                  />
                 ) : null}
               </div>
               <div className="flex min-w-0 flex-col justify-between py-1 pr-1">
@@ -285,8 +307,9 @@ function MotionSpotlight({
                   </p>
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-2">
-                  <span className="glass-chip px-2 py-1 font-mono text-[8px] uppercase tracking-[0.18em] text-muted">
-                    Live
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-muted/70">
+                    <span className="h-1.5 w-1.5 rounded-full bg-red/70" />
+                    Live loop
                   </span>
                   <span className="text-[13px] text-muted transition group-hover:text-red">
                     ↗

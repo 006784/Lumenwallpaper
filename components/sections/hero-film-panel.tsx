@@ -40,6 +40,7 @@ function AnimatedCell({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoReady, setVideoReady] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
+  const hasPlayableVideo = Boolean(cell.videoUrl && !videoFailed);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -63,13 +64,8 @@ function AnimatedCell({
       });
   }, [cell.videoUrl, shouldPlay, videoFailed]);
 
-  return (
-    <button
-      aria-label={`播放动态壁纸：${cell.label}`}
-      className="group relative min-w-0 flex-1 cursor-pointer overflow-hidden border-r border-white/10 outline-none transition-[flex,filter] duration-300 last:border-r-0 hover:flex-[1.4] hover:brightness-110 focus-visible:flex-[1.4] focus-visible:ring-2 focus-visible:ring-gold"
-      type="button"
-      onClick={onPlay}
-    >
+  const cellContent = (
+    <>
       {cell.previewUrl ? (
         <>
           <div
@@ -111,19 +107,58 @@ function AnimatedCell({
 
       <div className="absolute inset-0 bg-paper/0 transition-colors duration-200 group-hover:bg-paper/8" />
 
-      <div className="absolute inset-0 flex items-center justify-center opacity-70 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-paper/40 bg-black/40 text-[10px] text-paper backdrop-blur-sm">
-          ▶
+      {hasPlayableVideo ? (
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
+          <div className="inline-flex items-center gap-2 rounded-full border border-paper/30 bg-black/38 px-3 py-2 font-mono text-[8px] uppercase tracking-[0.24em] text-paper/72 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-gold" />
+            Preview
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <div className="absolute inset-x-2 bottom-2 translate-y-1 transition-[opacity,transform] duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 sm:opacity-75">
         <p className="truncate text-[8px] uppercase tracking-[0.26em] text-paper/70">
           {cell.label}
         </p>
-        <p className="mt-1 text-[9px] text-gold/90">点击预览</p>
+        <p className="mt-1 text-[9px] text-gold/90">
+          {hasPlayableVideo ? "实时预览" : "查看作品"}
+        </p>
       </div>
-    </button>
+    </>
+  );
+
+  const className =
+    "group relative min-w-0 flex-1 overflow-hidden border-r border-white/10 outline-none transition-[flex,filter] duration-300 last:border-r-0 hover:flex-[1.4] hover:brightness-110 focus-visible:flex-[1.4] focus-visible:ring-2 focus-visible:ring-gold";
+
+  if (hasPlayableVideo) {
+    return (
+      <button
+        aria-label={`预览动态壁纸：${cell.label}`}
+        className={`${className} cursor-pointer`}
+        type="button"
+        onClick={onPlay}
+      >
+        {cellContent}
+      </button>
+    );
+  }
+
+  if (cell.href) {
+    return (
+      <Link
+        aria-label={`查看作品：${cell.label}`}
+        className={className}
+        href={cell.href}
+      >
+        {cellContent}
+      </Link>
+    );
+  }
+
+  return (
+    <div aria-label={cell.label} className={className}>
+      {cellContent}
+    </div>
   );
 }
 
@@ -237,6 +272,7 @@ export function HeroFilmPanel({ rows = heroFilmRows }: HeroFilmPanelProps) {
 
   // 把二维 rows 压平成一维，保留对 cell 数据的访问
   const allCells = rows.flatMap((row) => row);
+  const hasPlayableVideos = allCells.some((cell) => cell.videoUrl);
   const activeCell: FilmCellData | null =
     activeIndex !== null ? allCells[activeIndex] : null;
 
@@ -277,14 +313,16 @@ export function HeroFilmPanel({ rows = heroFilmRows }: HeroFilmPanelProps) {
           ) : (
             <>
               {/* 格子模式的播放/暂停 */}
-              <button
-                aria-label={paused ? "恢复动画" : "暂停动画"}
-                className="flex h-6 w-6 items-center justify-center text-[8px] text-paper/30 transition hover:text-paper/60"
-                type="button"
-                onClick={handleTogglePause}
-              >
-                {paused ? "▶" : "⏸"}
-              </button>
+              {hasPlayableVideos ? (
+                <button
+                  aria-label={paused ? "恢复动画" : "暂停动画"}
+                  className="flex h-6 w-6 items-center justify-center text-[8px] text-paper/30 transition hover:text-paper/60"
+                  type="button"
+                  onClick={handleTogglePause}
+                >
+                  {paused ? "▶" : "⏸"}
+                </button>
+              ) : null}
               <p className="font-mono text-[11px] tracking-[0.24em] text-paper/30">
                 {String(allCells.length).padStart(2, "0")} Motion
               </p>
@@ -347,7 +385,7 @@ export function HeroFilmPanel({ rows = heroFilmRows }: HeroFilmPanelProps) {
           把会呼吸、会闪动、会慢慢推进情绪的画面单独放进这条胶卷里。
         </p>
         <p className="mt-3 text-[9px] uppercase tracking-[0.35em] text-gold">
-          点击任意一格，进入实时预览
+          {hasPlayableVideos ? "选择视频格，进入实时预览" : "浏览动态灵感与精选封面"}
         </p>
       </div>
     </div>
