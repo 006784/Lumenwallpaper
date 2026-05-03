@@ -77,7 +77,6 @@ type UploadQueueItem = {
   description: string;
   tagsValue: string;
   colorsValue: string;
-  licenseAccepted: boolean;
   progress: UploadProgressState;
   status: "idle" | "submitting" | "success" | "error";
   message: string;
@@ -544,6 +543,7 @@ export function UploadStudioForm({
   const titleInputRef = useRef<HTMLInputElement>(null);
   const [uploadItems, setUploadItems] = useState<UploadQueueItem[]>([]);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
+  const [batchLicenseAccepted, setBatchLicenseAccepted] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [state, setState] = useState<UploadState>({
@@ -564,16 +564,13 @@ export function UploadStudioForm({
   const completedMetadataCount = uploadItems.filter(
     (item) => item.title.trim().length > 0,
   ).length;
-  const confirmedLicenseCount = uploadItems.filter(
-    (item) => item.licenseAccepted,
-  ).length;
+  const confirmedLicenseCount = batchLicenseAccepted ? uploadItems.length : 0;
   const publishedCount = uploadItems.filter((item) => item.status === "success").length;
   const failedCount = uploadItems.filter((item) => item.status === "error").length;
   const canPublish =
     uploadItems.length > 0 &&
-    uploadItems.every(
-      (item) => item.title.trim().length > 0 && item.licenseAccepted,
-    ) &&
+    uploadItems.every((item) => item.title.trim().length > 0) &&
+    batchLicenseAccepted &&
     !isSubmitting;
 
   const statusLabel = {
@@ -611,9 +608,9 @@ export function UploadStudioForm({
     },
     {
       description:
-        confirmedLicenseCount > 0
-          ? `${confirmedLicenseCount} 个作品已确认授权。`
-          : "发布前逐项确认授权声明。",
+        batchLicenseAccepted
+          ? `本批 ${uploadItems.length} 个作品已统一确认授权。`
+          : "发布前一次确认整批授权声明。",
       isActive: confirmedLicenseCount > 0 || isSubmitting || state.kind === "success",
       label: "确认授权",
       number: "03",
@@ -710,7 +707,6 @@ export function UploadStudioForm({
           description: "",
           tagsValue: defaultTags,
           colorsValue: "",
-          licenseAccepted: false,
           progress: {
             bytesSent: 0,
             percent: 0,
@@ -798,6 +794,10 @@ export function UploadStudioForm({
 
       if (itemId === activeItemId) {
         setActiveItemId(nextItems[0]?.id ?? null);
+      }
+
+      if (nextItems.length === 0) {
+        setBatchLicenseAccepted(false);
       }
 
       return nextItems;
@@ -992,7 +992,7 @@ export function UploadStudioForm({
         description: item.description.trim(),
         tags: parseCsv(item.tagsValue),
         colors: parseCsv(item.colorsValue),
-        licenseAccepted: item.licenseAccepted,
+        licenseAccepted: batchLicenseAccepted,
         licenseVersion: "2026-04",
         original: {
           storagePath: presignPayload.data.key,
@@ -1062,16 +1062,24 @@ export function UploadStudioForm({
     }
 
     const firstIncomplete = uploadItems.find(
-      (item) => item.title.trim().length === 0 || !item.licenseAccepted,
+      (item) => item.title.trim().length === 0,
     );
 
     if (firstIncomplete) {
       setActiveItemId(firstIncomplete.id);
       setState({
         kind: "error",
-        message: "队列里还有未补完标题或未确认授权的作品，先补完再发布。",
+        message: "队列里还有未补完标题的作品，先补完再发布。",
       });
       titleInputRef.current?.focus();
+      return;
+    }
+
+    if (!batchLicenseAccepted) {
+      setState({
+        kind: "error",
+        message: "请先点击一次整批授权确认，再发布到 Lumen。",
+      });
       return;
     }
 
@@ -1827,22 +1835,17 @@ export function UploadStudioForm({
 
           <label className="glass-surface-soft flex items-start gap-3 px-4 py-4 text-sm leading-6 text-muted">
             <input
-              checked={activeItem.licenseAccepted}
+              checked={batchLicenseAccepted}
               className="mt-1 h-4 w-4 shrink-0 accent-ink"
-              id="licenseAccepted"
-              name="licenseAccepted"
-              onChange={(event) =>
-                updateActiveQueueItem((current) => ({
-                  ...current,
-                  licenseAccepted: event.target.checked,
-                }))
-              }
+              id="batchLicenseAccepted"
+              name="batchLicenseAccepted"
+              onChange={(event) => setBatchLicenseAccepted(event.target.checked)}
               required
               type="checkbox"
             />
             <span>
-              我确认自己拥有这项作品的上传、展示与分发授权，并同意 Lumen
-              记录本次授权确认时间用于内容合规审计。
+              我确认自己拥有本批 {uploadItems.length} 个作品的上传、展示与分发授权，并同意
+              Lumen 记录本次授权确认时间用于内容合规审计。
             </span>
           </label>
         </div>
@@ -1871,7 +1874,9 @@ export function UploadStudioForm({
           <p className="text-sm leading-6 text-muted">
             {uploadItems.length === 0
               ? "先选择至少一个图片或视频文件。"
-              : `当前还差 ${uploadItems.filter((item) => !item.title.trim() || !item.licenseAccepted).length} 项未补完标题或授权。`}
+              : batchLicenseAccepted
+                ? `当前还差 ${uploadItems.filter((item) => !item.title.trim()).length} 项未补完标题。`
+                : "补完标题后，只需要点击一次整批授权确认即可发布。"}
           </p>
         ) : null}
 
