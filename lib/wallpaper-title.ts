@@ -23,6 +23,7 @@ const SOURCE_TAGS = new Set([
 const GENERIC_VISUAL_TAGS = new Set([
   "人像",
   "人物",
+  "肖像",
   "女性",
   "少女",
   "女孩",
@@ -30,6 +31,7 @@ const GENERIC_VISUAL_TAGS = new Set([
   "自拍",
   "时尚",
   "背景",
+  "背影",
   "侧脸",
   "侧颜",
   "长发",
@@ -43,6 +45,30 @@ const GENERIC_VISUAL_TAGS = new Set([
   "selfie",
   "smile",
   "wallpaper",
+]);
+
+const SCENE_TITLE_TAGS = new Map([
+  ["海边", "海边"],
+  ["海岸", "海边"],
+  ["沙漠", "沙漠"],
+  ["室内", "室内"],
+  ["湖泊", "湖畔"],
+  ["湖边", "湖畔"],
+  ["厨房", "厨房"],
+  ["街头", "街头"],
+  ["城市", "城市"],
+  ["森林", "森林"],
+  ["花园", "花园"],
+  ["舞台", "舞台"],
+  ["beach", "Beach"],
+  ["coast", "Coastal"],
+  ["desert", "Desert"],
+  ["indoor", "Indoor"],
+  ["lake", "Lakeside"],
+  ["city", "City"],
+  ["forest", "Forest"],
+  ["garden", "Garden"],
+  ["stage", "Stage"],
 ]);
 
 const PERSON_TAGS: Array<{ label: string; tags: string[] }> = [
@@ -119,6 +145,56 @@ function isGenericVisualTag(tag: string) {
     GENERIC_VISUAL_TAGS.has(tag.trim().toLowerCase()) ||
     GENERIC_VISUAL_TAGS.has(tag.trim())
   );
+}
+
+function getSceneTitleTag(tag: string) {
+  return (
+    SCENE_TITLE_TAGS.get(tag.trim().toLowerCase()) ??
+    SCENE_TITLE_TAGS.get(tag.trim()) ??
+    null
+  );
+}
+
+function looksLikeSegmentedTagTitle(parts: string[]) {
+  return (
+    parts.length >= 2 &&
+    parts.length <= 4 &&
+    parts.every((part) => part.length <= 16) &&
+    parts.some((part) => isGenericVisualTag(part) || getSceneTitleTag(part))
+  );
+}
+
+function composeTagTitle(parts: string[]) {
+  const scene = parts.map(getSceneTitleTag).find(Boolean);
+  const hasBackView = parts.some((part) =>
+    ["背影", "back view", "silhouette"].includes(part.trim().toLowerCase()),
+  );
+  const hasSmile = parts.some((part) =>
+    ["微笑", "smile", "smiling"].includes(part.trim().toLowerCase()),
+  );
+  const hasPortrait = parts.some((part) =>
+    ["人像", "肖像", "portrait"].includes(part.trim().toLowerCase()),
+  );
+
+  if (scene) {
+    if (/^[A-Z]/.test(scene)) {
+      return hasBackView ? `${scene} Silhouette` : `${scene} Portrait`;
+    }
+
+    return `${scene}${hasBackView ? "背影" : "人像"}`;
+  }
+
+  if (hasSmile) {
+    return parts.some((part) => part === "微笑") ? "微笑人像" : "Soft Portrait";
+  }
+
+  if (hasPortrait) {
+    return parts.some((part) => part === "人像" || part === "肖像")
+      ? "人像写真"
+      : "Portrait Study";
+  }
+
+  return null;
 }
 
 function cleanCaption(caption: string | null | undefined) {
@@ -209,12 +285,16 @@ export function getProfessionalWallpaperTitle(input: WallpaperTitleInput) {
     .split("·")
     .map((part) => part.trim())
     .filter(Boolean);
-  const looksLikeTagTitle =
-    titleParts.length >= 2 &&
-    titleParts.every((part) => isGenericVisualTag(part));
+  const looksLikeTagTitle = looksLikeSegmentedTagTitle(titleParts);
 
   if (looksLikeTagTitle && caption) {
     return caption;
+  }
+
+  const composedTitle = looksLikeTagTitle ? composeTagTitle(titleParts) : null;
+
+  if (composedTitle) {
+    return composedTitle;
   }
 
   const meaningfulTags = getMeaningfulTags(input);
