@@ -44,9 +44,9 @@ export function WallpaperGridCard({
   return (
     <Link
       className={cn(
-        "glass-surface-soft group relative h-fit self-start overflow-hidden text-ink transition duration-card hover:-translate-y-1 focus-visible:-translate-y-1",
+        "glass-surface-soft group relative h-fit self-start overflow-hidden text-ink transition duration-card hover:-translate-y-1 hover:border-red/20 focus-visible:-translate-y-1 dark:hover:border-red/30",
         wallpaper.videoUrl &&
-          "bg-white/58 text-ink shadow-[0_22px_54px_rgba(37,58,62,0.14)]",
+          "bg-white/58 text-ink shadow-[0_22px_54px_rgba(37,58,62,0.14)] dark:bg-paper2/70 dark:shadow-[0_22px_54px_rgba(0,0,0,0.26)]",
         className,
       )}
       href={`/wallpaper/${wallpaper.slug}`}
@@ -73,7 +73,9 @@ export function WallpaperGridCard({
           alt={displayTitle}
           sources={coverSources}
           gradient={gradientKey}
-          imageClassName={wallpaper.videoUrl ? "brightness-[.96] saturate-[1.04]" : undefined}
+          imageClassName={
+            wallpaper.videoUrl ? "brightness-[.96] saturate-[1.04]" : undefined
+          }
           loading={loading}
           sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
           src={previewUrl}
@@ -138,7 +140,7 @@ export function WallpaperGridCard({
               key={tag}
               className={cn(
                 "glass-chip px-2 py-1 text-[8px] uppercase tracking-[0.14em] text-muted sm:text-[9px]",
-                wallpaper.videoUrl && "bg-white/55 text-muted",
+                wallpaper.videoUrl && "bg-white/55 text-muted dark:bg-paper/10",
               )}
             >
               {tag}

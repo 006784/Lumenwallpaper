@@ -57,32 +57,37 @@
 }
 
 .dark {
-  --color-ink: #d9f0ef;
-  --color-ink-rgb: 217 240 239;
-  --color-paper: #0e1f21;
-  --color-paper-rgb: 14 31 33;
-  --color-paper-2: #15282a;
-  --color-paper-2-rgb: 21 40 42;
-  --color-muted: #9bb4b3;
-  --color-muted-rgb: 155 180 179;
-  --border-frame: 1px solid rgba(255, 255, 255, 0.14);
-  --glass-bg: rgba(19, 38, 41, 0.7);
-  --glass-bg-strong: rgba(25, 47, 50, 0.86);
-  --glass-border: rgba(255, 255, 255, 0.14);
-  --glass-edge: rgba(255, 255, 255, 0.09);
+  --color-ink: #edf7f4;
+  --color-ink-rgb: 237 247 244;
+  --color-paper: #091113;
+  --color-paper-rgb: 9 17 19;
+  --color-paper-2: #101c1f;
+  --color-paper-2-rgb: 16 28 31;
+  --color-red: #ff7642;
+  --color-red-rgb: 255 118 66;
+  --color-gold: #f0bd76;
+  --color-gold-rgb: 240 189 118;
+  --color-muted: #9eafad;
+  --color-muted-rgb: 158 175 173;
+  --border-frame: 1px solid rgba(238, 247, 244, 0.12);
+  --glass-bg: rgba(18, 31, 34, 0.62);
+  --glass-bg-strong: rgba(24, 39, 42, 0.82);
+  --glass-border: rgba(239, 248, 245, 0.13);
+  --glass-edge: rgba(239, 248, 245, 0.08);
   --glass-shadow:
-    18px 22px 46px rgba(0, 0, 0, 0.3),
-    -10px -10px 28px rgba(255, 255, 255, 0.04),
-    inset 1px 1px 1px rgba(255, 255, 255, 0.12),
-    inset -1px -1px 2px rgba(0, 0, 0, 0.28);
+    0 22px 56px rgba(0, 0, 0, 0.38),
+    0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.34);
   --glass-shadow-soft:
-    10px 14px 28px rgba(0, 0, 0, 0.22),
-    -8px -8px 22px rgba(255, 255, 255, 0.035),
-    inset 1px 1px 1px rgba(255, 255, 255, 0.1),
-    inset -1px -1px 2px rgba(0, 0, 0, 0.22);
+    0 14px 34px rgba(0, 0, 0, 0.28),
+    0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.24);
   --glass-inset:
-    inset 5px 5px 12px rgba(0, 0, 0, 0.25),
-    inset -5px -5px 12px rgba(255, 255, 255, 0.06);
+    inset 0 1px 1px rgba(255, 255, 255, 0.06),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 8px 22px rgba(0, 0, 0, 0.16);
 }
 
 /*
@@ -134,8 +139,9 @@ h2.font-body {
 
 .dark body {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 35%),
-    linear-gradient(180deg, #11272a 0%, #0e1f21 50%, #081416 100%);
+    radial-gradient(circle at 18% 10%, rgba(255, 118, 66, 0.08), transparent 26%),
+    radial-gradient(circle at 82% 2%, rgba(240, 189, 118, 0.045), transparent 22%),
+    linear-gradient(180deg, #101c1f 0%, #091315 46%, #060b0d 100%);
 }
 
 body::after {
@@ -151,7 +157,7 @@ body::after {
 
 /* 暗室模式胶粒更明显 */
 .dark body::after {
-  opacity: 0.055;
+  opacity: 0.036;
 }
 
 a {
@@ -352,53 +358,81 @@ textarea:focus-visible {
   }
 
   .dark .glass-surface {
-    border-color: rgba(232, 248, 247, 0.16);
+    border-color: rgba(239, 248, 245, 0.16);
     background:
-      linear-gradient(145deg, rgba(28, 56, 59, 0.92), rgba(10, 26, 28, 0.72));
+      linear-gradient(145deg, rgba(25, 42, 45, 0.9), rgba(8, 17, 19, 0.72));
+    box-shadow: var(--glass-shadow);
   }
 
   .dark .glass-surface-soft {
-    border-color: rgba(232, 248, 247, 0.14);
+    border-color: rgba(239, 248, 245, 0.13);
     background:
-      linear-gradient(145deg, rgba(25, 49, 52, 0.78), rgba(9, 24, 26, 0.62));
+      linear-gradient(145deg, rgba(22, 36, 39, 0.76), rgba(7, 15, 17, 0.58));
+    box-shadow: var(--glass-shadow-soft);
   }
 
   .dark .glass-control {
-    border-color: rgba(232, 248, 247, 0.22);
+    border-color: rgba(239, 248, 245, 0.16);
     background:
-      linear-gradient(145deg, rgba(31, 61, 64, 0.88), rgba(12, 29, 31, 0.76));
+      linear-gradient(145deg, rgba(28, 44, 47, 0.78), rgba(9, 18, 20, 0.7));
     box-shadow:
-      10px 14px 28px rgba(0, 0, 0, 0.24),
-      -8px -8px 20px rgba(255, 255, 255, 0.04),
-      inset 1px 1px 1px rgba(255, 255, 255, 0.12),
-      inset -1px -1px 2px rgba(0, 0, 0, 0.28);
+      0 12px 28px rgba(0, 0, 0, 0.26),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
     color: var(--color-ink);
   }
 
   .dark .glass-control:hover {
-    border-color: rgba(232, 248, 247, 0.34);
+    border-color: rgba(255, 118, 66, 0.28);
     background:
-      linear-gradient(145deg, rgba(38, 72, 75, 0.94), rgba(15, 34, 36, 0.82));
+      linear-gradient(145deg, rgba(34, 54, 57, 0.86), rgba(12, 24, 27, 0.78));
     box-shadow:
-      14px 18px 34px rgba(0, 0, 0, 0.3),
-      -8px -8px 22px rgba(255, 255, 255, 0.055),
-      inset 1px 1px 1px rgba(255, 255, 255, 0.16),
-      inset -1px -1px 2px rgba(0, 0, 0, 0.3);
+      0 16px 34px rgba(0, 0, 0, 0.32),
+      0 0 0 1px rgba(255, 118, 66, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
   .dark .glass-field {
-    border-color: rgba(232, 248, 247, 0.16);
-    background: rgba(9, 24, 26, 0.58);
+    border-color: rgba(239, 248, 245, 0.14);
+    background: rgba(5, 12, 14, 0.42);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 10px 24px rgba(0, 0, 0, 0.18);
     color: var(--color-ink);
   }
 
+  .dark .glass-field:focus {
+    border-color: rgba(255, 118, 66, 0.42);
+    background: rgba(8, 17, 19, 0.66);
+  }
+
   .dark .glass-chip {
-    border-color: rgba(232, 248, 247, 0.16);
-    background: rgba(21, 43, 46, 0.72);
+    border-color: rgba(239, 248, 245, 0.13);
+    background: rgba(20, 34, 37, 0.64);
     box-shadow:
-      7px 9px 18px rgba(0, 0, 0, 0.2),
-      -5px -5px 14px rgba(255, 255, 255, 0.035),
-      inset 1px 1px 1px rgba(255, 255, 255, 0.1);
+      0 8px 18px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+
+  .dark .glass-chip:hover {
+    border-color: rgba(255, 118, 66, 0.24);
+    background: rgba(29, 47, 50, 0.72);
+  }
+
+  .dark .glass-chip-active {
+    border-color: rgba(255, 139, 86, 0.58);
+    background:
+      linear-gradient(145deg, rgba(255, 132, 78, 0.98), rgba(226, 83, 39, 0.92));
+    box-shadow:
+      0 14px 30px rgba(255, 104, 55, 0.22),
+      0 0 0 1px rgba(255, 186, 123, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  }
+
+  .dark .glass-panel-grid {
+    background-image:
+      linear-gradient(90deg, rgba(239, 248, 245, 0.018) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(239, 248, 245, 0.014) 1px, transparent 1px);
+    background-size: 64px 64px;
   }
 
   .section-entry-link--dark {

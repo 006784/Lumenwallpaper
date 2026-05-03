@@ -16,7 +16,7 @@ export function TickerStrip({ locale }: TickerStripProps) {
   const items = [...tickerItems, ...tickerItems];
 
   return (
-    <section className="bg-white/42 group mx-4 overflow-hidden rounded-[999px] shadow-[inset_5px_5px_12px_rgba(40,62,66,0.08),inset_-6px_-6px_12px_rgba(255,255,255,0.9)] md:mx-10">
+    <section className="group mx-4 overflow-hidden rounded-[999px] bg-white/42 shadow-[inset_5px_5px_12px_rgba(40,62,66,0.08),inset_-6px_-6px_12px_rgba(255,255,255,0.9)] md:mx-10 dark:border dark:border-paper/10 dark:bg-paper/6 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_14px_32px_rgba(0,0,0,0.18)]">
       <div className="ticker-track flex h-[46px] items-center whitespace-nowrap group-hover:[animation-play-state:paused]">
         {items.map((item, index) => (
           <span

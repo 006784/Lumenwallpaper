@@ -82,7 +82,7 @@ export function EditorialSection({
             ↗
           </div>
 
-          <div className="bg-white/72 absolute inset-x-3 bottom-3 rounded-[22px] px-6 pb-8 pt-8 text-ink shadow-[0_14px_30px_rgba(37,58,62,0.16)] backdrop-blur md:px-10">
+          <div className="absolute inset-x-3 bottom-3 rounded-[22px] bg-white/72 px-6 pb-8 pt-8 text-ink shadow-[0_14px_30px_rgba(37,58,62,0.16)] backdrop-blur md:px-10 dark:border dark:border-paper/12 dark:bg-paper/12 dark:shadow-[0_18px_44px_rgba(0,0,0,0.34)]">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <p className="text-[9px] uppercase tracking-[0.35em] text-red">
                 ✦ {feature.eyebrow}
@@ -107,7 +107,7 @@ export function EditorialSection({
             return (
               <Link
                 key={item.number}
-                className="hover:bg-white/38 group grid flex-1 grid-cols-[88px_1fr] rounded-[22px] transition md:grid-cols-[100px_1fr]"
+                className="group grid flex-1 grid-cols-[88px_1fr] rounded-[22px] transition hover:bg-white/38 md:grid-cols-[100px_1fr] dark:hover:bg-paper/8"
                 href={item.href}
               >
                 <div className="relative m-3 overflow-hidden rounded-[18px]">

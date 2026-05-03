@@ -6,6 +6,24 @@
 
 ## 进行中
 
+### TASK-048 · UI/UX 细节与暗色模式打磨
+
+- **状态**: ✅ codex done
+- **内容**: 用户要求继续打磨网站 UI/UX 细节，并重点改善当前过脏、过厚重的黑暗模式
+- **Codex 完成**:
+  - 重设暗色模式全局色彩 token，从偏绿厚玻璃改为更干净的深墨蓝底、暖橙点缀和更低噪声的网格背景
+  - 调整暗色模式下 glass surface、chip、control、field 的背景、边框、阴影和 focus 状态，减少塑料感和脏灰感
+  - 首页、Explore、Mood、Editorial、Ticker、Join、壁纸卡片补充暗色模式细节，避免白色半透明块在黑暗模式里显得突兀
+  - 主题切换按钮从简单圆点改为更像开关的视觉状态
+  - 缩短 hero 搜索 placeholder，解决移动端搜索框文字被截断的问题
+  - 同步更新 `theme-color`，让浏览器 UI 更贴合新的明暗主题
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - `git diff --check`
+  - `pnpm build`（通过；本地 Supabase 读取仍有 transient `fetch failed` 重试日志，sitemap 已降级不阻断构建）
+  - 本地 Playwright 截图复查首页 / Explore 的 light、dark、mobile dark 视图
+
 ### TASK-047 · 正式站观感与数据可信度清理
 
 - **状态**: ✅ codex done

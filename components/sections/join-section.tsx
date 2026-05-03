@@ -56,7 +56,7 @@ export function JoinSection({ locale }: JoinSectionProps) {
           </div>
         </div>
 
-        <div className="bg-white/38 group relative flex min-h-[280px] flex-col items-center justify-center gap-5 overflow-hidden px-8 py-12 transition">
+        <div className="group relative flex min-h-[280px] flex-col items-center justify-center gap-5 overflow-hidden bg-white/38 px-8 py-12 transition dark:bg-paper/6">
           <div className="pointer-events-none absolute bottom-[-20px] font-mono text-[140px] text-ink/5 md:text-[180px]">
             UPLOAD
           </div>

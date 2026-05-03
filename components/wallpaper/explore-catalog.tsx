@@ -277,7 +277,7 @@ function MotionSpotlight({
             return (
               <Link
                 key={wallpaper.id}
-                className="group grid min-h-[112px] grid-cols-[78px_1fr] gap-3 overflow-hidden rounded-[18px] border border-ink/8 bg-white/54 p-2 shadow-[0_12px_28px_rgba(37,58,62,0.08)] backdrop-blur transition duration-card hover:-translate-y-0.5 hover:bg-white/70"
+                className="group grid min-h-[112px] grid-cols-[78px_1fr] gap-3 overflow-hidden rounded-[18px] border border-ink/8 bg-white/54 p-2 shadow-[0_12px_28px_rgba(37,58,62,0.08)] backdrop-blur transition duration-card hover:-translate-y-0.5 hover:bg-white/70 dark:border-paper/10 dark:bg-paper/7 dark:shadow-[0_16px_34px_rgba(0,0,0,0.22)] dark:hover:bg-paper/10"
                 href={`/wallpaper/${wallpaper.slug}`}
                 onBlur={() => setActivePreviewId(null)}
                 onFocus={() => setActivePreviewId(wallpaper.id)}

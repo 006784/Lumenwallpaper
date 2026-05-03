@@ -46,7 +46,7 @@ export function MoodBoardSection({ cards, locale }: MoodBoardSectionProps) {
             </Link>
           </div>
 
-          <div className="bg-white/24 min-w-0 overflow-hidden rounded-[24px] px-2 py-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.56)]">
+          <div className="min-w-0 overflow-hidden rounded-[24px] bg-white/24 px-2 py-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.56)] dark:bg-paper/6 dark:shadow-[inset_0_0_0_1px_rgba(237,247,244,0.08)]">
             <DraggableStrip
               className="pb-1"
               trackClassName="flex w-max gap-3 md:gap-4"
