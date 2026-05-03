@@ -21,6 +21,7 @@ import {
 } from "@/lib/explore";
 import { getExploreCategoryCopy, getExploreOptionCopy } from "@/lib/i18n";
 import { getExploreUiCopy } from "@/lib/i18n-ui";
+import { cn } from "@/lib/utils";
 import {
   getWallpaperCoverSources,
   getWallpaperDisplayTitle,
@@ -270,54 +271,63 @@ function MotionSpotlight({
         </Link>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-          {wallpapers.slice(1, 5).map((wallpaper) => (
-            <Link
-              key={wallpaper.id}
-              className="group grid min-h-[112px] grid-cols-[78px_1fr] gap-3 overflow-hidden rounded-[18px] border border-ink/8 bg-white/54 p-2 shadow-[0_12px_28px_rgba(37,58,62,0.08)] backdrop-blur transition duration-card hover:-translate-y-0.5 hover:bg-white/70"
-              href={`/wallpaper/${wallpaper.slug}`}
-              onBlur={() => setActivePreviewId(null)}
-              onFocus={() => setActivePreviewId(wallpaper.id)}
-              onMouseEnter={() => setActivePreviewId(wallpaper.id)}
-              onMouseLeave={() => setActivePreviewId(null)}
-            >
-              <div className="relative overflow-hidden rounded-[14px] bg-ink">
-                <WallpaperCoverImage
-                  alt={getWallpaperDisplayTitle(wallpaper)}
-                  sources={getWallpaperCoverSources(wallpaper)}
-                  gradient="night"
-                  imageClassName="brightness-[.95] contrast-[1.02] saturate-[1.06]"
-                  sizes="96px"
-                  src={getWallpaperPreviewUrl(wallpaper, "medium")}
-                />
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_24%_18%,rgba(255,111,77,0.24),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.06),rgba(0,0,0,0.14))]" />
-                {wallpaper.videoUrl ? (
-                  <MotionPreviewLayer
-                    isActive={activePreviewId === wallpaper.id}
-                    videoUrl={wallpaper.videoUrl}
+          {wallpapers.slice(1, 5).map((wallpaper) => {
+            const hasVideo = Boolean(wallpaper.videoUrl);
+
+            return (
+              <Link
+                key={wallpaper.id}
+                className="group grid min-h-[112px] grid-cols-[78px_1fr] gap-3 overflow-hidden rounded-[18px] border border-ink/8 bg-white/54 p-2 shadow-[0_12px_28px_rgba(37,58,62,0.08)] backdrop-blur transition duration-card hover:-translate-y-0.5 hover:bg-white/70"
+                href={`/wallpaper/${wallpaper.slug}`}
+                onBlur={() => setActivePreviewId(null)}
+                onFocus={() => setActivePreviewId(wallpaper.id)}
+                onMouseEnter={() => setActivePreviewId(wallpaper.id)}
+                onMouseLeave={() => setActivePreviewId(null)}
+              >
+                <div className="relative overflow-hidden rounded-[14px] bg-ink">
+                  <WallpaperCoverImage
+                    alt={getWallpaperDisplayTitle(wallpaper)}
+                    sources={getWallpaperCoverSources(wallpaper)}
+                    gradient="night"
+                    imageClassName="brightness-[.95] contrast-[1.02] saturate-[1.06]"
+                    sizes="96px"
+                    src={getWallpaperPreviewUrl(wallpaper, "medium")}
                   />
-                ) : null}
-              </div>
-              <div className="flex min-w-0 flex-col justify-between py-1 pr-1">
-                <div>
-                  <p className="line-clamp-2 font-body text-[15px] font-semibold leading-tight text-ink">
-                    {getWallpaperDisplayTitle(wallpaper)}
-                  </p>
-                  <p className="mt-1 text-[8px] uppercase tracking-[0.2em] text-muted">
-                    {getWallpaperMeta(wallpaper)}
-                  </p>
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_24%_18%,rgba(255,111,77,0.24),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.06),rgba(0,0,0,0.14))]" />
+                  {wallpaper.videoUrl ? (
+                    <MotionPreviewLayer
+                      isActive={activePreviewId === wallpaper.id}
+                      videoUrl={wallpaper.videoUrl}
+                    />
+                  ) : null}
                 </div>
-                <div className="mt-3 flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-muted/70">
-                    <span className="h-1.5 w-1.5 rounded-full bg-red/70" />
-                    Live loop
-                  </span>
-                  <span className="text-[13px] text-muted transition group-hover:text-red">
-                    ↗
-                  </span>
+                <div className="flex min-w-0 flex-col justify-between py-1 pr-1">
+                  <div>
+                    <p className="line-clamp-2 font-body text-[15px] font-semibold leading-tight text-ink">
+                      {getWallpaperDisplayTitle(wallpaper)}
+                    </p>
+                    <p className="mt-1 text-[8px] uppercase tracking-[0.2em] text-muted">
+                      {getWallpaperMeta(wallpaper)}
+                    </p>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-muted/70">
+                      <span
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          hasVideo ? "bg-red/70" : "bg-ink/20",
+                        )}
+                      />
+                      {hasVideo ? "Live loop" : "Cover"}
+                    </span>
+                    <span className="text-[13px] text-muted transition group-hover:text-red">
+                      ↗
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -522,14 +532,14 @@ export function ExploreCatalog({
           method="get"
         >
           <input
-            className="glass-field min-w-0 px-4 py-3 text-[18px] outline-none transition placeholder:text-muted"
+            className="glass-field min-w-0 px-4 py-3 text-[15px] outline-none transition placeholder:text-muted sm:text-[18px]"
             defaultValue={query}
             name="q"
             placeholder={copy.searchPlaceholder}
             type="text"
           />
           <input
-            className="glass-field min-w-0 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.2em] outline-none transition placeholder:text-muted"
+            className="glass-field min-w-0 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.16em] outline-none transition placeholder:text-muted sm:text-[11px] sm:tracking-[0.2em]"
             defaultValue={tag}
             name="tag"
             placeholder={copy.tagPlaceholder}
@@ -578,12 +588,12 @@ export function ExploreCatalog({
           </div>
         ) : null}
 
-        <div className="scrollbar-none mt-5 flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible">
+        <div className="scrollbar-none -mx-5 mt-5 flex max-w-[100vw] gap-2 overflow-x-auto px-5 pb-2 md:mx-0 md:max-w-none md:flex-wrap md:overflow-visible md:px-0">
           <Link
             className={
               category
-                ? "glass-chip px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-ink transition hover:text-red"
-                : "glass-chip-active px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
+                ? "glass-chip shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-ink transition hover:text-red"
+                : "glass-chip-active shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
             }
             href={buildExploreHref(undefined, {
               q: query || undefined,
@@ -603,8 +613,8 @@ export function ExploreCatalog({
                 key={item.slug}
                 className={
                   isActive
-                    ? "glass-chip-active px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
-                    : "glass-chip px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-ink transition hover:text-red"
+                    ? "glass-chip-active shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
+                    : "glass-chip shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-ink transition hover:text-red"
                 }
                 href={buildExploreHref(item.slug, {
                   q: query || undefined,
@@ -620,7 +630,7 @@ export function ExploreCatalog({
           })}
         </div>
 
-        <div className="scrollbar-none mt-4 flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible">
+        <div className="scrollbar-none -mx-5 mt-4 flex max-w-[100vw] gap-2 overflow-x-auto px-5 pb-2 md:mx-0 md:max-w-none md:flex-wrap md:overflow-visible md:px-0">
           {EXPLORE_SORT_OPTIONS.map((item) => {
             const isActive = item.value === sort;
 
@@ -629,8 +639,8 @@ export function ExploreCatalog({
                 key={item.value}
                 className={
                   isActive
-                    ? "glass-chip-active px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
-                    : "glass-chip px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-ink"
+                    ? "glass-chip-active shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
+                    : "glass-chip shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-ink"
                 }
                 href={buildExploreHref(category?.slug, {
                   q: query || undefined,
@@ -652,8 +662,8 @@ export function ExploreCatalog({
           <Link
             className={
               motionOnly
-                ? "glass-chip-active px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
-                : "glass-chip px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-ink"
+                ? "glass-chip-active shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
+                : "glass-chip shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-ink"
             }
             href={buildExploreHref(category?.slug, {
               q: query || undefined,
@@ -668,8 +678,8 @@ export function ExploreCatalog({
           <Link
             className={
               featuredOnly
-                ? "glass-chip-active px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
-                : "glass-chip px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-ink"
+                ? "glass-chip-active shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
+                : "glass-chip shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-ink"
             }
             href={buildExploreHref(category?.slug, {
               q: query || undefined,
@@ -829,11 +839,12 @@ export function ExploreCatalog({
                   : "wallpaper-card-grid mt-10 transition-opacity"
               }
             >
-              {wallpapers.map((wallpaper) => (
+              {wallpapers.map((wallpaper, index) => (
                 <WallpaperGridCard
                   key={wallpaper.id}
                   aspectRatio={motionOnly ? "aspect-[9/16]" : undefined}
                   imageQuality={motionOnly ? "medium" : "default"}
+                  loading={index < 12 ? "eager" : "lazy"}
                   wallpaper={wallpaper}
                 />
               ))}

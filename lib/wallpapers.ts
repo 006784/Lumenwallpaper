@@ -54,6 +54,10 @@ import {
   getWallpaperPreviewUrl,
   isVideoWallpaperFile,
 } from "@/lib/wallpaper-presenters";
+import {
+  getProfessionalWallpaperTitle,
+  looksLikeImportedWallpaperTitle,
+} from "@/lib/wallpaper-title";
 import type { Database } from "@/types/database";
 import type {
   DownloadHistoryItem,
@@ -453,59 +457,23 @@ type IncrementWallpaperDownloadsRow =
 
 const WALLPAPER_FILE_QUERY_BATCH_SIZE = 200;
 
-function getWallpaperDisplayTitle(
-  wallpaper: Pick<Wallpaper, "title" | "aiTags" | "tags">,
-) {
-  const normalizedTitle = wallpaper.title.trim().toLowerCase();
-  const looksLikeImportedFilename =
-    /^(beauty|image|img|photo|wallpaper|lumen)[\s_-]*[a-z]*[\s_-]*\d{2,}$/i.test(
-      normalizedTitle,
-    ) ||
-    /^(dsc|img|pxl|mvimg|mmexport|wechatimg)[\s_-]?\d+/i.test(normalizedTitle) ||
-    /\b(copy|final|edit|export|upload)\b/i.test(normalizedTitle) ||
-    /^精选壁纸(?:\s+\d+)?$/i.test(normalizedTitle) ||
-    /^lumen curated(?:\s+\d+)?$/i.test(normalizedTitle) ||
-    /^(?:[a-f0-9]{4,12}[\s_-]){3,}[a-f0-9]{4,24}$/i.test(normalizedTitle);
-
-  return (
-    wallpaper.aiTags.filter(Boolean).slice(0, 3).join(" · ") ||
-    wallpaper.tags.filter(Boolean).slice(0, 3).join(" · ") ||
-    (looksLikeImportedFilename ? "精选壁纸" : wallpaper.title)
-  );
-}
-
-function looksLikeImportedWallpaperTitle(title: string) {
-  const normalizedTitle = title.trim().toLowerCase();
-
-  return (
-    /^(beauty|image|img|photo|wallpaper|lumen)[\s_-]*[a-z]*[\s_-]*\d{2,}$/i.test(
-      normalizedTitle,
-    ) ||
-    /^(dsc|img|pxl|mvimg|mmexport|wechatimg)[\s_-]?\d+/i.test(normalizedTitle) ||
-    /\b(copy|final|edit|export|upload)\b/i.test(normalizedTitle) ||
-    /^精选壁纸(?:\s+\d+)?$/i.test(normalizedTitle) ||
-    /^lumen curated(?:\s+\d+)?$/i.test(normalizedTitle) ||
-    /^(?:[a-f0-9]{4,12}[\s_-]){3,}[a-f0-9]{4,24}$/i.test(normalizedTitle)
-  );
-}
-
 function buildSemanticWallpaperTitle(input: {
   aiTags?: string[];
   tags?: string[];
   fallback?: string;
 }) {
-  return (
-    input.aiTags?.filter(Boolean).slice(0, 3).join(" · ") ||
-    input.tags?.filter(Boolean).slice(0, 3).join(" · ") ||
-    input.fallback ||
-    "精选壁纸"
-  );
+  return getProfessionalWallpaperTitle({
+    aiCaption: null,
+    aiTags: input.aiTags ?? [],
+    tags: input.tags ?? [],
+    title: input.fallback ?? "精选壁纸",
+  });
 }
 
 function withDisplayTitle<T extends Wallpaper>(wallpaper: T): T {
   return {
     ...wallpaper,
-    title: getWallpaperDisplayTitle(wallpaper),
+    title: getProfessionalWallpaperTitle(wallpaper),
   };
 }
 
@@ -2033,9 +2001,11 @@ async function enrichWallpaperWithAiMetadata(
       ai_analyzed_at: new Date().toISOString(),
       ...(looksLikeImportedWallpaperTitle(input.title)
         ? {
-            title: buildSemanticWallpaperTitle({
+            title: getProfessionalWallpaperTitle({
+              aiCaption: analysis.caption,
               aiTags: analysis.tags,
-              fallback: "精选壁纸",
+              tags: [],
+              title: input.title,
             }),
           }
         : {}),
@@ -2960,7 +2930,7 @@ export async function getSimilarWallpapers(
     source: {
       id: source.id,
       slug: source.slug,
-      title: getWallpaperDisplayTitle(source),
+      title: getProfessionalWallpaperTitle(source),
     },
     groups,
   };
@@ -3013,7 +2983,7 @@ export async function getWallpaperMotionSnapshot(
     source: {
       id: wallpaper.id,
       slug: wallpaper.slug,
-      title: getWallpaperDisplayTitle(wallpaper),
+      title: getProfessionalWallpaperTitle(wallpaper),
     },
   };
 }
@@ -3056,7 +3026,7 @@ export async function getWallpaperTrustSnapshot(
     source: {
       id: wallpaper.id,
       slug: wallpaper.slug,
-      title: getWallpaperDisplayTitle(wallpaper),
+      title: getProfessionalWallpaperTitle(wallpaper),
     },
   };
 }
@@ -3215,7 +3185,7 @@ function getDuplicateWallpaperItem(
     id: wallpaper.id,
     slug: wallpaper.slug,
     title: wallpaper.title,
-    displayTitle: getWallpaperDisplayTitle(wallpaper),
+    displayTitle: getProfessionalWallpaperTitle(wallpaper),
     status: wallpaper.status,
     kind: wallpaper.videoUrl ? "video" : "image",
     creatorUsername: wallpaper.creator?.username ?? null,
@@ -3494,7 +3464,7 @@ export async function batchRenameWallpapers(
     if (updated) {
       updatedWallpapers.push({
         ...updated,
-        displayTitle: getWallpaperDisplayTitle(updated),
+        displayTitle: getProfessionalWallpaperTitle(updated),
       });
     }
   }
@@ -3542,7 +3512,7 @@ export async function batchUpdateWallpapers(
     if (updated) {
       updatedWallpapers.push({
         ...updated,
-        displayTitle: getWallpaperDisplayTitle(updated),
+        displayTitle: getProfessionalWallpaperTitle(updated),
       });
     }
   }

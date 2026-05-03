@@ -100,18 +100,18 @@ export function getLocalizedFooterColumns(
 }
 
 export const heroStats: HeroStat[] = [
-  { value: "48K+", label: "精选壁纸" },
-  { value: "2.1M", label: "月活用户" },
-  { value: "3,200", label: "创作者" },
+  { value: "820+", label: "精选壁纸" },
+  { value: "11", label: "动态循环" },
+  { value: "8", label: "人物合集" },
 ];
 
 export function getLocalizedHeroStats(locale: SupportedLocale): HeroStat[] {
   const copy = getLocalizedHomeDataCopy(locale);
 
   return [
-    { value: "48K+", label: copy.stats.wallpapers },
-    { value: "2.1M", label: copy.stats.monthlyUsers },
-    { value: "3,200", label: copy.stats.creators },
+    { value: "820+", label: copy.stats.wallpapers },
+    { value: "11", label: copy.stats.monthlyUsers },
+    { value: "8", label: copy.stats.creators },
   ];
 }
 

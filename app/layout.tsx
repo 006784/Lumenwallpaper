@@ -34,7 +34,7 @@ export function generateMetadata(): Metadata {
     icons: {
       icon: [
         { url: "/icon.svg", type: "image/svg+xml" },
-        { url: "/favicon.ico", type: "image/svg+xml" },
+        { url: "/favicon.ico", type: "image/x-icon" },
       ],
       shortcut: "/favicon.ico",
       apple: "/icon.svg",

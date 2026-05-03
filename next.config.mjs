@@ -20,6 +20,7 @@ function getRemoteImagePatterns() {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  poweredByHeader: false,
   images: {
     remotePatterns: getRemoteImagePatterns(),
     formats: ["image/avif", "image/webp"],

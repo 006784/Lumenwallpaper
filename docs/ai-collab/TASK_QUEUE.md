@@ -6,6 +6,28 @@
 
 ## 进行中
 
+### TASK-047 · 正式站观感与数据可信度清理
+
+- **状态**: ✅ codex done
+- **内容**: 用户要求一次性处理正式站标题像机器标签、INS AI 失败兜底、动态区无视频仍显示播放状态、封面占位观感、移动端筛选裁切、首页假数据、`x-powered-by` 与 favicon MIME 等专业度问题
+- **Codex 完成**:
+  - 新增统一壁纸标题清理逻辑，明显导入文件名、技术视频名、`ins · instagram · celebrity`、泛标签标题会改成更像作品名的展示标题
+  - INS 专区上传即使 AI 打标签失败，也会根据人物合集自动生成默认标题和人物标签；上传队列也会按人物专区 / 动态视频生成更可读标题
+  - Explore / INS / 动态列表首屏卡片改为 eager 加载，减少首屏浅色占位；动态侧栏不再给无视频条目显示 Live loop 状态
+  - Explore 移动端搜索与分类 / 排序筛选改为更稳的可横向滚动布局，避免按钮和 placeholder 被裁切
+  - 首页和创作者区移除夸张运营数字，改为与当前公开规模更接近的保守统计与审核文案
+  - Next 配置关闭 `x-powered-by`；根 metadata 与 manifest 修正 `/favicon.ico` 的 MIME 类型
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - `git diff --check`
+  - `pnpm build`（通过；本地 Supabase 读取仍有 transient `fetch failed` 重试日志，sitemap 已降级不阻断构建）
+  - 本地 Playwright 截图复查 `/explore` 移动端与 `/explore?motion=true` 桌面端，移动端搜索 placeholder 与筛选区不再明显裁切
+  - 本地 `curl -I /` 确认不再返回 `x-powered-by`；`curl -I /manifest.webmanifest` 返回 `application/manifest+json`
+- **剩余外部配置**:
+  - 生产 AI key 仍需在 Vercel / AI provider 控制台修复；代码已做 INS fallback，但真实 AI 标签恢复依赖正确 key
+  - Cloudflare Rocket Loader 需要在 Cloudflare 控制台关闭；本轮 Cloudflare API connector 返回 Auth required，无法从代码侧直接关闭
+
 ### TASK-046 · 上传 Studio 整批授权确认
 
 - **状态**: ✅ codex done

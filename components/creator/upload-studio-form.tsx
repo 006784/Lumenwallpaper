@@ -139,6 +139,40 @@ function toDisplayTitleFromFilename(filename: string) {
   return normalized || "Lumen Wallpaper";
 }
 
+function looksLikeTechnicalFilename(filename: string) {
+  return /(?:^|[\s_-])(?:uhd|hd|4k|\d{3,4}|\d{2,3}fps)(?:$|[\s_-])/i.test(
+    filename.replace(/\.[^/.]+$/, ""),
+  );
+}
+
+function getDefaultQueueTitle(
+  file: File,
+  info: PendingFileInfo,
+  insPickCollection: UploadStudioFormProps["insPickCollection"],
+) {
+  if (insPickCollection) {
+    const filenameTitle = toDisplayTitleFromFilename(file.name);
+
+    return looksLikeTechnicalFilename(file.name)
+      ? `${insPickCollection.label} · Archive frame`
+      : `${insPickCollection.label} · ${filenameTitle}`;
+  }
+
+  if (info.kind === "video") {
+    const longEdge = Math.max(info.width ?? 0, info.height ?? 0);
+    const resolution =
+      longEdge >= 3800 ? "4K" : longEdge >= 2500 ? "2K" : "HD";
+    const orientation =
+      info.width && info.height && info.height > info.width
+        ? "Portrait"
+        : "Landscape";
+
+    return `Motion Loop · ${resolution} ${orientation}`;
+  }
+
+  return toDisplayTitleFromFilename(file.name);
+}
+
 function isVideoFileType(contentType: string) {
   return contentType.startsWith("video/");
 }
@@ -703,7 +737,7 @@ export function UploadStudioForm({
           id: crypto.randomUUID(),
           file,
           info,
-          title: toDisplayTitleFromFilename(file.name),
+          title: getDefaultQueueTitle(file, info, insPickCollection),
           description: "",
           tagsValue: defaultTags,
           colorsValue: "",

@@ -17,6 +17,7 @@ import {
 import { revalidateWallpaperPublicData } from "@/lib/revalidate";
 import { getWallpaperCreateErrorResponse } from "@/lib/wallpaper-create-errors";
 import { createWallpaperRecord, createWallpaperSchema } from "@/lib/wallpapers";
+import { getProfessionalWallpaperTitle } from "@/lib/wallpaper-title";
 import type { InsPickUploadResult } from "@/types/ins-picks";
 
 const collectionSchema = z.object({
@@ -78,9 +79,19 @@ export async function POST(request: Request) {
       });
     }
 
+    const uploadTags = getInsPickUploadTags(collection, payload.tags);
     const normalizedPayload = createWallpaperSchema.parse({
       ...payload,
-      tags: getInsPickUploadTags(collection, payload.tags),
+      tags: uploadTags,
+      title: getProfessionalWallpaperTitle({
+        aiCaption: null,
+        aiTags: [],
+        height: payload.height,
+        tags: uploadTags,
+        title: payload.title,
+        videoUrl: payload.videoUrl,
+        width: payload.width,
+      }),
     });
 
     logger.start({

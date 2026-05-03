@@ -22,6 +22,7 @@ type WallpaperGridCardProps = {
   /** Tailwind aspect-ratio class, e.g. "aspect-[9/18]". Defaults to "aspect-[4/5]". */
   aspectRatio?: string;
   className?: string;
+  loading?: "eager" | "lazy";
 };
 
 export function WallpaperGridCard({
@@ -29,6 +30,7 @@ export function WallpaperGridCard({
   imageQuality = "default",
   aspectRatio = "aspect-[4/5]",
   className,
+  loading = "lazy",
 }: WallpaperGridCardProps) {
   const [isPreviewActive, setIsPreviewActive] = useState(false);
   const previewUrl = getWallpaperPreviewUrl(wallpaper, imageQuality);
@@ -72,6 +74,7 @@ export function WallpaperGridCard({
           sources={coverSources}
           gradient={gradientKey}
           imageClassName={wallpaper.videoUrl ? "brightness-[.96] saturate-[1.04]" : undefined}
+          loading={loading}
           sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
           src={previewUrl}
         />

@@ -8,6 +8,14 @@ type JoinSectionProps = {
 
 export function JoinSection({ locale }: JoinSectionProps) {
   const copy = getHomeUiCopy(locale);
+  const reviewMetricValue =
+    locale === "zh-CN"
+      ? "人工"
+      : locale === "ja"
+        ? "手動"
+        : locale === "ko"
+          ? "수동"
+          : "Manual";
 
   return (
     <section className="px-4 py-12 md:px-10 md:py-16">
@@ -34,9 +42,9 @@ export function JoinSection({ locale }: JoinSectionProps) {
 
           <div className="flex flex-wrap gap-8">
             {[
-              ["3.2K", copy.join.metricCreators],
-              ["48K", copy.join.metricWorks],
-              ["70%", copy.join.metricRevenue],
+              ["8", copy.join.metricCreators],
+              ["820+", copy.join.metricWorks],
+              [reviewMetricValue, copy.join.metricRevenue],
             ].map(([value, label]) => (
               <div key={label}>
                 <p className="font-mono text-[38px] leading-none">{value}</p>

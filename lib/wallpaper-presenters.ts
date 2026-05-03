@@ -13,6 +13,10 @@ import {
   getI18nMessages,
   translateStaticTerm,
 } from "@/lib/i18n";
+import {
+  getProfessionalWallpaperTitle,
+  looksLikeImportedWallpaperTitle,
+} from "@/lib/wallpaper-title";
 import type { SupportedLocale } from "@/types/i18n";
 import type {
   Wallpaper,
@@ -365,25 +369,6 @@ function getWallpaperResolutionLabel(
   return messages.wallpaper.hd;
 }
 
-function looksLikeImportedFilename(value: string) {
-  const normalized = value.trim().toLowerCase();
-
-  if (!normalized) {
-    return false;
-  }
-
-  return (
-    /^(beauty|image|img|photo|wallpaper|lumen)[\s_-]*[a-z]*[\s_-]*\d{2,}$/i.test(
-      normalized,
-    ) ||
-    /^(dsc|img|pxl|mvimg|mmexport|wechatimg)[\s_-]?\d+/i.test(normalized) ||
-    /\b(copy|final|edit|export|upload)\b/i.test(normalized) ||
-    /^精选壁纸(?:\s+\d+)?$/i.test(normalized) ||
-    /^lumen curated(?:\s+\d+)?$/i.test(normalized) ||
-    /^(?:[a-f0-9]{4,12}[\s_-]){3,}[a-f0-9]{4,24}$/i.test(normalized)
-  );
-}
-
 function getPrimaryWallpaperLabel(
   wallpaper: Pick<Wallpaper, "aiCategory" | "aiTags" | "tags">,
   locale: SupportedLocale = DEFAULT_LOCALE,
@@ -400,10 +385,26 @@ function getPrimaryWallpaperLabel(
 }
 
 export function getWallpaperDisplayTitle(
-  wallpaper: Pick<Wallpaper, "aiTags" | "tags" | "title">,
+  wallpaper: Pick<Wallpaper, "aiTags" | "tags" | "title"> &
+    Partial<
+      Pick<Wallpaper, "aiCaption" | "files" | "height" | "videoUrl" | "width">
+    >,
   locale: SupportedLocale = DEFAULT_LOCALE,
 ) {
   const messages = getI18nMessages(locale);
+  const professionalTitle = getProfessionalWallpaperTitle(wallpaper);
+
+  if (professionalTitle !== wallpaper.title) {
+    return professionalTitle;
+  }
+
+  if (
+    wallpaper.title.trim().length > 0 &&
+    !looksLikeImportedWallpaperTitle(wallpaper.title)
+  ) {
+    return wallpaper.title;
+  }
+
   const aiLabel = wallpaper.aiTags
     .filter(Boolean)
     .slice(0, 3)
@@ -424,7 +425,7 @@ export function getWallpaperDisplayTitle(
     return tagLabel;
   }
 
-  if (looksLikeImportedFilename(wallpaper.title)) {
+  if (looksLikeImportedWallpaperTitle(wallpaper.title)) {
     return messages.wallpaper.curated;
   }
 
