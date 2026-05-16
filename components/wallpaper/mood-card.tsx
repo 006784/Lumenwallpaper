@@ -76,10 +76,7 @@ export function MoodCard({ card }: MoodCardProps) {
       </div>
 
       <div className="absolute inset-x-2.5 bottom-2.5 rounded-[18px] bg-white/76 px-3.5 pb-3.5 pt-4 shadow-[0_12px_24px_rgba(37,58,62,0.12)] backdrop-blur md:translate-y-[106%] md:transition-transform md:duration-info md:ease-[var(--ease-film)] md:group-hover:translate-y-0 dark:border dark:border-paper/10 dark:bg-paper/10 dark:shadow-[0_18px_32px_rgba(0,0,0,0.24)]">
-        <p className="line-clamp-2 font-body text-[16px] font-semibold leading-tight text-ink">
-          {card.name}
-        </p>
-        <p className="mt-1 text-[8px] uppercase tracking-[0.22em] text-muted">
+        <p className="text-[8px] uppercase tracking-[0.22em] text-muted">
           {card.meta}
         </p>
         {card.aiTags && card.aiTags.length > 0 ? (

@@ -57,17 +57,7 @@ export function DarkroomCard({ item }: DarkroomCardProps) {
       </div>
 
       <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-5 pt-10">
-        <p
-          className={cn(
-            "font-body font-semibold text-paper transition-[letter-spacing] duration-300",
-            item.featured
-              ? "text-[24px] group-hover:tracking-[0.01em]"
-              : "text-[18px] group-hover:tracking-[0.005em]",
-          )}
-        >
-          {item.title}
-        </p>
-        <p className="mt-1 text-[9px] uppercase tracking-[0.28em] text-paper/60">
+        <p className="text-[9px] uppercase tracking-[0.28em] text-paper/60">
           {item.meta}
         </p>
         <div className="mt-3 h-px w-12 bg-paper/16 transition-[width,background-color] duration-300 group-hover:w-20 group-hover:bg-gold/60" />
