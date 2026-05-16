@@ -76,29 +76,43 @@ function CollectionPreview({
     );
   }
 
+  const [featured, ...rest] = previewWallpapers;
+
   return (
-    <div className="grid h-full min-h-[260px] grid-cols-2 gap-2 p-3">
-      {previewWallpapers.map((wallpaper, index) => (
-        <div
-          key={wallpaper.id}
-          className={cn(
-            "relative overflow-hidden bg-black shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]",
-            index === 0 ? "rounded-tl-[26px]" : "",
-            index === 1 ? "rounded-tr-[26px]" : "",
-            index === 2 ? "rounded-bl-[26px]" : "",
-            index === 3 ? "rounded-br-[26px]" : "",
-          )}
-        >
+    <div className="grid h-full min-h-[300px] grid-cols-[1.4fr_1fr] gap-2 p-3">
+      {/* 主图 */}
+      <div className="relative overflow-hidden rounded-[22px] bg-black shadow-[0_8px_24px_rgba(0,0,0,0.22)]">
+        {featured ? (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center transition duration-700 group-hover:scale-[1.04]"
+              style={{ backgroundImage: `url("${getWallpaperPreviewUrl(featured, "medium")}")` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,rgba(255,109,45,0.9),rgba(23,79,80,0.5),rgba(214,176,106,0.8))]" />
+          </>
+        ) : null}
+      </div>
+      {/* 副图竖列 */}
+      <div className="flex flex-col gap-2">
+        {rest.slice(0, 3).map((wallpaper, i) => (
           <div
-            className="absolute inset-0 bg-cover bg-center transition duration-card group-hover:scale-[1.04]"
-            style={{
-              backgroundImage: `url("${getWallpaperPreviewUrl(wallpaper, "medium")}")`,
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/64 via-black/10 to-transparent" />
-          <div className="absolute inset-x-3 bottom-3 h-px bg-paper/20" />
-        </div>
-      ))}
+            key={wallpaper.id}
+            className={cn(
+              "relative flex-1 overflow-hidden bg-black shadow-[0_4px_12px_rgba(0,0,0,0.18)]",
+              i === 0 ? "rounded-tr-[22px]" : "",
+              i === 2 ? "rounded-br-[22px]" : "",
+              i === 1 ? "rounded-[6px]" : "",
+            )}
+          >
+            <div
+              className="absolute inset-0 bg-cover bg-center transition duration-700 group-hover:scale-[1.04]"
+              style={{ backgroundImage: `url("${getWallpaperPreviewUrl(wallpaper, "medium")}")` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -375,9 +389,14 @@ export function InsPicksGallery({
                   }))}
                 />
               ) : null}
-              <div className="wallpaper-card-grid grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-                {wallpapers.map((wallpaper) => (
-                  <WallpaperGridCard key={wallpaper.id} wallpaper={wallpaper} />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {wallpapers.map((wallpaper, index) => (
+                  <WallpaperGridCard
+                    key={wallpaper.id}
+                    wallpaper={wallpaper}
+                    aspectRatio="aspect-[3/4]"
+                    loading={index < 6 ? "eager" : "lazy"}
+                  />
                 ))}
               </div>
             </>
