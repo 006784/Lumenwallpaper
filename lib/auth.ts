@@ -21,11 +21,18 @@ export const SESSION_MAX_AGE_DAYS_ENV = "LUMEN_SESSION_MAX_AGE_DAYS";
 export const FRAME_SESSION_COOKIE = "frame_session";
 
 const sessionsTable = "sessions" satisfies keyof Database["public"]["Tables"];
+const DEV_AUTH_SECRET = "lumen-development-auth-secret";
 
 type SessionRow = Database["public"]["Tables"]["sessions"]["Row"];
 
 type SessionTokenPayload = {
   user: SessionUser;
+  expiresAt: string;
+};
+
+type DevelopmentMagicLinkPayload = {
+  email: string;
+  redirectTo: string;
   expiresAt: string;
 };
 
@@ -47,17 +54,63 @@ function fromBase64Url(input: string) {
 function getAuthSecret() {
   const secret = process.env.NEXTAUTH_SECRET ?? "";
 
-  if (!secret) {
-    throw new Error("NEXTAUTH_SECRET is required for authentication.");
+  if (secret) {
+    return secret;
   }
 
-  return secret;
+  if (isDevelopmentAuthFallbackEnabled()) {
+    return DEV_AUTH_SECRET;
+  }
+
+  throw new Error("NEXTAUTH_SECRET is required for authentication.");
+}
+
+function isProductionEnvironment() {
+  return process.env.NODE_ENV === "production";
+}
+
+export function isDevelopmentAuthFallbackEnabled() {
+  return (
+    !isProductionEnvironment() &&
+    process.env.LUMEN_DISABLE_DEV_AUTH_FALLBACK !== "true"
+  );
+}
+
+function assertMagicLinkStorageConfigured() {
+  if (!isSupabaseConfigured() && !isDevelopmentAuthFallbackEnabled()) {
+    throw new Error("Supabase is required before sending magic links.");
+  }
 }
 
 function signPayload(payload: string) {
   return toBase64Url(
     createHmac("sha256", getAuthSecret()).update(payload).digest(),
   );
+}
+
+function createSignedToken(payload: unknown, signatureScope: string) {
+  const body = toBase64Url(JSON.stringify(payload));
+  const signature = signPayload(`${signatureScope}.${body}`);
+
+  return `${body}.${signature}`;
+}
+
+function readSignedToken<T>(token: string, signatureScope: string) {
+  const [body, signature] = token.split(".");
+
+  if (
+    !body ||
+    !signature ||
+    !safeSignatureEquals(signPayload(`${signatureScope}.${body}`), signature)
+  ) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(fromBase64Url(body).toString("utf8")) as T;
+  } catch {
+    return null;
+  }
 }
 
 function safeSignatureEquals(left: string, right: string) {
@@ -99,7 +152,13 @@ export function getAuthBaseUrl() {
 }
 
 export function isAuthConfigured() {
-  return Boolean(process.env.NEXTAUTH_SECRET);
+  return (
+    Boolean(process.env.NEXTAUTH_SECRET) || isDevelopmentAuthFallbackEnabled()
+  );
+}
+
+export function canCreateMagicLinkSessions() {
+  return isSupabaseConfigured() || isDevelopmentAuthFallbackEnabled();
 }
 
 export function getSessionMaxAgeDays() {
@@ -146,10 +205,7 @@ export function buildMagicLinkUrl(token: string) {
 }
 
 export function createSessionCookieValue(payload: SessionTokenPayload) {
-  const serialized = JSON.stringify(payload);
-  const body = toBase64Url(serialized);
-  const signature = signPayload(body);
-  return `${body}.${signature}`;
+  return createSignedToken(payload, "session");
 }
 
 export function readSessionCookieValue(
@@ -166,7 +222,7 @@ export function readSessionCookieValue(
   if (
     !body ||
     !signature ||
-    !safeSignatureEquals(signPayload(body), signature)
+    !safeSignatureEquals(signPayload(`session.${body}`), signature)
   ) {
     return null;
   }
@@ -237,23 +293,44 @@ export function getSessionCookieOptions() {
     maxAge: 60 * 60 * 24 * sessionMaxAgeDays,
     path: "/",
     sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure: isProductionEnvironment(),
   };
+}
+
+function createDevelopmentMagicLinkToken(payload: DevelopmentMagicLinkPayload) {
+  return createSignedToken(payload, "magic-link");
+}
+
+function readDevelopmentMagicLinkToken(token: string) {
+  return readSignedToken<DevelopmentMagicLinkPayload>(token, "magic-link");
 }
 
 export async function createMagicLinkSession(
   email: string,
   redirectTo?: string | null,
 ) {
+  assertMagicLinkStorageConfigured();
+
+  const expiresAt = new Date(
+    Date.now() + MAGIC_LINK_EXPIRY_MINUTES * 60 * 1000,
+  ).toISOString();
+
   if (!isSupabaseConfigured()) {
-    throw new Error("Supabase is required before sending magic links.");
+    const token = createDevelopmentMagicLinkToken({
+      email: email.trim().toLowerCase(),
+      redirectTo: normalizeRedirectPath(redirectTo),
+      expiresAt,
+    });
+
+    return {
+      token,
+      expiresAt,
+      magicLink: buildMagicLinkUrl(token),
+    };
   }
 
   const token = createMagicLinkToken();
   const tokenHash = hashMagicLinkToken(token);
-  const expiresAt = new Date(
-    Date.now() + MAGIC_LINK_EXPIRY_MINUTES * 60 * 1000,
-  ).toISOString();
   const client = createSupabaseAdminClient();
   const { error } = await client.from(sessionsTable).insert({
     email: email.trim().toLowerCase(),
@@ -274,11 +351,38 @@ export async function createMagicLinkSession(
 }
 
 export async function consumeMagicLinkSession(token: string) {
-  if (!isSupabaseConfigured()) {
-    throw new Error("Supabase is required before verifying magic links.");
-  }
+  assertMagicLinkStorageConfigured();
 
   const tokenHash = hashMagicLinkToken(token);
+
+  if (!isSupabaseConfigured()) {
+    const session = readDevelopmentMagicLinkToken(token);
+
+    if (!session) {
+      throw new Error("This login link is invalid.");
+    }
+
+    if (new Date(session.expiresAt).getTime() <= Date.now()) {
+      throw new Error("This login link has expired.");
+    }
+
+    const user = await findOrCreateUserByEmail(session.email);
+    const sessionMaxAgeDays = getSessionMaxAgeDays();
+    const expiresAt = new Date(
+      Date.now() + sessionMaxAgeDays * 24 * 60 * 60 * 1000,
+    ).toISOString();
+
+    return {
+      user,
+      redirectTo: normalizeRedirectPath(session.redirectTo),
+      sessionCookieValue: createSessionCookieValue({
+        user,
+        expiresAt,
+      }),
+      sessionExpiresAt: expiresAt,
+    };
+  }
+
   const client = createSupabaseAdminClient();
   const { data, error } = await client
     .from(sessionsTable)

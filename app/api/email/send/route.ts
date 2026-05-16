@@ -8,8 +8,10 @@ import {
   jsonSuccess,
 } from "@/lib/api";
 import {
+  canCreateMagicLinkSessions,
   createMagicLinkSession,
   isAuthConfigured,
+  isDevelopmentAuthFallbackEnabled,
   normalizeRedirectPath,
 } from "@/lib/auth";
 import {
@@ -19,7 +21,6 @@ import {
   normalizeRateLimitKeyPart,
 } from "@/lib/rate-limit";
 import { isResendConfigured, sendMagicLinkEmail } from "@/lib/resend";
-import { isSupabaseConfigured } from "@/lib/supabase";
 
 const sendMagicLinkSchema = z.object({
   email: z.string().trim().email(),
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
     });
   }
 
-  if (!isSupabaseConfigured()) {
+  if (!canCreateMagicLinkSessions()) {
     return jsonError("Supabase is not configured.", {
       status: 503,
       code: "SUPABASE_NOT_CONFIGURED",
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
     );
     const verifyRequestUrl = `/verify?email=${encodeURIComponent(payload.email)}`;
     const isDevFallback =
-      process.env.NODE_ENV !== "production" && !isResendConfigured();
+      isDevelopmentAuthFallbackEnabled() && !isResendConfigured();
 
     if (isDevFallback) {
       logger.done("magic_link.created", {

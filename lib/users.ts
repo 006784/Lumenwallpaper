@@ -1,10 +1,24 @@
-import { createSupabaseAdminClient, isSupabaseConfigured } from "@/lib/supabase";
+import { createHash, randomUUID } from "node:crypto";
+
+import {
+  createSupabaseAdminClient,
+  isSupabaseConfigured,
+} from "@/lib/supabase";
 import type { Database } from "@/types/database";
 import type { SessionUser } from "@/types/auth";
 
 const usersTable = "users" satisfies keyof Database["public"]["Tables"];
 
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
+
+const developmentUsersByEmail = new Map<string, SessionUser>();
+
+function isDevelopmentUserFallbackEnabled() {
+  return (
+    process.env.NODE_ENV !== "production" &&
+    process.env.LUMEN_DISABLE_DEV_AUTH_FALLBACK !== "true"
+  );
+}
 
 function getDefaultLoginUsername() {
   const configuredUsername =
@@ -22,7 +36,26 @@ function slugifyUsername(input: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-  return sanitized || `frame-user-${crypto.randomUUID().slice(0, 8)}`;
+  return sanitized || `frame-user-${randomUUID().slice(0, 8)}`;
+}
+
+function createDevelopmentSessionUser(email: string): SessionUser {
+  const normalizedEmail = email.trim().toLowerCase();
+  const emailHash = createHash("sha256")
+    .update(normalizedEmail)
+    .digest("hex")
+    .slice(0, 12);
+  const usernameSeed = slugifyUsername(
+    normalizedEmail.split("@")[0] ?? "frame-user",
+  );
+
+  return {
+    id: `dev-${emailHash}`,
+    email: normalizedEmail,
+    username: usernameSeed,
+    avatarUrl: null,
+    bio: "Local development user",
+  };
 }
 
 function mapSessionUser(row: UserRow): SessionUser {
@@ -121,7 +154,9 @@ async function claimDefaultLoginUser(email: string) {
 
 export async function findUserByEmail(email: string) {
   if (!isSupabaseConfigured()) {
-    return null;
+    return isDevelopmentUserFallbackEnabled()
+      ? (developmentUsersByEmail.get(email.trim().toLowerCase()) ?? null)
+      : null;
   }
 
   const client = createSupabaseAdminClient();
@@ -140,7 +175,11 @@ export async function findUserByEmail(email: string) {
 
 export async function findUserById(id: string) {
   if (!isSupabaseConfigured()) {
-    return null;
+    return isDevelopmentUserFallbackEnabled()
+      ? (Array.from(developmentUsersByEmail.values()).find(
+          (user) => user.id === id,
+        ) ?? null)
+      : null;
   }
 
   const client = createSupabaseAdminClient();
@@ -171,6 +210,16 @@ export async function findOrCreateUserByEmail(email: string) {
     return existing;
   }
 
+  if (!isSupabaseConfigured() && isDevelopmentUserFallbackEnabled()) {
+    const developmentUser = createDevelopmentSessionUser(normalizedEmail);
+    developmentUsersByEmail.set(normalizedEmail, developmentUser);
+    return developmentUser;
+  }
+
+  if (!isSupabaseConfigured()) {
+    throw new Error("Supabase is required to create user profiles.");
+  }
+
   const claimedDefaultUser = await claimDefaultLoginUser(normalizedEmail);
 
   if (claimedDefaultUser) {
@@ -178,7 +227,9 @@ export async function findOrCreateUserByEmail(email: string) {
   }
 
   const client = createSupabaseAdminClient();
-  const usernameSeed = slugifyUsername(normalizedEmail.split("@")[0] ?? "frame-user");
+  const usernameSeed = slugifyUsername(
+    normalizedEmail.split("@")[0] ?? "frame-user",
+  );
   const username = await ensureUniqueUsername(usernameSeed);
   const { data, error } = await client
     .from(usersTable)

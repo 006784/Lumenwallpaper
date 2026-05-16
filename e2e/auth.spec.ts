@@ -9,13 +9,62 @@ test.describe("Magic Link 登录", () => {
     const emailInput = page.locator('input[type="email"]');
     await expect(emailInput).toBeVisible();
 
-    await emailInput.fill("test@example.com");
+    await emailInput.fill(`login-${Date.now()}@example.com`);
     await emailInput.press("Enter");
 
-    // 提交后应显示「邮件已发送」之类的提示，或跳转到提示页
     await expect(
-      page.locator("text=/发送|已发|sent|check/i").first(),
+      page.locator("text=/调试链接|已发|sent|check|检查/i").first(),
     ).toBeVisible({ timeout: 10_000 });
+  });
+
+  test("开发环境可完成 Magic Link 验证并建立会话", async ({ page }) => {
+    const email = `dev-login-${Date.now()}@example.com`;
+    const response = await page.request.post("/api/email/send", {
+      data: {
+        email,
+        redirectTo: "/library",
+      },
+    });
+
+    test.skip(
+      response.status() === 503,
+      "当前环境未配置认证，且未启用开发环境登录 fallback。",
+    );
+
+    expect(response.ok()).toBe(true);
+    const payload = (await response.json()) as {
+      data?: {
+        devMagicLink?: string;
+      };
+    };
+    const devMagicLink = payload.data?.devMagicLink;
+
+    if (!devMagicLink) {
+      test.skip(
+        true,
+        "当前环境通过真实邮件发送 Magic Link，无法在 E2E 中读取邮件链接。",
+      );
+      return;
+    }
+
+    await page.goto(devMagicLink);
+    await expect(page).toHaveURL(/\/library/, { timeout: 10_000 });
+
+    const sessionResponse = await page.request.get("/api/auth/session");
+    expect(sessionResponse.ok()).toBe(true);
+    const sessionPayload = (await sessionResponse.json()) as {
+      data?: {
+        authenticated?: boolean;
+        session?: {
+          user?: {
+            email?: string;
+          };
+        };
+      };
+    };
+
+    expect(sessionPayload.data?.authenticated).toBe(true);
+    expect(sessionPayload.data?.session?.user?.email).toBe(email);
   });
 
   test("带无效 token 访问 verify 页面，应展示错误状态", async ({ page }) => {
