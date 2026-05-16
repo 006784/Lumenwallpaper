@@ -510,12 +510,10 @@ export function DownloadPanel({
   }
 
   function applyRatio(nextRatio: RatioOption) {
-    if (formatKey === "original") {
-      return;
-    }
+    const activeFormatKey = formatKey === "original" ? "4k" : formatKey;
 
     setLastCropRatio(nextRatio);
-    applyPanelState(formatKey, nextRatio);
+    applyPanelState(activeFormatKey, nextRatio);
   }
 
   function toggleThirds() {
@@ -1089,7 +1087,7 @@ export function DownloadPanel({
               <div className="mt-2 flex flex-wrap gap-1">
                 {DESKTOP_RATIOS.map((option) => {
                   const active = ratio === option.label;
-                  const disabled = !canCrop;
+                  const disabled = false;
 
                   return (
                     <button
@@ -1155,7 +1153,7 @@ export function DownloadPanel({
               <div className="mt-[6px] flex flex-wrap gap-1">
                 {MOBILE_RATIOS.map((option) => {
                   const active = ratio === option.label;
-                  const disabled = !canCrop;
+                  const disabled = false;
 
                   return (
                     <button
@@ -1214,10 +1212,10 @@ export function DownloadPanel({
                   lineHeight: 1.7,
                 }}
               >
-                {formatKey === "original"
-                  ? "原图会保留源文件尺寸与格式，不做裁切转换。选择 4K 或 WebP 后可裁切导出。"
-                  : (cropWarning ??
-                    "红框表示最终导出区域，框外内容不会进入裁切文件。")}
+                {cropWarning ??
+                  (isCropActive
+                    ? "红框表示最终导出区域，框外内容不会进入裁切文件。"
+                    : "选择比例后自动切换到 4K 导出并裁切，原图格式保留完整画面。")}
               </p>
             </section>
 
