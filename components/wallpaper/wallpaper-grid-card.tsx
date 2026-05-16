@@ -112,12 +112,9 @@ export function WallpaperGridCard({
       <div className="space-y-2 px-3 pb-3 pt-0.5 sm:px-4 sm:pb-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="line-clamp-2 font-body text-[15px] font-semibold leading-tight sm:text-[16px]">
-              {displayTitle}
-            </p>
             <p
               className={cn(
-                "mt-1 text-[9px] uppercase tracking-[0.2em] text-muted",
+                "text-[9px] uppercase tracking-[0.2em] text-muted",
                 wallpaper.videoUrl && "text-muted/80",
               )}
             >

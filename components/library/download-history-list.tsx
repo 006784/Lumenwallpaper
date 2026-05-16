@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import {
-  getWallpaperDisplayTitle,
   getWallpaperGradientKey,
   getWallpaperMeta,
   getWallpaperPreviewUrl,
@@ -25,7 +24,6 @@ export function DownloadHistoryList({ items }: DownloadHistoryListProps) {
     <div className="grid gap-4">
       {items.map((item) => {
         const previewUrl = getWallpaperPreviewUrl(item.wallpaper);
-        const displayTitle = getWallpaperDisplayTitle(item.wallpaper);
         const artworkStyle = previewUrl
           ? {
               backgroundImage: `linear-gradient(to top, rgba(10,8,4,0.08), rgba(10,8,4,0.08)), url("${previewUrl}")`,
@@ -50,9 +48,6 @@ export function DownloadHistoryList({ items }: DownloadHistoryListProps) {
             <div className="flex flex-col justify-between gap-4">
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="font-body text-[24px] font-semibold leading-none text-ink">
-                    {displayTitle}
-                  </p>
                   <span className="glass-chip px-3 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
                     {item.variant ?? "original"}
                   </span>

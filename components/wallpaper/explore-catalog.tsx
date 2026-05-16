@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -303,9 +303,6 @@ function MotionSpotlight({
                 </div>
                 <div className="flex min-w-0 flex-col justify-between py-1 pr-1">
                   <div>
-                    <p className="line-clamp-2 font-body text-[15px] font-semibold leading-tight text-ink">
-                      {getWallpaperDisplayTitle(wallpaper)}
-                    </p>
                     <p className="mt-1 text-[8px] uppercase tracking-[0.2em] text-muted">
                       {getWallpaperMeta(wallpaper)}
                     </p>
@@ -414,8 +411,14 @@ export function ExploreCatalog({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!initialResult);
   const [retryNonce, setRetryNonce] = useState(0);
+  const isInitialRender = useRef(true);
 
   useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      if (initialResult) return;
+    }
+
     const controller = new AbortController();
 
     setIsLoading(true);

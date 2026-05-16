@@ -90,6 +90,7 @@ export function WallpaperCoverImage({
         imageClassName,
       )}
       decoding="async"
+      fetchPriority={loading === "eager" ? "high" : "auto"}
       loading={loading}
       sizes={sizes}
       src={currentSrc}
