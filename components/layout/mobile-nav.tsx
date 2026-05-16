@@ -105,7 +105,7 @@ export function MobileNav({
                   <Link
                     key={link.label}
                     className={cn(
-                      "flex items-center justify-between rounded-2xl px-3 py-4 text-[13px] uppercase tracking-[0.18em] transition hover:bg-white/45",
+                      "flex items-center justify-between rounded-2xl px-3 py-4 text-[13px] uppercase tracking-[0.18em] transition hover:bg-white/45 dark:hover:bg-paper/15",
                       i > 0 && "border-t border-ink/5",
                       isIns ? "text-red/75 hover:text-red" : "text-ink hover:text-red",
                     )}

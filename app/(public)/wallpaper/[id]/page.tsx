@@ -195,7 +195,7 @@ export default async function WallpaperPage({ params }: WallpaperPageProps) {
               <WallpaperCoverImage
                 alt={displayTitle}
                 gradient={gradientKey}
-                imageClassName="!object-contain rounded-[24px] bg-white/45"
+                imageClassName="!object-contain rounded-[24px] bg-white/45 dark:bg-paper-2/50"
                 loading="eager"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 sources={coverSources}

@@ -68,8 +68,8 @@ export function WallpaperCoverImage({
         role="img"
         style={{ backgroundImage: GRADIENTS[gradient] }}
       >
-        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.24),transparent_28%,rgba(0,0,0,0.18)_72%),radial-gradient(circle_at_22%_18%,rgba(255,255,255,0.28),transparent_34%)]" />
-        <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:42px_42px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.24),transparent_28%,rgba(0,0,0,0.18)_72%),radial-gradient(circle_at_22%_18%,rgba(255,255,255,0.28),transparent_34%)] dark:bg-[linear-gradient(115deg,rgba(255,255,255,0.06),transparent_28%,rgba(0,0,0,0.32)_72%),radial-gradient(circle_at_22%_18%,rgba(255,255,255,0.08),transparent_34%)]" />
+        <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(255,255,255,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:42px_42px] dark:opacity-15" />
         <div className="absolute inset-x-4 bottom-4 text-paper drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
           <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-paper/65">
             Lumen Preview

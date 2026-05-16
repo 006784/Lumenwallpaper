@@ -38,7 +38,7 @@ function ActionIcon({ children }: { children: string }) {
   return (
     <span
       aria-hidden="true"
-      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-ink/10 bg-white/45 text-[16px] text-ink/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
+      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-ink/10 bg-white/45 text-[16px] text-ink/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] dark:border-paper/15 dark:bg-paper-2/50 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
     >
       {children}
     </span>
@@ -53,7 +53,7 @@ export function ErrorShell({
   const copy = errorCopy[kind];
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#edf0f4] text-ink">
+    <main className="relative min-h-screen overflow-hidden bg-[#edf0f4] text-ink dark:bg-paper">
       <Image
         alt=""
         className="absolute inset-0 h-full w-full object-cover object-center"
@@ -63,7 +63,7 @@ export function ErrorShell({
         src={errorArtwork}
       />
       <div className="absolute inset-0 bg-[linear-gradient(90deg,#eef2f6_0%,#eef2f6_34%,rgba(238,242,246,0.9)_45%,rgba(238,242,246,0.36)_62%,rgba(238,242,246,0.04)_100%)]" />
-      <div className="absolute inset-y-0 left-0 w-[54%] bg-white/20 backdrop-blur-[2px]" />
+      <div className="absolute inset-y-0 left-0 w-[54%] bg-white/20 backdrop-blur-[2px] dark:bg-paper/30" />
       <div className="absolute inset-x-0 bottom-0 h-[30%] bg-[linear-gradient(0deg,rgba(238,242,246,0.92),rgba(238,242,246,0.42)_58%,rgba(238,242,246,0))]" />
 
       <section className="relative z-10 flex min-h-screen items-center px-5 py-8 md:px-12 lg:px-20">
@@ -83,13 +83,13 @@ export function ErrorShell({
             </p>
 
             {error?.digest ? (
-              <p className="mt-5 inline-flex rounded-full border border-ink/10 bg-white/45 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted backdrop-blur-md">
+              <p className="mt-5 inline-flex rounded-full border border-ink/10 bg-white/45 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted backdrop-blur-md dark:border-paper/15 dark:bg-paper-2/40">
                 Digest {error.digest}
               </p>
             ) : null}
 
             {process.env.NODE_ENV === "development" && error?.message ? (
-              <p className="mt-4 max-w-[32rem] rounded-[18px] border border-red/15 bg-white/58 px-4 py-3 font-mono text-xs leading-6 text-red backdrop-blur-md">
+              <p className="mt-4 max-w-[32rem] rounded-[18px] border border-red/15 bg-white/58 px-4 py-3 font-mono text-xs leading-6 text-red backdrop-blur-md dark:bg-paper-2/40">
                 {error.message}
               </p>
             ) : null}
@@ -131,10 +131,10 @@ export function ErrorShell({
 
           <nav
             aria-label="Error page shortcuts"
-            className="mt-16 grid max-w-[46rem] gap-2 rounded-[32px] border border-white/55 bg-white/28 p-3 shadow-[0_24px_90px_rgba(39,58,69,0.16)] backdrop-blur-xl md:grid-cols-3"
+            className="mt-16 grid max-w-[46rem] gap-2 rounded-[32px] border border-white/55 bg-white/28 p-3 shadow-[0_24px_90px_rgba(39,58,69,0.16)] backdrop-blur-xl md:grid-cols-3 dark:border-paper/15 dark:bg-paper-2/40 dark:shadow-[0_24px_90px_rgba(0,0,0,0.38)]"
           >
             <Link
-              className="flex min-h-[70px] items-center gap-3 rounded-[24px] px-4 py-3 transition hover:bg-white/35"
+              className="flex min-h-[70px] items-center gap-3 rounded-[24px] px-4 py-3 transition hover:bg-white/35 dark:hover:bg-paper/15"
               href="/explore"
             >
               <ActionIcon>⌖</ActionIcon>
@@ -148,7 +148,7 @@ export function ErrorShell({
               </span>
             </Link>
             <Link
-              className="flex min-h-[70px] items-center gap-3 rounded-[24px] px-4 py-3 transition hover:bg-white/35"
+              className="flex min-h-[70px] items-center gap-3 rounded-[24px] px-4 py-3 transition hover:bg-white/35 dark:hover:bg-paper/15"
               href="/ins"
             >
               <ActionIcon>▦</ActionIcon>
@@ -162,7 +162,7 @@ export function ErrorShell({
               </span>
             </Link>
             <Link
-              className="flex min-h-[70px] items-center gap-3 rounded-[24px] px-4 py-3 transition hover:bg-white/35"
+              className="flex min-h-[70px] items-center gap-3 rounded-[24px] px-4 py-3 transition hover:bg-white/35 dark:hover:bg-paper/15"
               href="/creator/studio"
             >
               <ActionIcon>✉</ActionIcon>
