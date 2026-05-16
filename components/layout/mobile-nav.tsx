@@ -99,20 +99,27 @@ export function MobileNav({
           >
             {/* 主导航 */}
             <div className="px-3 py-3">
-              {navLinks.map((link, i) => (
-                <Link
-                  key={link.label}
-                  className={cn(
-                    "flex items-center justify-between rounded-2xl px-3 py-4 text-[13px] uppercase tracking-[0.18em] text-ink transition hover:bg-white/45 hover:text-red",
-                    i > 0 && "border-t border-ink/5",
-                  )}
-                  href={link.href}
-                  onClick={handleLinkClick}
-                >
-                  {link.label}
-                  <span className="text-ink/25">→</span>
-                </Link>
-              ))}
+              {navLinks.map((link, i) => {
+                const isIns = link.href === "/ins";
+                return (
+                  <Link
+                    key={link.label}
+                    className={cn(
+                      "flex items-center justify-between rounded-2xl px-3 py-4 text-[13px] uppercase tracking-[0.18em] transition hover:bg-white/45",
+                      i > 0 && "border-t border-ink/5",
+                      isIns ? "text-red/75 hover:text-red" : "text-ink hover:text-red",
+                    )}
+                    href={link.href}
+                    onClick={handleLinkClick}
+                  >
+                    <span className="flex items-center gap-2">
+                      {isIns && <span className="text-[9px] opacity-60">✦</span>}
+                      {link.label}
+                    </span>
+                    <span className="text-ink/25">→</span>
+                  </Link>
+                );
+              })}
             </div>
 
             {/* 账号区 */}

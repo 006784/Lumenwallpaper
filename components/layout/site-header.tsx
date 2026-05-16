@@ -41,15 +41,27 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
         </Link>
 
         <nav className="hidden items-center gap-2 md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              className="glass-chip px-4 py-2 text-[11px] uppercase text-muted transition hover:text-ink focus-visible:text-ink"
-              href={link.href}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isIns = link.href === "/ins";
+            return isIns ? (
+              <Link
+                key={link.label}
+                className="inline-flex items-center gap-1.5 rounded-full border border-red/20 bg-[linear-gradient(135deg,rgba(255,255,255,0.78),rgba(212,43,43,0.06))] px-4 py-2 text-[11px] uppercase tracking-[0.14em] text-red/70 shadow-[4px_6px_14px_rgba(212,43,43,0.07),-4px_-4px_10px_rgba(255,255,255,0.82),inset_1px_1px_1px_rgba(255,255,255,0.92)] transition hover:border-red/35 hover:text-red focus-visible:text-red dark:border-red/25 dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(212,43,43,0.10))] dark:text-red/60 dark:hover:text-red/90"
+                href={link.href}
+              >
+                <span className="text-[7px] opacity-70">✦</span>
+                {link.label}
+              </Link>
+            ) : (
+              <Link
+                key={link.label}
+                className="glass-chip px-4 py-2 text-[11px] uppercase text-muted transition hover:text-ink focus-visible:text-ink"
+                href={link.href}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
