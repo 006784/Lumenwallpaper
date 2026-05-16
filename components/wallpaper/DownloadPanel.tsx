@@ -3,6 +3,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { useTheme } from "@/components/layout/theme-provider";
+
 type DownloadFormat = "ORIGINAL" | "PNG" | "WEBP";
 type DownloadState = "idle" | "loading" | "done" | "error";
 type CacheState = "idle" | "done";
@@ -81,27 +83,53 @@ type CachedDownloadPanelConfig = {
   updatedAt?: string;
 };
 
-const OVERLAY_BG = "rgba(15, 39, 42, 0.28)";
-const INK = "#174f50";
-const PAPER = "rgba(250, 252, 253, 0.82)";
-const PAPER_2 = "rgba(239, 245, 246, 0.7)";
-const RED = "#ff6d2d";
-const MUTED = "#7b8c8c";
-const HINT = "#a8b3b3";
-const BORDER = "rgba(255,255,255,0.78)";
-const BORDER_DK = "rgba(23,79,80,0.12)";
-const FILM_BG = "rgba(255,255,255,0.58)";
-const FILM_HOLE = "rgba(23,79,80,0.16)";
+const LIGHT = {
+  overlayBg: "rgba(15, 39, 42, 0.28)",
+  ink: "#174f50",
+  paper: "rgba(250, 252, 253, 0.82)",
+  paper2: "rgba(239, 245, 246, 0.7)",
+  red: "#ff6d2d",
+  muted: "#7b8c8c",
+  hint: "#a8b3b3",
+  border: "rgba(255,255,255,0.78)",
+  borderDk: "rgba(23,79,80,0.12)",
+  filmBg: "rgba(255,255,255,0.58)",
+  filmHole: "rgba(23,79,80,0.16)",
+  panelBg: "linear-gradient(145deg, rgba(255,255,255,0.92), rgba(236,244,246,0.72))",
+  leftBg: "rgba(239,245,246,0.70)",
+  rightBg: "linear-gradient(145deg, rgba(255,255,255,0.62), rgba(239,245,246,0.36))",
+  previewBg: "linear-gradient(145deg, rgba(255,255,255,0.72), rgba(226,236,238,0.58))",
+  shadow: "22px 26px 60px rgba(37,58,62,0.18), -16px -16px 40px rgba(255,255,255,0.86), inset 1px 1px 2px rgba(255,255,255,0.94), inset -1px -1px 2px rgba(35,61,66,0.1)",
+  shadowSoft: "12px 16px 34px rgba(37,58,62,0.12), -10px -10px 26px rgba(255,255,255,0.82), inset 1px 1px 1px rgba(255,255,255,0.92), inset -1px -1px 2px rgba(35,61,66,0.08)",
+  inset: "inset 5px 5px 12px rgba(40,62,66,0.1), inset -6px -6px 12px rgba(255,255,255,0.92)",
+  toggleOff: "linear-gradient(145deg, #ffffff, #edf3f4)",
+};
+
+const DARK = {
+  overlayBg: "rgba(0, 6, 8, 0.58)",
+  ink: "#edf7f4",
+  paper: "rgba(20, 34, 37, 0.92)",
+  paper2: "rgba(12, 24, 27, 0.82)",
+  red: "#ff7642",
+  muted: "#9eafad",
+  hint: "#7a9090",
+  border: "rgba(239,248,245,0.13)",
+  borderDk: "rgba(239,248,245,0.08)",
+  filmBg: "rgba(16,28,31,0.92)",
+  filmHole: "rgba(239,248,245,0.10)",
+  panelBg: "linear-gradient(145deg, rgba(18,31,34,0.97), rgba(7,14,16,0.94))",
+  leftBg: "rgba(12,24,27,0.82)",
+  rightBg: "linear-gradient(145deg, rgba(22,36,39,0.88), rgba(6,14,16,0.78))",
+  previewBg: "linear-gradient(145deg, rgba(18,30,33,0.86), rgba(8,16,18,0.72))",
+  shadow: "0 24px 60px rgba(0,0,0,0.52), 0 1px 0 rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.08)",
+  shadowSoft: "0 12px 30px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.06)",
+  inset: "inset 0 2px 8px rgba(0,0,0,0.32), inset 0 -1px 0 rgba(255,255,255,0.04)",
+  toggleOff: "linear-gradient(145deg, rgba(35,55,58,0.9), rgba(14,24,27,0.85))",
+};
 
 const FONT_BODY =
   "var(--font-body), 'PingFang SC', 'Hiragino Sans GB', system-ui, sans-serif";
 const FONT_MONO = "monospace";
-const GLASS_SHADOW =
-  "22px 26px 60px rgba(37,58,62,0.18), -16px -16px 40px rgba(255,255,255,0.86), inset 1px 1px 2px rgba(255,255,255,0.94), inset -1px -1px 2px rgba(35,61,66,0.1)";
-const GLASS_SOFT_SHADOW =
-  "12px 16px 34px rgba(37,58,62,0.12), -10px -10px 26px rgba(255,255,255,0.82), inset 1px 1px 1px rgba(255,255,255,0.92), inset -1px -1px 2px rgba(35,61,66,0.08)";
-const GLASS_INSET =
-  "inset 5px 5px 12px rgba(40,62,66,0.1), inset -6px -6px 12px rgba(255,255,255,0.92)";
 
 const FREE_RATIO: RatioOption = {
   label: "FREE",
@@ -288,8 +316,8 @@ function FilmHoles({ count }: { count: number }) {
           key={index}
           className="block h-2 w-[11px] rounded-[2px]"
           style={{
-            background: FILM_BG,
-            border: `1px solid ${FILM_HOLE}`,
+            background: t.filmBg,
+            border: `1px solid ${t.filmHole}`,
           }}
         />
       ))}
@@ -304,17 +332,21 @@ function Toggle({
   checked: boolean;
   onClick: () => void;
 }) {
+  const { resolvedTheme } = useTheme();
+  const dark = resolvedTheme === "dark";
   return (
     <button
       aria-pressed={checked}
       className="relative block h-[32px] w-[58px]"
       style={{
-        border: "1px solid rgba(255,255,255,0.78)",
+        border: `1px solid ${dark ? "rgba(239,248,245,0.14)" : "rgba(255,255,255,0.78)"}`,
         borderRadius: "999px",
         background: checked
-          ? "rgba(255,255,255,0.68)"
-          : "rgba(255,255,255,0.42)",
-        boxShadow: GLASS_INSET,
+          ? dark ? "rgba(30,50,54,0.88)" : "rgba(255,255,255,0.68)"
+          : dark ? "rgba(16,28,31,0.72)" : "rgba(255,255,255,0.42)",
+        boxShadow: dark
+          ? "inset 0 2px 8px rgba(0,0,0,0.32)"
+          : LIGHT.inset,
       }}
       type="button"
       onClick={onClick}
@@ -325,10 +357,10 @@ function Toggle({
           left: checked ? "28px" : "3px",
           background: checked
             ? "linear-gradient(145deg, #1f8585, #126160)"
-            : "linear-gradient(145deg, #ffffff, #edf3f4)",
+            : dark ? DARK.toggleOff : LIGHT.toggleOff,
           boxShadow: checked
             ? "0 8px 18px rgba(23,79,80,0.28), inset 1px 1px 2px rgba(255,255,255,0.5)"
-            : GLASS_SOFT_SHADOW,
+            : dark ? DARK.shadowSoft : LIGHT.shadowSoft,
         }}
       />
     </button>
@@ -341,6 +373,8 @@ export function DownloadPanel({
   onSaveConfig,
   onClose,
 }: DownloadPanelProps) {
+  const { resolvedTheme } = useTheme();
+  const t = resolvedTheme === "dark" ? DARK : LIGHT;
   const timeoutsRef = useRef<number[]>([]);
   const storageKey = `lumen:download-config:${wallpaper.id}`;
   const [viewportWidth, setViewportWidth] = useState(1024);
@@ -677,7 +711,7 @@ export function DownloadPanel({
     <div
       className="fixed inset-0 z-[80] flex items-end justify-center px-3 py-3 sm:px-4 sm:py-6 md:items-center"
       style={{
-        background: OVERLAY_BG,
+        background: t.overlayBg,
         backdropFilter: "blur(18px) saturate(1.05)",
         fontFamily: FONT_BODY,
       }}
@@ -686,11 +720,10 @@ export function DownloadPanel({
       <div
         className="grid w-full overflow-hidden"
         style={{
-          background:
-            "linear-gradient(145deg, rgba(255,255,255,0.92), rgba(236,244,246,0.72))",
-          border: `1px solid ${BORDER}`,
+          background: t.panelBg,
+          border: `1px solid ${t.border}`,
           borderRadius: "34px",
-          boxShadow: GLASS_SHADOW,
+          boxShadow: t.shadow,
           gridTemplateColumns: isCompact
             ? "1fr"
             : "minmax(0, 1fr) minmax(400px, 440px)",
@@ -703,23 +736,23 @@ export function DownloadPanel({
         <div
           className="relative z-0 flex flex-col overflow-hidden"
           style={{
-            borderRight: isCompact ? "none" : `1px solid ${BORDER_DK}`,
-            borderBottom: isCompact ? `1px solid ${BORDER_DK}` : "none",
+            borderRight: isCompact ? "none" : `1px solid ${t.borderDk}`,
+            borderBottom: isCompact ? `1px solid ${t.borderDk}` : "none",
             minHeight: isCompact ? "auto" : "min(760px, calc(100dvh - 48px))",
           }}
         >
           <div
             className="flex h-[26px] items-center justify-between px-3"
             style={{
-              background: FILM_BG,
-              borderBottom: `1px solid ${BORDER_DK}`,
+              background: t.filmBg,
+              borderBottom: `1px solid ${t.borderDk}`,
             }}
           >
             <FilmHoles count={5} />
             <p
               className="text-center"
               style={{
-                color: "#3a3830",
+                color: t.muted,
                 fontFamily: FONT_MONO,
                 fontSize: "9px",
                 letterSpacing: "2.5px",
@@ -733,7 +766,7 @@ export function DownloadPanel({
           <div
             className="flex flex-1 items-center justify-center"
             style={{
-              background: PAPER_2,
+              background: t.leftBg,
               padding: isPhone
                 ? "36px 18px"
                 : isCompact
@@ -745,11 +778,11 @@ export function DownloadPanel({
               <div
                 className="absolute left-0 top-[-24px]"
                 style={{
-                  background: "rgba(255,255,255,0.72)",
-                  border: `1px solid ${BORDER}`,
+                  background: t.paper,
+                  border: `1px solid ${t.border}`,
                   borderRadius: "999px",
-                  boxShadow: GLASS_SOFT_SHADOW,
-                  color: INK,
+                  boxShadow: t.shadowSoft,
+                  color: t.ink,
                   fontFamily: FONT_MONO,
                   fontSize: "9px",
                   letterSpacing: "1.5px",
@@ -765,10 +798,10 @@ export function DownloadPanel({
                   width: `${displayBoxWidth}px`,
                   height: `${displayBoxHeight}px`,
                   background:
-                    "linear-gradient(145deg, rgba(255,255,255,0.72), rgba(226,236,238,0.58))",
-                  border: `1px solid ${BORDER}`,
+                    t.previewBg,
+                  border: `1px solid ${t.border}`,
                   borderRadius: "22px",
-                  boxShadow: GLASS_INSET,
+                  boxShadow: t.inset,
                   transition:
                     "width 0.42s cubic-bezier(0.4,0,0.2,1), height 0.42s cubic-bezier(0.4,0,0.2,1)",
                 }}
@@ -791,7 +824,7 @@ export function DownloadPanel({
                 <div
                   className="absolute"
                   style={{
-                    border: `2px solid ${isCropActive ? RED : "rgba(255,255,255,0.86)"}`,
+                    border: `2px solid ${isCropActive ? t.red : t.border}`,
                     boxShadow: isCropActive
                       ? "0 0 0 999px rgba(23,79,80,0.2)"
                       : "none",
@@ -870,10 +903,10 @@ export function DownloadPanel({
               <div
                 className="absolute bottom-[-24px] right-0"
                 style={{
-                  background: isCropActive ? RED : "rgba(255,255,255,0.76)",
-                  border: `1px solid ${isCropActive ? "rgba(255,109,45,0.7)" : BORDER}`,
+                  background: isCropActive ? t.red : t.paper,
+                  border: `1px solid ${isCropActive ? "rgba(255,109,45,0.7)" : t.border}`,
                   borderRadius: "999px",
-                  boxShadow: GLASS_SOFT_SHADOW,
+                  boxShadow: t.shadowSoft,
                   color: isCropActive ? "#fff" : INK,
                   fontFamily: FONT_MONO,
                   fontSize: "9px",
@@ -889,15 +922,15 @@ export function DownloadPanel({
           <div
             className="flex h-[26px] items-center justify-between px-3"
             style={{
-              background: FILM_BG,
-              borderTop: `1px solid ${BORDER_DK}`,
+              background: t.filmBg,
+              borderTop: `1px solid ${t.borderDk}`,
             }}
           >
             <FilmHoles count={3} />
             <p
               className="text-center"
               style={{
-                color: "#6a6050",
+                color: t.muted,
                 fontFamily: FONT_MONO,
                 fontSize: "9px",
                 letterSpacing: "2px",
@@ -913,18 +946,18 @@ export function DownloadPanel({
           className="relative z-10 flex flex-col overflow-hidden"
           style={{
             background:
-              "linear-gradient(145deg, rgba(255,255,255,0.62), rgba(239,245,246,0.36))",
+              t.rightBg,
             height: isCompact ? "auto" : "min(760px, calc(100dvh - 48px))",
           }}
         >
           <div
             className="px-[22px] pb-4 pt-5"
-            style={{ borderBottom: `1px solid ${BORDER_DK}` }}
+            style={{ borderBottom: `1px solid ${t.borderDk}` }}
           >
             <div className="flex items-start justify-between">
               <p
                 style={{
-                  color: MUTED,
+                  color: t.muted,
                   fontFamily: FONT_MONO,
                   fontSize: "9px",
                   letterSpacing: "4px",
@@ -936,11 +969,11 @@ export function DownloadPanel({
                 aria-label="关闭下载配置"
                 className="flex h-[22px] w-[22px] items-center justify-center transition-colors"
                 style={{
-                  background: "rgba(255,255,255,0.72)",
-                  border: `1px solid ${BORDER}`,
+                  background: t.paper,
+                  border: `1px solid ${t.border}`,
                   borderRadius: "999px",
-                  boxShadow: GLASS_SOFT_SHADOW,
-                  color: INK,
+                  boxShadow: t.shadowSoft,
+                  color: t.ink,
                   fontSize: "11px",
                 }}
                 type="button"
@@ -950,7 +983,7 @@ export function DownloadPanel({
                   event.currentTarget.style.color = "#fff";
                 }}
                 onMouseLeave={(event) => {
-                  event.currentTarget.style.background = "rgba(255,255,255,0.72)";
+                  event.currentTarget.style.background = t.paper;
                   event.currentTarget.style.color = INK;
                 }}
               >
@@ -960,7 +993,7 @@ export function DownloadPanel({
             <h2
               className="mt-5"
               style={{
-                color: INK,
+                color: t.ink,
                 fontSize: "22px",
                 fontWeight: 500,
                 letterSpacing: 0,
@@ -972,7 +1005,7 @@ export function DownloadPanel({
             <p
               className="mt-1"
               style={{
-                color: MUTED,
+                color: t.muted,
                 fontSize: "11px",
                 letterSpacing: "0.5px",
               }}
@@ -991,7 +1024,7 @@ export function DownloadPanel({
               <div className="mb-[10px] flex items-center gap-[10px]">
                 <span
                   style={{
-                    color: MUTED,
+                    color: t.muted,
                     fontSize: "9px",
                     letterSpacing: "4px",
                     textTransform: "uppercase",
@@ -1001,7 +1034,7 @@ export function DownloadPanel({
                 </span>
                 <span
                   className="block h-px flex-1"
-                  style={{ background: BORDER_DK }}
+                  style={{ background: t.borderDk }}
                 />
               </div>
               <div className="grid grid-cols-3 gap-[5px]">
@@ -1022,7 +1055,7 @@ export function DownloadPanel({
                         borderRadius: "18px",
                         boxShadow: active
                           ? "0 12px 26px rgba(23,79,80,0.22), inset 1px 1px 2px rgba(255,255,255,0.42)"
-                          : GLASS_SOFT_SHADOW,
+                          : t.shadowSoft,
                         color: active ? "#fff" : MUTED,
                         cursor: "pointer",
                         fontFamily: FONT_MONO,
@@ -1060,7 +1093,7 @@ export function DownloadPanel({
               <div className="mb-[10px] flex items-center gap-[10px]">
                 <span
                   style={{
-                    color: MUTED,
+                    color: t.muted,
                     fontSize: "9px",
                     letterSpacing: "4px",
                     textTransform: "uppercase",
@@ -1070,13 +1103,13 @@ export function DownloadPanel({
                 </span>
                 <span
                   className="block h-px flex-1"
-                  style={{ background: BORDER_DK }}
+                  style={{ background: t.borderDk }}
                 />
               </div>
 
               <p
                 style={{
-                  color: HINT,
+                  color: t.hint,
                   fontFamily: FONT_MONO,
                   fontSize: "9px",
                   letterSpacing: "2px",
@@ -1101,7 +1134,7 @@ export function DownloadPanel({
                             : "rgba(255,255,255,0.54)",
                         border: `1px solid ${disabled ? BORDER : active ? RED : BORDER}`,
                         borderRadius: "999px",
-                        boxShadow: active ? "0 10px 22px rgba(255,109,45,0.22)" : GLASS_SOFT_SHADOW,
+                        boxShadow: active ? "0 10px 22px rgba(255,109,45,0.22)" : t.shadowSoft,
                         color: disabled
                           ? "rgba(138,128,112,0.42)"
                           : active
@@ -1142,7 +1175,7 @@ export function DownloadPanel({
               <p
                 className="mt-[10px]"
                 style={{
-                  color: HINT,
+                  color: t.hint,
                   fontFamily: FONT_MONO,
                   fontSize: "9px",
                   letterSpacing: "2px",
@@ -1167,7 +1200,7 @@ export function DownloadPanel({
                             : "rgba(255,255,255,0.54)",
                         border: `1px solid ${disabled ? BORDER : active ? RED : BORDER}`,
                         borderRadius: "999px",
-                        boxShadow: active ? "0 10px 22px rgba(255,109,45,0.22)" : GLASS_SOFT_SHADOW,
+                        boxShadow: active ? "0 10px 22px rgba(255,109,45,0.22)" : t.shadowSoft,
                         color: disabled
                           ? "rgba(138,128,112,0.42)"
                           : active
@@ -1223,7 +1256,7 @@ export function DownloadPanel({
               <div className="mb-[10px] flex items-center gap-[10px]">
                 <span
                   style={{
-                    color: MUTED,
+                    color: t.muted,
                     fontSize: "9px",
                     letterSpacing: "4px",
                     textTransform: "uppercase",
@@ -1233,39 +1266,39 @@ export function DownloadPanel({
                 </span>
                 <span
                   className="block h-px flex-1"
-                  style={{ background: BORDER_DK }}
+                  style={{ background: t.borderDk }}
                 />
               </div>
 
               <div
                 className="flex items-center justify-between py-[9px]"
-                style={{ borderBottom: `1px solid ${BORDER_DK}` }}
+                style={{ borderBottom: `1px solid ${t.borderDk}` }}
               >
-                <span style={{ color: "#5a5060", fontSize: "12px" }}>
+                <span style={{ color: t.muted, fontSize: "12px" }}>
                   三分构图参考线
                 </span>
                 <Toggle checked={thirdsOn} onClick={toggleThirds} />
               </div>
               <div
                 className="flex items-center justify-between py-[9px]"
-                style={{ borderBottom: `1px solid ${BORDER_DK}` }}
+                style={{ borderBottom: `1px solid ${t.borderDk}` }}
               >
-                <span style={{ color: "#5a5060", fontSize: "12px" }}>
+                <span style={{ color: t.muted, fontSize: "12px" }}>
                   等比缩放锁定，默认开启
                 </span>
                 <Toggle checked={lockOn} onClick={() => {}} />
               </div>
               <div className="flex items-center justify-between py-[9px]">
-                <span style={{ color: "#5a5060", fontSize: "12px" }}>
+                <span style={{ color: t.muted, fontSize: "12px" }}>
                   检测屏幕分辨率
                 </span>
                 <button
                   disabled={!canCrop}
                   style={{
                     background: "rgba(255,255,255,0.54)",
-                    border: `1px solid ${BORDER}`,
+                    border: `1px solid ${t.border}`,
                     borderRadius: "999px",
-                    boxShadow: GLASS_SOFT_SHADOW,
+                    boxShadow: t.shadowSoft,
                     color: canCrop ? MUTED : "rgba(138,128,112,0.42)",
                     cursor: canCrop ? "pointer" : "not-allowed",
                     fontFamily: FONT_MONO,
@@ -1345,12 +1378,12 @@ export function DownloadPanel({
           <div
             className="flex-shrink-0 flex flex-col gap-[7px]"
             style={{
-              borderTop: `1px solid ${BORDER_DK}`,
+              borderTop: `1px solid ${t.borderDk}`,
               padding: isPhone ? "14px 18px" : "16px 22px",
               ...(isCompact && {
                 position: "sticky",
                 bottom: 0,
-                background: "rgba(248,251,252,0.97)",
+                background: t.leftBg,
                 backdropFilter: "blur(12px)",
                 zIndex: 10,
               }),
@@ -1372,7 +1405,7 @@ export function DownloadPanel({
                 boxShadow:
                   dlState === "idle"
                     ? "0 16px 32px rgba(255,109,45,0.28), inset 1px 1px 2px rgba(255,255,255,0.62)"
-                    : GLASS_SOFT_SHADOW,
+                    : t.shadowSoft,
                 color:
                   dlState === "done"
                     ? "#fff"
@@ -1423,7 +1456,7 @@ export function DownloadPanel({
                   style={{
                     background: "rgba(255,255,255,0.58)",
                     borderRadius: "999px",
-                    boxShadow: GLASS_INSET,
+                    boxShadow: t.inset,
                   }}
                 >
                   <div
@@ -1440,7 +1473,7 @@ export function DownloadPanel({
                 <div
                   className="flex items-center justify-between gap-3"
                   style={{
-                    color: MUTED,
+                    color: t.muted,
                     fontFamily: FONT_MONO,
                     fontSize: "9px",
                     letterSpacing: "1.5px",
@@ -1459,7 +1492,7 @@ export function DownloadPanel({
             ) : null}
 
             {downloadError ? (
-              <p className="text-xs leading-5" style={{ color: RED }}>
+              <p className="text-xs leading-5" style={{ color: t.red }}>
                 {downloadError}
               </p>
             ) : null}
@@ -1470,7 +1503,7 @@ export function DownloadPanel({
                 background: "transparent",
                 border: `1px solid ${cacheState === "done" ? "rgba(35,140,88,0.38)" : BORDER}`,
                 borderRadius: "999px",
-                boxShadow: GLASS_SOFT_SHADOW,
+                boxShadow: t.shadowSoft,
                 color: cacheState === "done" ? "#238c58" : MUTED,
                 cursor: cacheState === "idle" ? "pointer" : "default",
                 fontFamily: FONT_MONO,

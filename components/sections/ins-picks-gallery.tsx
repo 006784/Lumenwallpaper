@@ -42,13 +42,13 @@ function CollectionPreview({
   if (previewWallpapers.length === 0) {
     return (
       <div className="relative grid h-full min-h-[260px] overflow-hidden p-3">
-        <div className="relative overflow-hidden rounded-[26px] border border-ink/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.54),rgba(23,79,80,0.08)_46%,rgba(255,109,45,0.12))]">
+        <div className="relative overflow-hidden rounded-[26px] border border-ink/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.54),rgba(23,79,80,0.08)_46%,rgba(255,109,45,0.12))] dark:border-paper/10 dark:bg-[linear-gradient(135deg,rgba(18,32,35,0.92),rgba(7,15,17,0.98)_46%,rgba(35,14,4,0.55))]">
           <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,rgba(255,109,45,0.85),rgba(23,79,80,0.55),rgba(214,176,106,0.75))]" />
           <div className="absolute inset-y-6 left-5 flex flex-col justify-between">
             {Array.from({ length: 6 }).map((_, index) => (
               <span
                 aria-hidden="true"
-                className="h-3 w-2 rounded-[3px] border border-ink/15 bg-paper/40"
+                className="h-3 w-2 rounded-[3px] border border-ink/15 bg-paper/40 dark:border-paper/15 dark:bg-white/[0.08]"
                 key={index}
               />
             ))}
@@ -57,12 +57,12 @@ function CollectionPreview({
             {Array.from({ length: 6 }).map((_, index) => (
               <span
                 aria-hidden="true"
-                className="h-3 w-2 rounded-[3px] border border-ink/15 bg-paper/40"
+                className="h-3 w-2 rounded-[3px] border border-ink/15 bg-paper/40 dark:border-paper/15 dark:bg-white/[0.08]"
                 key={index}
               />
             ))}
           </div>
-          <div className="absolute inset-10 rounded-[22px] border border-ink/10 bg-paper/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.48)]" />
+          <div className="absolute inset-10 rounded-[22px] border border-ink/10 bg-paper/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.48)] dark:border-paper/10 dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" />
           <div className="absolute inset-0 flex flex-col items-center justify-center px-12 text-center">
             <span className="font-display text-[clamp(3.4rem,7vw,5.5rem)] leading-none text-ink/45">
               {initials}
@@ -138,7 +138,7 @@ function CollectionCard({
       href={collection.href}
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,rgba(255,109,45,0.9),rgba(23,79,80,0.55),rgba(214,176,106,0.8))] opacity-80" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.28),rgba(255,255,255,0)_42%,rgba(23,79,80,0.08))]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.28),rgba(255,255,255,0)_42%,rgba(23,79,80,0.08))] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.03),rgba(255,255,255,0)_42%,rgba(239,248,245,0.04))]" />
       <div className="relative flex min-h-[280px] flex-col justify-between gap-8 p-5 md:p-6">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
