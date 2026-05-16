@@ -912,11 +912,11 @@ export function DownloadPanel({
         </div>
 
         <div
-          className="relative z-10 flex flex-col"
+          className="relative z-10 flex flex-col overflow-hidden"
           style={{
             background:
               "linear-gradient(145deg, rgba(255,255,255,0.62), rgba(239,245,246,0.36))",
-            minHeight: isCompact ? "auto" : "min(760px, calc(100dvh - 48px))",
+            height: isCompact ? "auto" : "min(760px, calc(100dvh - 48px))",
           }}
         >
           <div
@@ -1322,7 +1322,7 @@ export function DownloadPanel({
                 >
                   <span
                     style={{
-                      color: "#4a4440",
+                      color: "rgba(255,255,255,0.36)",
                       fontFamily: FONT_MONO,
                       fontSize: "9px",
                       letterSpacing: "2px",
@@ -1345,10 +1345,17 @@ export function DownloadPanel({
           </div>
 
           <div
-            className="flex flex-col gap-[7px]"
+            className="flex-shrink-0 flex flex-col gap-[7px]"
             style={{
               borderTop: `1px solid ${BORDER_DK}`,
               padding: isPhone ? "14px 18px" : "16px 22px",
+              ...(isCompact && {
+                position: "sticky",
+                bottom: 0,
+                background: "rgba(248,251,252,0.97)",
+                backdropFilter: "blur(12px)",
+                zIndex: 10,
+              }),
             }}
           >
             <button
