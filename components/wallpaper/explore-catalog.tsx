@@ -158,14 +158,21 @@ function ExploreSummary({
     EXPLORE_SORT_OPTIONS.find((item) => item.value === sort)?.label;
 
   return (
-    <div className="glass-surface-soft grid gap-2 px-4 py-4 text-[10px] uppercase tracking-[0.2em] text-muted sm:max-w-[18rem]">
-      <span>{copy.pageCount({ page, total, totalPages })}</span>
-      <span>{copy.pageSize({ count, pageSize })}</span>
-      <span>
-        {copy.sortLabel} {sortLabel}
-      </span>
-      <span>{featuredOnly ? copy.featuredOff : copy.allFilters}</span>
-      <span>{motionOnly ? copy.motionOnly : copy.motionMixed}</span>
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[9px] uppercase tracking-[0.22em] text-muted/70">
+      {[
+        copy.pageCount({ page, total, totalPages }),
+        copy.pageSize({ count, pageSize }),
+        `${copy.sortLabel} ${sortLabel}`,
+        featuredOnly ? copy.featuredOff : copy.allFilters,
+        motionOnly ? copy.motionOnly : null,
+      ]
+        .filter(Boolean)
+        .map((item, i) => (
+          <span key={i} className="flex items-center gap-4">
+            {i > 0 && <span className="h-px w-3 bg-ink/15 dark:bg-paper/15" />}
+            {item}
+          </span>
+        ))}
     </div>
   );
 }

@@ -880,29 +880,29 @@ export function DownloadPanel({
                   <span
                     className="absolute left-[-2px] top-[-2px] h-[12px] w-[12px]"
                     style={{
-                      borderLeft: `3px solid ${RED}`,
-                      borderTop: `3px solid ${RED}`,
+                      borderLeft: `3px solid ${t.red}`,
+                      borderTop: `3px solid ${t.red}`,
                     }}
                   />
                   <span
                     className="absolute right-[-2px] top-[-2px] h-[12px] w-[12px]"
                     style={{
-                      borderRight: `3px solid ${RED}`,
-                      borderTop: `3px solid ${RED}`,
+                      borderRight: `3px solid ${t.red}`,
+                      borderTop: `3px solid ${t.red}`,
                     }}
                   />
                   <span
                     className="absolute bottom-[-2px] left-[-2px] h-[12px] w-[12px]"
                     style={{
-                      borderBottom: `3px solid ${RED}`,
-                      borderLeft: `3px solid ${RED}`,
+                      borderBottom: `3px solid ${t.red}`,
+                      borderLeft: `3px solid ${t.red}`,
                     }}
                   />
                   <span
                     className="absolute bottom-[-2px] right-[-2px] h-[12px] w-[12px]"
                     style={{
-                      borderBottom: `3px solid ${RED}`,
-                      borderRight: `3px solid ${RED}`,
+                      borderBottom: `3px solid ${t.red}`,
+                      borderRight: `3px solid ${t.red}`,
                     }}
                   />
                 </div>
@@ -987,7 +987,7 @@ export function DownloadPanel({
                 type="button"
                 onClick={onClose}
                 onMouseEnter={(event) => {
-                  event.currentTarget.style.background = RED;
+                  event.currentTarget.style.background = t.red;
                   event.currentTarget.style.color = "#fff";
                 }}
                 onMouseLeave={(event) => {
@@ -1140,7 +1140,7 @@ export function DownloadPanel({
                           : active
                             ? "linear-gradient(145deg, #ff8b45, #ff6424)"
                             : "rgba(255,255,255,0.54)",
-                        border: `1px solid ${disabled ? BORDER : active ? RED : BORDER}`,
+                        border: `1px solid ${disabled ? BORDER : active ? t.red : BORDER}`,
                         borderRadius: "999px",
                         boxShadow: active ? "0 10px 22px rgba(255,109,45,0.22)" : t.shadowSoft,
                         color: disabled
@@ -1206,7 +1206,7 @@ export function DownloadPanel({
                           : active
                             ? "linear-gradient(145deg, #ff8b45, #ff6424)"
                             : "rgba(255,255,255,0.54)",
-                        border: `1px solid ${disabled ? BORDER : active ? RED : BORDER}`,
+                        border: `1px solid ${disabled ? BORDER : active ? t.red : BORDER}`,
                         borderRadius: "999px",
                         boxShadow: active ? "0 10px 22px rgba(255,109,45,0.22)" : t.shadowSoft,
                         color: disabled
@@ -1248,7 +1248,7 @@ export function DownloadPanel({
               <p
                 className="mt-3"
                 style={{
-                  color: cropWarning ? RED : MUTED,
+                  color: cropWarning ? t.red : MUTED,
                   fontSize: "11px",
                   lineHeight: 1.7,
                 }}
@@ -1353,7 +1353,7 @@ export function DownloadPanel({
                 ["分辨率", res, PAPER],
                 ["格式", getFormatDisplayName(fmt), MUTED],
                 ["大小", size, MUTED],
-                ["比例", ratio, RED],
+                ["比例", ratio, t.red],
               ].map(([key, value, color]) => (
                 <div
                   key={key}
@@ -1437,7 +1437,7 @@ export function DownloadPanel({
                   return;
                 }
 
-                event.currentTarget.style.background = RED;
+                event.currentTarget.style.background = t.red;
               }}
               onMouseLeave={(event) => {
                 if (dlState !== "idle") {
@@ -1470,7 +1470,7 @@ export function DownloadPanel({
                   <div
                     className="h-full"
                     style={{
-                      background: dlState === "error" ? "#b94035" : RED,
+                      background: dlState === "error" ? "#b94035" : t.red,
                       borderRadius: "999px",
                       transform: `scaleX(${Math.max(0.04, Math.min(1, progressPercent / 100))})`,
                       transformOrigin: "left",
