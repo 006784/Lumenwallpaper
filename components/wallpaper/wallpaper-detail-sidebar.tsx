@@ -501,54 +501,47 @@ export function WallpaperDetailSidebar({
 
   return (
     <>
-      <div className="mt-8 grid gap-3 text-sm text-muted sm:grid-cols-2">
-        <p>
-          <span className="mr-2 uppercase tracking-[0.18em] text-ink">
-            slug
-          </span>
-          {slug}
-        </p>
-        <p>
-          <span className="mr-2 uppercase tracking-[0.18em] text-ink">
-            {labels.dimensions}
-          </span>
-          {width && height ? `${width} × ${height}` : labels.unrecorded}
-        </p>
-        <p>
-          <span className="mr-2 uppercase tracking-[0.18em] text-ink">
-            {labels.download}
-          </span>
-          {downloadsCount}
-        </p>
-        <p>
-          <span className="mr-2 uppercase tracking-[0.18em] text-ink">
-            {labels.favorites}
-          </span>
-          {likesCount}
-        </p>
+      {/* 元数据表格 */}
+      <div className="mt-8 divide-y divide-ink/6 rounded-[16px] border border-ink/8 dark:divide-paper/8 dark:border-paper/10">
+        {[
+          ["slug", slug],
+          [labels.dimensions, width && height ? `${width} × ${height}` : labels.unrecorded],
+          [labels.download, String(downloadsCount)],
+          [labels.favorites, String(likesCount)],
+        ].map(([label, value]) => (
+          <div key={label} className="flex items-baseline justify-between gap-4 px-4 py-3">
+            <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.22em] text-muted/60">
+              {label}
+            </span>
+            <span className="truncate text-right text-[13px] font-medium text-ink">
+              {value}
+            </span>
+          </div>
+        ))}
         {creatorUsername ? (
-          <p>
-            <span className="mr-2 uppercase tracking-[0.18em] text-ink">
+          <div className="flex items-baseline justify-between gap-4 px-4 py-3">
+            <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.22em] text-muted/60">
               {labels.creator}
             </span>
             <Link
-              className="underline decoration-ink/40 underline-offset-4 transition hover:text-ink hover:decoration-ink focus-visible:decoration-ink focus-visible:outline-none"
+              className="text-[13px] font-medium text-ink underline decoration-ink/30 underline-offset-4 transition hover:text-red hover:decoration-red/30 focus-visible:outline-none"
               href={`/creator/${creatorUsername}`}
             >
               @{creatorUsername}
             </Link>
-          </p>
+          </div>
         ) : null}
       </div>
 
+      {/* 标签 */}
       {tags.length > 0 || aiTags.length > 0 ? (
-        <div className="mt-8 space-y-3">
+        <div className="mt-7 space-y-4">
           {tags.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {tags.map((tag) => (
                 <Link
                   key={tag}
-                  className="glass-chip px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:text-ink focus-visible:text-ink focus-visible:outline-none"
+                  className="rounded-full border border-ink/10 bg-white/55 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted transition hover:border-red/20 hover:text-red dark:border-paper/10 dark:bg-paper/6 focus-visible:outline-none"
                   href={`/explore?tag=${encodeURIComponent(tag)}`}
                 >
                   {translateStaticTerm(tag, locale)}
@@ -558,14 +551,14 @@ export function WallpaperDetailSidebar({
           ) : null}
           {aiTags.length > 0 ? (
             <div>
-              <p className="mb-2 text-[9px] uppercase tracking-[0.3em] text-muted/50">
+              <p className="mb-2 text-[9px] uppercase tracking-[0.32em] text-muted/40">
                 {labels.aiDetected}
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {aiTags.slice(0, 8).map((tag) => (
                   <Link
                     key={tag}
-                    className="glass-chip px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted/70 transition hover:text-muted focus-visible:outline-none"
+                    className="rounded-full border border-ink/6 bg-white/35 px-3 py-1 text-[9px] uppercase tracking-[0.18em] text-muted/60 transition hover:border-red/15 hover:text-muted dark:border-paper/8 dark:bg-paper/4 focus-visible:outline-none"
                     href={`/explore?tag=${encodeURIComponent(tag)}`}
                   >
                     {translateStaticTerm(tag, locale)}
@@ -577,22 +570,23 @@ export function WallpaperDetailSidebar({
         </div>
       ) : null}
 
+      {/* 色彩 */}
       {colors.length > 0 ? (
         <div className="mt-6">
-          <p className="mb-3 text-[9px] uppercase tracking-[0.3em] text-muted/50">
+          <p className="mb-3 text-[9px] uppercase tracking-[0.32em] text-muted/40">
             {labels.colors}
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {colors.slice(0, 8).map((color) => {
               const hex = color.startsWith("#") ? color : `#${color}`;
               return (
                 <div
                   key={color}
-                  className="glass-chip flex items-center gap-2 px-2.5 py-1.5"
+                  className="flex items-center gap-2 rounded-full border border-ink/8 bg-white/55 px-2.5 py-1.5 dark:border-paper/10 dark:bg-paper/5"
                   title={hex}
                 >
                   <span
-                    className="border-ink/12 h-3.5 w-3.5 shrink-0 rounded-full border"
+                    className="h-3 w-3 shrink-0 rounded-full border border-ink/10 dark:border-paper/10"
                     style={{ backgroundColor: hex }}
                   />
                   <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-muted/70">
@@ -605,26 +599,27 @@ export function WallpaperDetailSidebar({
         </div>
       ) : null}
 
+      {/* AI 描述 */}
       {aiCaption ? (
-        <div className="glass-surface-soft mt-6 px-4 py-4">
-          <p className="mb-2 text-[9px] uppercase tracking-[0.3em] text-muted/50">
+        <div className="mt-6 rounded-[14px] border border-ink/6 bg-white/40 px-4 py-4 dark:border-paper/8 dark:bg-paper/4">
+          <p className="mb-2 text-[9px] uppercase tracking-[0.32em] text-muted/40">
             {labels.aiCaption}
           </p>
-          <p className="text-sm leading-6 text-muted/80">{aiCaption}</p>
+          <p className="text-[13px] leading-7 text-muted/80">{aiCaption}</p>
         </div>
       ) : null}
 
-      <div className="mt-10 space-y-4">
+      {/* 下载 + 操作 */}
+      <div className="mt-10 space-y-3">
         {canDownload ? (
-          <div className="glass-surface-soft space-y-3 p-4 sm:p-5">
-            <div className="rounded-[18px] bg-white/45 px-4 py-3 shadow-[inset_4px_4px_10px_rgba(37,58,62,0.08),inset_-4px_-4px_10px_rgba(255,255,255,0.86)]">
-              <p className="text-xs leading-6 text-muted">
-                {labels.downloadHint}
-              </p>
-            </div>
+          <div className="space-y-2.5 rounded-[20px] border border-ink/8 bg-white/55 p-4 dark:border-paper/10 dark:bg-paper/6">
+            <p className="text-[12px] leading-6 text-muted/75">
+              {labels.downloadHint}
+            </p>
             <button
+              aria-label={labels.downloadConfig}
               data-download-ready={isClientReady ? "true" : "false"}
-              className="glass-primary inline-flex min-h-[48px] w-full justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em]"
+              className="inline-flex min-h-[48px] w-full items-center justify-center rounded-[14px] bg-ink px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-paper transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 dark:bg-paper dark:text-ink"
               type="button"
               onClick={() => {
                 setFeedback(null);
@@ -634,7 +629,7 @@ export function WallpaperDetailSidebar({
               {labels.downloadConfig}
             </button>
             {downloadOptions.length > 0 ? (
-              <p className="text-[10px] uppercase tracking-[0.22em] text-muted">
+              <p className="text-center text-[10px] uppercase tracking-[0.18em] text-muted/60">
                 {labels.tiers(
                   downloadOptions.length,
                   downloadOptions.find((option) => option.variant === "4k")
@@ -650,7 +645,7 @@ export function WallpaperDetailSidebar({
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <button
             aria-label={
               isPending
@@ -662,10 +657,10 @@ export function WallpaperDetailSidebar({
                     : labels.favorite
             }
             className={cn(
-              "inline-flex min-h-[48px] w-full justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] transition focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto",
+              "inline-flex min-h-[44px] w-full items-center justify-center rounded-[12px] px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] transition focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto",
               isFavorited && !isPending
-                ? "glass-chip-active"
-                : "glass-control text-ink",
+                ? "bg-red/10 text-red ring-1 ring-red/20 hover:bg-red/15"
+                : "border border-ink/10 bg-white/55 text-muted hover:border-red/15 hover:text-red dark:border-paper/10 dark:bg-paper/6",
             )}
             disabled={isPending}
             onClick={handleFavoriteClick}
@@ -680,14 +675,14 @@ export function WallpaperDetailSidebar({
                   : labels.favorite}
           </button>
           <Link
-            className="glass-control inline-flex min-h-[48px] w-full justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition sm:w-auto"
+            className="inline-flex min-h-[44px] w-full items-center justify-center rounded-[12px] border border-ink/10 bg-white/55 px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted transition hover:border-red/15 hover:text-red dark:border-paper/10 dark:bg-paper/6 sm:w-auto"
             href="/explore"
           >
             {labels.backExplore}
           </Link>
           {didHydrateAuthState && isSignedIn ? (
             <Link
-              className="glass-control inline-flex min-h-[48px] w-full justify-center px-5 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink transition sm:w-auto"
+              className="inline-flex min-h-[44px] w-full items-center justify-center rounded-[12px] border border-ink/10 bg-white/55 px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted transition hover:border-red/15 hover:text-red dark:border-paper/10 dark:bg-paper/6 sm:w-auto"
               href="/library"
             >
               {labels.library}
@@ -696,7 +691,11 @@ export function WallpaperDetailSidebar({
         </div>
       </div>
 
-      {feedback ? <p className="mt-4 text-sm text-red">{feedback}</p> : null}
+      {feedback ? (
+        <p className="mt-3 rounded-[10px] border border-red/20 bg-red/8 px-4 py-2.5 text-[13px] text-red">
+          {feedback}
+        </p>
+      ) : null}
 
       {canDownload && isDownloadPanelOpen ? (
         <DownloadPanel
