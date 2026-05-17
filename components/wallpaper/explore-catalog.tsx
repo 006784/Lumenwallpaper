@@ -179,14 +179,13 @@ function ExploreSummary({
 
 function ExploreCardSkeleton() {
   return (
-    <div className="glass-surface-soft overflow-hidden p-3">
-      <div className="aspect-[4/5] animate-pulse rounded-[22px] bg-ink/5" />
-      <div className="space-y-3 px-3.5 py-3.5 sm:px-4 sm:py-4">
-        <div className="h-5 animate-pulse rounded-full bg-ink/5" />
-        <div className="h-3 w-1/2 animate-pulse rounded-full bg-ink/5" />
+    <div className="overflow-hidden rounded-[22px] border border-ink/6 bg-white/50 dark:border-paper/8 dark:bg-paper/5">
+      <div className="aspect-[4/5] animate-pulse bg-gradient-to-br from-ink/4 via-ink/6 to-ink/4 dark:from-paper/4 dark:via-paper/6 dark:to-paper/4" />
+      <div className="space-y-2.5 px-3.5 py-3.5">
+        <div className="h-3 w-3/4 animate-pulse rounded-full bg-ink/6 dark:bg-paper/6" />
         <div className="flex gap-2">
-          <span className="h-6 w-16 animate-pulse rounded-full bg-ink/5" />
-          <span className="h-6 w-12 animate-pulse rounded-full bg-ink/5" />
+          <span className="h-5 w-14 animate-pulse rounded-full bg-ink/5 dark:bg-paper/5" />
+          <span className="h-5 w-10 animate-pulse rounded-full bg-ink/5 dark:bg-paper/5" />
         </div>
       </div>
     </div>
@@ -509,55 +508,57 @@ export function ExploreCatalog({
     : copy.defaultDescription;
 
   return (
-    <section className="glass-panel-grid relative overflow-hidden px-5 pb-8 pt-24 sm:px-6 md:px-10 md:pb-12 md:pt-28">
+    <section className="glass-panel-grid relative overflow-hidden px-5 pb-10 pt-24 sm:px-6 md:px-10 md:pb-14 md:pt-28">
       <div className="relative mx-auto max-w-7xl">
-        <p className="mb-3 text-[10px] uppercase tracking-[0.35em] text-red">
-          Explore
-        </p>
-        <div className="flex flex-col gap-5 pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-4 pb-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-4xl">
-            <h1 className="font-body text-[clamp(2rem,5vw,3.6rem)] font-semibold leading-tight tracking-normal">
+            <p className="mb-3 text-[9px] uppercase tracking-[0.4em] text-red/80">
+              Explore
+            </p>
+            <h1 className="font-body text-[clamp(2rem,5vw,3.8rem)] font-semibold leading-[1.05] tracking-tight text-ink">
               {heading}
             </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">
+            <p className="mt-3 max-w-2xl text-[14px] leading-7 text-muted">
               {description}
             </p>
           </div>
-          <ExploreSummary
-            count={count}
-            featuredOnly={featuredOnly}
-            locale={locale}
-            motionOnly={motionOnly}
-            page={currentPage}
-            pageSize={pageSize}
-            sort={sort}
-            total={total}
-            totalPages={totalPages}
-          />
+          <div className="shrink-0 pb-1">
+            <ExploreSummary
+              count={count}
+              featuredOnly={featuredOnly}
+              locale={locale}
+              motionOnly={motionOnly}
+              page={currentPage}
+              pageSize={pageSize}
+              sort={sort}
+              total={total}
+              totalPages={totalPages}
+            />
+          </div>
         </div>
 
         <form
           action={category ? `/explore/${category.slug}` : "/explore"}
-          className="glass-surface-soft mt-6 grid gap-3 p-3 lg:grid-cols-[1.2fr_0.8fr_auto]"
+          className="grid overflow-hidden rounded-[16px] border border-ink/8 bg-white/62 shadow-[0_4px_24px_rgba(23,79,80,0.06)] backdrop-blur-sm dark:border-paper/10 dark:bg-paper/6 lg:grid-cols-[1fr_0.6fr_auto]"
           key={`${category?.slug ?? "all"}:${query}:${tag ?? ""}:${sort}:${featuredOnly}:${motionOnly}`}
           method="get"
         >
           <input
-            className="glass-field min-w-0 px-4 py-3 text-[15px] outline-none transition placeholder:text-muted sm:text-[18px]"
+            className="min-w-0 bg-transparent px-5 py-3.5 text-[15px] text-ink outline-none placeholder:text-muted/60"
             defaultValue={query}
             name="q"
             placeholder={copy.searchPlaceholder}
             type="text"
           />
           <input
-            className="glass-field min-w-0 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.16em] outline-none transition placeholder:text-muted sm:text-[11px] sm:tracking-[0.2em]"
+            className="min-w-0 border-l border-ink/8 bg-transparent px-4 py-3.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink outline-none placeholder:text-muted/55 dark:border-paper/10"
             defaultValue={tag}
             name="tag"
             placeholder={copy.tagPlaceholder}
             type="text"
           />
           <button
-            className="glass-primary px-5 py-3 font-mono text-[12px] uppercase tracking-[0.22em] focus-visible:outline-none"
+            className="m-1.5 rounded-[10px] bg-ink px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.22em] text-paper transition hover:opacity-90 focus-visible:outline-none dark:bg-paper dark:text-ink"
             type="submit"
           >
             {copy.searchSubmit}
@@ -862,13 +863,13 @@ export function ExploreCatalog({
             </div>
 
             {totalPages > 1 ? (
-              <div className="mt-12 flex items-center justify-between pt-8">
+              <div className="mt-14 flex items-center justify-center gap-1.5 border-t border-ink/6 pt-10 dark:border-paper/8">
                 <Link
-                  aria-disabled={page <= 1}
+                  aria-disabled={!hasPreviousPage}
                   className={
                     !hasPreviousPage
-                      ? "glass-chip pointer-events-none px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/25"
-                      : "glass-control px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition"
+                      ? "flex h-9 items-center gap-1.5 rounded-full px-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ink/20 dark:text-paper/20"
+                      : "flex h-9 items-center gap-1.5 rounded-full border border-ink/10 bg-white/60 px-4 font-mono text-[10px] uppercase tracking-[0.18em] text-muted transition hover:border-red/20 hover:text-red dark:border-paper/10 dark:bg-paper/6"
                   }
                   href={buildExploreHref(category?.slug, {
                     q: query || undefined,
@@ -879,7 +880,7 @@ export function ExploreCatalog({
                     page: currentPage - 1,
                   })}
                 >
-                  {copy.previousPage}
+                  ← {copy.previousPage}
                 </Link>
 
                 <div className="flex items-center gap-1">
@@ -904,8 +905,8 @@ export function ExploreCatalog({
                           key={pageNum}
                           className={
                             pageNum === currentPage
-                              ? "glass-chip-active flex h-9 w-9 items-center justify-center font-mono text-[10px]"
-                              : "glass-chip flex h-9 w-9 items-center justify-center font-mono text-[10px] text-muted transition hover:text-ink"
+                              ? "flex h-9 w-9 items-center justify-center rounded-full bg-ink font-mono text-[11px] text-paper dark:bg-paper dark:text-ink"
+                              : "flex h-9 w-9 items-center justify-center rounded-full border border-ink/8 bg-white/55 font-mono text-[11px] text-muted transition hover:border-red/20 hover:text-red dark:border-paper/10 dark:bg-paper/5 focus-visible:outline-none"
                           }
                           href={buildExploreHref(category?.slug, {
                             q: query || undefined,
@@ -927,8 +928,8 @@ export function ExploreCatalog({
                   aria-disabled={!hasNextPage}
                   className={
                     !hasNextPage
-                      ? "glass-chip pointer-events-none px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/25"
-                      : "glass-control px-6 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition"
+                      ? "flex h-9 items-center gap-1.5 rounded-full px-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ink/20 dark:text-paper/20"
+                      : "flex h-9 items-center gap-1.5 rounded-full border border-ink/10 bg-white/60 px-4 font-mono text-[10px] uppercase tracking-[0.18em] text-muted transition hover:border-red/20 hover:text-red dark:border-paper/10 dark:bg-paper/6"
                   }
                   href={buildExploreHref(category?.slug, {
                     q: query || undefined,
@@ -939,7 +940,7 @@ export function ExploreCatalog({
                     page: currentPage + 1,
                   })}
                 >
-                  {copy.nextPage}
+                  {copy.nextPage} →
                 </Link>
               </div>
             ) : null}
