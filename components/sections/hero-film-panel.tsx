@@ -374,18 +374,18 @@ export function HeroFilmPanel({ rows = heroFilmRows }: HeroFilmPanelProps) {
 
       {/* 格子模式底部信息 */}
       <div
-        className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-black/80 to-transparent px-4 pb-5 pt-14 transition-opacity duration-500 sm:px-7 sm:pb-7 sm:pt-16"
+        className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/98 via-black/70 to-transparent px-5 pb-6 pt-16 transition-opacity duration-500 sm:px-7 sm:pb-8"
         style={{
           opacity: activeCell ? 0 : 1,
           pointerEvents: "none",
         }}
       >
-        <p className="font-display text-[22px] italic text-paper sm:text-[28px]">动态专区</p>
-        <p className="mt-2 max-w-sm text-sm leading-6 text-paper/48">
-          把会呼吸、会闪动、会慢慢推进情绪的画面单独放进这条胶卷里。
+        <p className="text-[9px] uppercase tracking-[0.4em] text-gold/70">
+          {hasPlayableVideos ? "Motion Gallery" : "Film Archive"}
         </p>
-        <p className="mt-3 text-[9px] uppercase tracking-[0.35em] text-gold">
-          {hasPlayableVideos ? "选择视频格，进入实时预览" : "浏览动态灵感与精选封面"}
+        <p className="mt-2 font-display text-[clamp(1.5rem,3.5vw,2.2rem)] italic leading-[1.1] text-paper">动态专区</p>
+        <p className="mt-2 max-w-xs text-[13px] leading-6 text-paper/42">
+          把会呼吸的画面单独放进这条胶卷。
         </p>
       </div>
     </div>

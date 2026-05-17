@@ -25,24 +25,28 @@ export function MoodBoardSection({ cards, locale }: MoodBoardSectionProps) {
         duration={0.7}
       >
         <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
-          <div className="glass-surface-soft flex min-h-[280px] flex-col justify-between p-5 sm:p-6">
+          <div className="relative flex min-h-[280px] flex-col justify-between overflow-hidden rounded-[18px] border border-ink/8 bg-white/55 p-5 dark:border-paper/10 dark:bg-paper/6 sm:p-6">
+            <div className="absolute inset-y-0 right-0 w-[2px] bg-[linear-gradient(180deg,transparent,rgba(255,109,45,0.35)_40%,rgba(255,109,45,0.15)_70%,transparent)]" />
             <div>
-              <p className="mb-5 inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-muted">
-                <span className="h-px w-7 bg-current opacity-40" />
+              <p className="mb-5 inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.32em] text-muted/60">
+                <span className="h-px w-6 bg-red/50" />
                 {copy.mood.eyebrow}
               </p>
-              <h2 className="max-w-[8em] font-body text-[clamp(2rem,4vw,3.4rem)] font-semibold leading-[1.02]">
+              <h2 className="max-w-[8em] font-body text-[clamp(1.9rem,4vw,3.2rem)] font-semibold leading-[1.04] tracking-tight">
                 {copy.mood.titlePrefix}
                 <span className="text-red">{copy.mood.titleAccent}</span>
                 {copy.mood.titleSuffix}
               </h2>
-              <p className="mt-5 text-sm leading-7 text-muted">
+              <p className="mt-4 max-w-[18rem] text-[14px] leading-7 text-muted">
                 {copy.mood.body}
               </p>
             </div>
-            <Link className="section-entry-link mt-7 w-fit" href="/explore">
+            <Link
+              className="mt-7 inline-flex w-fit items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-muted transition hover:text-red"
+              href="/explore"
+            >
               {copy.mood.cta}
-              <span aria-hidden>↗</span>
+              <span aria-hidden className="text-red/60">↗</span>
             </Link>
           </div>
 
