@@ -53,10 +53,10 @@ export const footerColumns: FooterColumn[] = [
   {
     title: "关于",
     links: [
-      { label: "关于 Lumen", href: "/explore" },
-      { label: "隐私政策", href: "/explore" },
-      { label: "使用条款", href: "/explore" },
-      { label: "联系我们", href: "/explore" },
+      { label: "关于 Lumen", href: "/about" },
+      { label: "隐私政策", href: "/privacy" },
+      { label: "使用条款", href: "/terms" },
+      { label: "联系我们", href: "/contact" },
     ],
   },
 ];
@@ -88,10 +88,10 @@ export function getLocalizedFooterColumns(
     {
       title: copy.footerColumns.about,
       links: [
-        { label: copy.footerLinks.about, href: "/explore" },
-        { label: copy.footerLinks.privacy, href: "/explore" },
-        { label: copy.footerLinks.terms, href: "/explore" },
-        { label: copy.footerLinks.contact, href: "/explore" },
+        { label: copy.footerLinks.about, href: "/about" },
+        { label: copy.footerLinks.privacy, href: "/privacy" },
+        { label: copy.footerLinks.terms, href: "/terms" },
+        { label: copy.footerLinks.contact, href: "/contact" },
       ],
     },
   ];
