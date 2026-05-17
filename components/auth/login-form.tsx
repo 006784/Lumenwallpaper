@@ -75,111 +75,111 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
-      <form
-        className="glass-surface relative overflow-hidden px-5 py-5 md:px-7 md:py-7"
-        onSubmit={handleSubmit}
-      >
-        <div className="absolute inset-x-8 top-0 h-[3px] rounded-full bg-red/70" />
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 pb-4">
+    <div className="grid gap-5 lg:grid-cols-[1fr_0.88fr]">
+      {/* 左侧：主表单 */}
+      <div className="relative overflow-hidden rounded-[24px] border border-ink/8 bg-white/70 p-6 shadow-[0_8px_40px_rgba(23,79,80,0.08)] backdrop-blur-md dark:border-paper/10 dark:bg-paper/8 md:p-8">
+        {/* 顶部红色渐变线 */}
+        <div className="absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_8%,rgba(255,109,45,0.7)_40%,rgba(255,109,45,0.4)_70%,transparent_92%)]" />
+
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-red">
-              01 — 邮件验证
+            <p className="text-[9px] uppercase tracking-[0.4em] text-red/70">
+              Magic Link · 邮件验证
             </p>
-            <p className="mt-2 max-w-md text-sm leading-6 text-muted">
-              输入你常用的邮箱，首次验证后这台设备会保持长期登录。
+            <h2 className="mt-3 font-body text-[1.6rem] font-semibold leading-tight tracking-tight text-ink">
+              无密码登录
+            </h2>
+            <p className="mt-2 text-[14px] leading-6 text-muted">
+              输入邮箱，收到链接后点击完成验证。
             </p>
           </div>
-          <p className="glass-chip px-3 py-2 text-[10px] uppercase tracking-[0.24em] text-muted">
-            180 天会话
-          </p>
-        </div>
 
-        <div>
-          <label
-            className="mb-2 block text-[10px] uppercase tracking-[0.25em] text-muted"
-            htmlFor="email"
+          <div className="space-y-2">
+            <label
+              className="block text-[9px] uppercase tracking-[0.28em] text-muted/70"
+              htmlFor="email"
+            >
+              邮箱地址
+            </label>
+            <input
+              autoComplete="email"
+              className="w-full rounded-[14px] border border-ink/10 bg-white/80 px-4 py-3.5 text-[15px] text-ink outline-none transition placeholder:text-muted/50 focus:border-red/30 focus:ring-2 focus:ring-red/10 dark:border-paper/12 dark:bg-paper/10 dark:focus:border-red/40"
+              id="email"
+              name="email"
+              placeholder="you@example.com"
+              required
+              type="email"
+            />
+          </div>
+
+          <button
+            className="inline-flex min-h-[50px] w-full items-center justify-center rounded-[14px] bg-ink px-5 py-3 font-mono text-[11px] uppercase tracking-[0.24em] text-paper transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-paper dark:text-ink"
+            disabled={isSubmitting}
+            type="submit"
           >
-            邮箱地址
-          </label>
-          <input
-            autoComplete="email"
-            className="glass-field w-full px-4 py-3.5 text-[15px] outline-none transition placeholder:text-muted/70"
-            id="email"
-            name="email"
-            placeholder="you@example.com"
-            required
-            type="email"
-          />
-          <p className="mt-3 text-xs leading-6 text-muted">
-            推荐使用你准备绑定创作者身份的邮箱；常用设备不需要每次重新收信。
+            {isSubmitting ? (
+              <span className="flex items-center gap-2">
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-paper/30 border-t-paper dark:border-ink/30 dark:border-t-ink" />
+                发送中
+              </span>
+            ) : "发送登录链接"}
+          </button>
+
+          {error ? (
+            <div className="flex items-start gap-3 rounded-[12px] border border-red/20 bg-red/6 px-4 py-3">
+              <span className="mt-0.5 text-[11px] text-red/60">⚠</span>
+              <p className="text-[13px] leading-6 text-red">{error}</p>
+            </div>
+          ) : null}
+
+          {devMagicLink ? (
+            <div className="rounded-[12px] border border-gold/30 bg-gold/8 px-4 py-4 dark:border-gold/20 dark:bg-gold/6">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-gold/80">调试链接</p>
+              <Link
+                className="mt-2 block break-all text-[13px] text-ink/70 underline decoration-ink/25 underline-offset-4 hover:text-ink"
+                href={devMagicLink}
+              >
+                {devMagicLink}
+              </Link>
+            </div>
+          ) : null}
+
+          <p className="text-[11px] leading-5 text-muted/55">
+            首次验证后本机保持登录，推荐使用绑定创作者身份的邮箱。
           </p>
-        </div>
+        </form>
+      </div>
 
-        <button
-          className="glass-primary inline-flex min-h-[50px] w-full items-center justify-center px-5 py-3 font-mono text-[12px] uppercase tracking-[0.24em] disabled:cursor-not-allowed disabled:opacity-60"
-          disabled={isSubmitting}
-          type="submit"
-        >
-          {isSubmitting ? "发送中…" : "发送一次性登录链接"}
-        </button>
-
-        {error ? (
-          <p className="border border-red/30 bg-red/10 px-4 py-3 text-sm leading-6 text-red">
-            {error}
+      {/* 右侧：说明 */}
+      <div className="relative overflow-hidden rounded-[24px] border border-ink/6 bg-white/40 p-6 dark:border-paper/8 dark:bg-paper/5 md:p-8">
+        <div className="space-y-5">
+          <p className="text-[9px] uppercase tracking-[0.4em] text-muted/50">
+            登录流程
           </p>
-        ) : null}
-
-        {devMagicLink ? (
-          <div className="space-y-2 border border-gold/40 bg-gold/10 px-4 py-4 text-sm text-ink">
-            <p>当前环境未配置 Resend，已生成本地调试链接：</p>
-            <Link
-              className="break-all underline decoration-ink/25 underline-offset-4"
-              href={devMagicLink}
-            >
-              {devMagicLink}
-            </Link>
-          </div>
-        ) : null}
-      </form>
-
-      <aside className="glass-surface relative overflow-hidden px-5 py-5 text-ink md:px-7 md:py-7">
-        <div className="relative">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-red">
-            长期登录
-          </p>
-          <p className="mt-3 text-sm leading-7 text-muted">
-            只在首次登录、换浏览器、清理 Cookie 或会话过期时需要邮件验证。验证成功后会建立 HttpOnly 长期会话。
-          </p>
-        </div>
-
-        <div className="relative mt-6 grid gap-3">
           {[
-            ["01", "首次验证", "请求一次性登录链接。"],
-            ["02", "绑定本机", "点开邮件链接完成设备验证。"],
-            ["03", "长期使用", "回到 Lumen 后保持本机登录。"],
-          ].map(([index, title, description]) => (
-            <div
-              key={index}
-              className="glass-surface-soft px-4 py-4"
-            >
-              <p className="text-[10px] uppercase tracking-[0.28em] text-red">
-                {index}
-              </p>
-              <p className="mt-2 font-body text-[22px] font-semibold leading-none text-ink">
-                {title}
-              </p>
-              <p className="mt-3 text-sm leading-6 text-muted">{description}</p>
+            { n: "01", title: "发送链接", desc: "输入邮箱，点击发送后一次性登录链接会到达收件箱。" },
+            { n: "02", title: "点击验证", desc: "打开邮件中的链接，完成本机设备验证。" },
+            { n: "03", title: "长期登录", desc: "验证成功后建立 180 天 HttpOnly 会话，无需再次登录。" },
+          ].map(({ n, title, desc }) => (
+            <div key={n} className="flex gap-4">
+              <span className="mt-0.5 font-mono text-[11px] text-red/50">{n}</span>
+              <div>
+                <p className="text-[14px] font-semibold text-ink">{title}</p>
+                <p className="mt-1.5 text-[13px] leading-6 text-muted">{desc}</p>
+              </div>
             </div>
           ))}
         </div>
 
-        <div className="relative mt-6 space-y-2 border-t border-ink/10 pt-5 text-[11px] uppercase tracking-[0.2em] text-muted">
-          <p>链接有效期：15 分钟</p>
-          <p>链接仅可使用一次</p>
-          <p>本机会话默认保留 180 天</p>
+        <div className="mt-8 space-y-2 border-t border-ink/6 pt-6 dark:border-paper/8">
+          {["链接有效期 15 分钟", "链接仅可使用一次", "会话默认保留 180 天"].map((item) => (
+            <div key={item} className="flex items-center gap-2.5 text-[11px] text-muted/60">
+              <span className="h-1 w-1 rounded-full bg-red/40" />
+              {item}
+            </div>
+          ))}
         </div>
-      </aside>
+      </div>
     </div>
   );
 }
