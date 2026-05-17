@@ -80,23 +80,31 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
 
         <div className="flex items-center gap-2 sm:gap-3">
           {currentUser ? (
-            <Link
-              className="hidden items-center gap-2 rounded-full border border-ink/10 bg-white/50 px-3.5 py-2 text-[11px] uppercase tracking-[0.14em] text-muted transition hover:border-ink/20 hover:text-ink dark:border-paper/12 dark:bg-paper/8 dark:hover:border-paper/20 sm:inline-flex"
-              href="/library"
-            >
-              <svg
-                aria-hidden="true"
-                className="h-3 w-3 opacity-60"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
+            <div className="hidden items-center gap-1 sm:flex">
+              <Link
+                className="inline-flex items-center gap-2 rounded-full border border-ink/10 bg-white/50 px-3.5 py-2 text-[11px] uppercase tracking-[0.14em] text-muted transition hover:border-ink/20 hover:text-ink dark:border-paper/12 dark:bg-paper/8 dark:hover:border-paper/20"
+                href="/library"
               >
-                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              {libraryLabel}
-            </Link>
+                <svg
+                  aria-hidden="true"
+                  className="h-3 w-3 opacity-60"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M4 19.5A2.5 2.5 0 016.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {libraryLabel}
+              </Link>
+              <Link
+                className="inline-flex items-center rounded-full border border-ink/10 bg-white/50 px-3.5 py-2 text-[11px] uppercase tracking-[0.14em] text-muted transition hover:border-ink/20 hover:text-ink dark:border-paper/12 dark:bg-paper/8 dark:hover:border-paper/20"
+                href="/admin"
+              >
+                管理台
+              </Link>
+            </div>
           ) : (
             <FrameButton
               className="hidden sm:inline-flex"

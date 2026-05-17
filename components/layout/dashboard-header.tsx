@@ -61,7 +61,7 @@ export async function DashboardHeader() {
               </Link>
               <Link
                 className="hidden text-[11px] uppercase tracking-[0.22em] text-muted transition hover:text-ink focus-visible:outline-none focus-visible:text-ink xl:inline-flex"
-                href="/creator/studio/manage"
+                href="/admin"
               >
                 管理台
               </Link>
