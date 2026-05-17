@@ -114,6 +114,23 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
               {loginLabel}
             </FrameButton>
           )}
+          <Link
+            aria-label="搜索"
+            className="glass-chip flex h-9 w-9 items-center justify-center rounded-full text-muted transition hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20"
+            href="/explore"
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" strokeLinecap="round" />
+            </svg>
+          </Link>
           <LanguageSwitcher initialLocale={locale} />
           <ThemeToggle />
           <FrameButton className="px-4 sm:px-5" href="/creator/studio">

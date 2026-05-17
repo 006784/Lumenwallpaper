@@ -93,10 +93,7 @@ export function EditorialSection({
                 </span>
               ) : null}
             </div>
-            <h2 className="max-w-[12ch] font-body text-[clamp(2rem,4vw,2.5rem)] font-semibold leading-[1.06]">
-              {feature.title}
-            </h2>
-            <p className="mt-3 max-w-md text-sm leading-6 text-muted">
+            <p className="mt-1 max-w-md text-[15px] leading-7 text-ink/80">
               {feature.description}
             </p>
           </div>
@@ -138,17 +135,12 @@ export function EditorialSection({
                       </span>
                     ) : null}
                   </div>
-                  <p className="font-body text-[18px] font-semibold leading-[1.2]">
-                    {item.title}
+                  <p className="text-[9px] uppercase tracking-[0.25em] text-muted">
+                    {item.meta}
                   </p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-[9px] uppercase tracking-[0.25em] text-muted">
-                      {item.meta}
-                    </p>
-                    <span className="translate-x-1 text-sm text-ink/20 opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-x-0 group-hover:opacity-100">
-                      →
-                    </span>
-                  </div>
+                  <span className="self-end text-sm text-ink/20 opacity-0 transition-[opacity] duration-200 group-hover:opacity-100">
+                    →
+                  </span>
                 </div>
               </Link>
             );
