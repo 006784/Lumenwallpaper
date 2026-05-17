@@ -47,6 +47,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.78,
     },
+    {
+      url: getSiteUrl("/about"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: getSiteUrl("/privacy"),
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: getSiteUrl("/terms"),
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: getSiteUrl("/contact"),
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
     ...EXPLORE_CATEGORIES.map((category) => ({
       url: getSiteUrl(category.href),
       changeFrequency: "weekly" as const,

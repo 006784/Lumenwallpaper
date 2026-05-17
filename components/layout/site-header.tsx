@@ -5,6 +5,7 @@ import { ScrollAwareHeader } from "@/components/layout/scroll-aware-header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { FrameButton } from "@/components/ui/frame-button";
+import { getCurrentUser, isAuthConfigured, isEditorUser } from "@/lib/auth";
 import { getLocalizedNavLinks } from "@/lib/data/home";
 import { getI18nMessages } from "@/lib/i18n";
 import type { SupportedLocale } from "@/types/i18n";
@@ -16,6 +17,10 @@ type SiteHeaderProps = {
 export function SiteHeader({ locale }: SiteHeaderProps) {
   const messages = getI18nMessages(locale);
   const navLinks = getLocalizedNavLinks(locale);
+
+  const currentUser = isAuthConfigured() ? getCurrentUser() : null;
+  const isEditor = isEditorUser(currentUser);
+
   const loginLabel =
     locale === "zh-CN"
       ? "登录"
@@ -24,6 +29,15 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
         : locale === "ko"
           ? "로그인"
           : "Log in";
+
+  const libraryLabel =
+    locale === "zh-CN"
+      ? "我的库"
+      : locale === "ja"
+        ? "ライブラリ"
+        : locale === "ko"
+          ? "라이브러리"
+          : "Library";
 
   return (
     <ScrollAwareHeader className="fixed inset-x-0 top-0 z-50 bg-transparent px-3 pt-3">
@@ -65,21 +79,41 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <FrameButton
-            className="hidden sm:inline-flex"
-            href="/login"
-            variant="outline"
-          >
-            {loginLabel}
-          </FrameButton>
+          {currentUser ? (
+            <Link
+              className="hidden items-center gap-2 rounded-full border border-ink/10 bg-white/50 px-3.5 py-2 text-[11px] uppercase tracking-[0.14em] text-muted transition hover:border-ink/20 hover:text-ink dark:border-paper/12 dark:bg-paper/8 dark:hover:border-paper/20 sm:inline-flex"
+              href="/library"
+            >
+              <svg
+                aria-hidden="true"
+                className="h-3 w-3 opacity-60"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {libraryLabel}
+            </Link>
+          ) : (
+            <FrameButton
+              className="hidden sm:inline-flex"
+              href="/login"
+              variant="outline"
+            >
+              {loginLabel}
+            </FrameButton>
+          )}
           <LanguageSwitcher initialLocale={locale} />
           <ThemeToggle />
           <FrameButton className="px-4 sm:px-5" href="/creator/studio">
             {messages.actions.upload}
           </FrameButton>
           <MobileNav
-            currentUsername={null}
-            isEditor={false}
+            currentUsername={currentUser?.username ?? null}
+            isEditor={isEditor}
             labels={{
               closeMenu:
                 locale === "zh-CN"

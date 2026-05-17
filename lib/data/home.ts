@@ -38,7 +38,7 @@ export const footerColumns: FooterColumn[] = [
       { label: "情绪版", href: "/explore" },
       { label: "暗室精选", href: "/darkroom" },
       { label: "热门排行", href: "/explore" },
-      { label: "随机发现", href: "/explore" },
+      { label: "随机发现", href: "/wallpaper/random" },
     ],
   },
   {
@@ -73,7 +73,7 @@ export function getLocalizedFooterColumns(
         { label: copy.footerLinks.mood, href: "/explore" },
         { label: copy.footerLinks.darkroom, href: "/darkroom" },
         { label: copy.footerLinks.popular, href: "/explore" },
-        { label: copy.footerLinks.random, href: "/explore" },
+        { label: copy.footerLinks.random, href: "/wallpaper/random" },
       ],
     },
     {
