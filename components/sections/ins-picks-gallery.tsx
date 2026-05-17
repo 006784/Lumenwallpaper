@@ -67,9 +67,6 @@ function CollectionPreview({
             <span className="font-display text-[clamp(3.4rem,7vw,5.5rem)] leading-none text-ink/45">
               {initials}
             </span>
-            <span className="mt-4 font-mono text-[9px] uppercase tracking-[0.26em] text-muted">
-              {collection.r2Prefix}
-            </span>
           </div>
         </div>
       </div>
@@ -180,11 +177,6 @@ function CollectionCard({
 
       <div className="relative">
         <CollectionPreview collection={collection} />
-        <div className="pointer-events-none absolute inset-x-4 bottom-4">
-          <span className="rounded-full border border-paper/20 bg-black/30 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-paper/65 backdrop-blur-sm">
-            {collection.slug}
-          </span>
-        </div>
       </div>
     </Link>
   );
@@ -275,44 +267,17 @@ export function InsPicksGallery({
               <FrameButton href={uploadHref}>
                 {copy.hero.uploadPhotos}
               </FrameButton>
-              <FrameButton href={snapshot.upload.createEndpoint} variant="outline">
-                {copy.hero.uploadApi}
-              </FrameButton>
-              <FrameButton
-                href={snapshot.upload.collectionsEndpoint}
-                variant="outline"
-              >
-                {copy.hero.collectionsApi}
-              </FrameButton>
-              <FrameButton href="/api/ins-picks" variant="outline">
-                {copy.hero.apiSnapshot}
-              </FrameButton>
               {selected ? (
                 <FrameButton href="/ins" variant="outline">
                   {copy.hero.allCollections}
                 </FrameButton>
               ) : null}
             </div>
-            <InsPicksCollectionTools
-              collectionsEndpoint={snapshot.upload.collectionsEndpoint}
-              copy={copy.tools}
-            />
           </div>
 
           {heroCollection ? (
             <div className="glass-surface overflow-hidden">
               <CollectionPreview collection={heroCollection} />
-              <div className="border-t border-ink/10 p-5">
-                <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted">
-                  {copy.hero.archiveTitle}
-                </p>
-                <p className="mt-3 text-sm leading-7 text-muted">
-                  {copy.hero.pipelineBody}
-                </p>
-                <p className="mt-3 break-all font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
-                  R2: {heroCollection.r2Prefix}
-                </p>
-              </div>
             </div>
           ) : null}
         </div>

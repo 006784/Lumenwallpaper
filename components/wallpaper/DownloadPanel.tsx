@@ -915,7 +915,7 @@ export function DownloadPanel({
                   border: `1px solid ${isCropActive ? "rgba(255,109,45,0.7)" : t.border}`,
                   borderRadius: "999px",
                   boxShadow: t.shadowSoft,
-                  color: isCropActive ? "#fff" : INK,
+                  color: isCropActive ? "#fff" : t.ink,
                   fontFamily: FONT_MONO,
                   fontSize: "9px",
                   letterSpacing: "2px",
@@ -992,7 +992,7 @@ export function DownloadPanel({
                 }}
                 onMouseLeave={(event) => {
                   event.currentTarget.style.background = t.paper;
-                  event.currentTarget.style.color = INK;
+                  event.currentTarget.style.color = t.ink;
                 }}
               >
                 ✕
@@ -1059,12 +1059,12 @@ export function DownloadPanel({
                           : "rgba(255,255,255,0.56)",
                         border: active
                           ? "1px solid rgba(23,79,80,0.28)"
-                          : `1px solid ${BORDER}`,
+                          : `1px solid ${t.border}`,
                         borderRadius: "18px",
                         boxShadow: active
                           ? "0 12px 26px rgba(23,79,80,0.22), inset 1px 1px 2px rgba(255,255,255,0.42)"
                           : t.shadowSoft,
-                        color: active ? "#fff" : MUTED,
+                        color: active ? "#fff" : t.muted,
                         cursor: "pointer",
                         fontFamily: FONT_MONO,
                         fontSize: "10px",
@@ -1078,16 +1078,16 @@ export function DownloadPanel({
                           return;
                         }
 
-                        event.currentTarget.style.borderColor = MUTED;
-                        event.currentTarget.style.color = INK;
+                        event.currentTarget.style.borderColor = t.muted;
+                        event.currentTarget.style.color = t.ink;
                       }}
                       onMouseLeave={(event) => {
                         if (active) {
                           return;
                         }
 
-                        event.currentTarget.style.borderColor = BORDER;
-                        event.currentTarget.style.color = MUTED;
+                        event.currentTarget.style.borderColor = t.border;
+                        event.currentTarget.style.color = t.muted;
                       }}
                     >
                       {label}
@@ -1140,14 +1140,16 @@ export function DownloadPanel({
                           : active
                             ? "linear-gradient(145deg, #ff8b45, #ff6424)"
                             : "rgba(255,255,255,0.54)",
-                        border: `1px solid ${disabled ? BORDER : active ? t.red : BORDER}`,
+                        border: `1px solid ${
+                          disabled ? t.border : active ? t.red : t.border
+                        }`,
                         borderRadius: "999px",
                         boxShadow: active ? "0 10px 22px rgba(255,109,45,0.22)" : t.shadowSoft,
                         color: disabled
                           ? "rgba(138,128,112,0.42)"
                           : active
                             ? "#fff"
-                            : MUTED,
+                            : t.muted,
                         cursor: disabled ? "not-allowed" : "pointer",
                         fontFamily: FONT_MONO,
                         fontSize: "9px",
@@ -1162,16 +1164,16 @@ export function DownloadPanel({
                           return;
                         }
 
-                        event.currentTarget.style.borderColor = MUTED;
-                        event.currentTarget.style.color = INK;
+                        event.currentTarget.style.borderColor = t.muted;
+                        event.currentTarget.style.color = t.ink;
                       }}
                       onMouseLeave={(event) => {
                         if (active || disabled) {
                           return;
                         }
 
-                        event.currentTarget.style.borderColor = BORDER;
-                        event.currentTarget.style.color = MUTED;
+                        event.currentTarget.style.borderColor = t.border;
+                        event.currentTarget.style.color = t.muted;
                       }}
                     >
                       {option.label === "FREE" ? "自由" : option.label}
@@ -1206,14 +1208,16 @@ export function DownloadPanel({
                           : active
                             ? "linear-gradient(145deg, #ff8b45, #ff6424)"
                             : "rgba(255,255,255,0.54)",
-                        border: `1px solid ${disabled ? BORDER : active ? t.red : BORDER}`,
+                        border: `1px solid ${
+                          disabled ? t.border : active ? t.red : t.border
+                        }`,
                         borderRadius: "999px",
                         boxShadow: active ? "0 10px 22px rgba(255,109,45,0.22)" : t.shadowSoft,
                         color: disabled
                           ? "rgba(138,128,112,0.42)"
                           : active
                             ? "#fff"
-                            : MUTED,
+                            : t.muted,
                         cursor: disabled ? "not-allowed" : "pointer",
                         fontFamily: FONT_MONO,
                         fontSize: "9px",
@@ -1228,16 +1232,16 @@ export function DownloadPanel({
                           return;
                         }
 
-                        event.currentTarget.style.borderColor = MUTED;
-                        event.currentTarget.style.color = INK;
+                        event.currentTarget.style.borderColor = t.muted;
+                        event.currentTarget.style.color = t.ink;
                       }}
                       onMouseLeave={(event) => {
                         if (active || disabled) {
                           return;
                         }
 
-                        event.currentTarget.style.borderColor = BORDER;
-                        event.currentTarget.style.color = MUTED;
+                        event.currentTarget.style.borderColor = t.border;
+                        event.currentTarget.style.color = t.muted;
                       }}
                     >
                       {option.label}
@@ -1248,7 +1252,7 @@ export function DownloadPanel({
               <p
                 className="mt-3"
                 style={{
-                  color: cropWarning ? t.red : MUTED,
+                  color: cropWarning ? t.red : t.muted,
                   fontSize: "11px",
                   lineHeight: 1.7,
                 }}
@@ -1307,7 +1311,7 @@ export function DownloadPanel({
                     border: `1px solid ${t.border}`,
                     borderRadius: "999px",
                     boxShadow: t.shadowSoft,
-                    color: canCrop ? MUTED : "rgba(138,128,112,0.42)",
+                    color: canCrop ? t.muted : "rgba(138,128,112,0.42)",
                     cursor: canCrop ? "pointer" : "not-allowed",
                     fontFamily: FONT_MONO,
                     fontSize: "9px",
@@ -1322,16 +1326,16 @@ export function DownloadPanel({
                       return;
                     }
 
-                    event.currentTarget.style.borderColor = MUTED;
-                    event.currentTarget.style.color = INK;
+                    event.currentTarget.style.borderColor = t.muted;
+                    event.currentTarget.style.color = t.ink;
                   }}
                   onMouseLeave={(event) => {
                     if (!canCrop) {
                       return;
                     }
 
-                    event.currentTarget.style.borderColor = BORDER;
-                    event.currentTarget.style.color = MUTED;
+                    event.currentTarget.style.borderColor = t.border;
+                    event.currentTarget.style.color = t.muted;
                   }}
                 >
                   {detectLabel}
@@ -1350,9 +1354,9 @@ export function DownloadPanel({
               }}
             >
               {[
-                ["分辨率", res, PAPER],
-                ["格式", getFormatDisplayName(fmt), MUTED],
-                ["大小", size, MUTED],
+                ["分辨率", res, t.paper],
+                ["格式", getFormatDisplayName(fmt), t.muted],
+                ["大小", size, t.muted],
                 ["比例", ratio, t.red],
               ].map(([key, value, color]) => (
                 <div
@@ -1509,10 +1513,12 @@ export function DownloadPanel({
               className="w-full"
               style={{
                 background: "transparent",
-                border: `1px solid ${cacheState === "done" ? "rgba(35,140,88,0.38)" : BORDER}`,
+                border: `1px solid ${
+                  cacheState === "done" ? "rgba(35,140,88,0.38)" : t.border
+                }`,
                 borderRadius: "999px",
                 boxShadow: t.shadowSoft,
-                color: cacheState === "done" ? "#238c58" : MUTED,
+                color: cacheState === "done" ? "#238c58" : t.muted,
                 cursor: cacheState === "idle" ? "pointer" : "default",
                 fontFamily: FONT_MONO,
                 fontSize: "9px",
@@ -1527,16 +1533,16 @@ export function DownloadPanel({
                   return;
                 }
 
-                event.currentTarget.style.borderColor = MUTED;
-                event.currentTarget.style.color = INK;
+                event.currentTarget.style.borderColor = t.muted;
+                event.currentTarget.style.color = t.ink;
               }}
               onMouseLeave={(event) => {
                 if (cacheState !== "idle") {
                   return;
                 }
 
-                event.currentTarget.style.borderColor = BORDER;
-                event.currentTarget.style.color = MUTED;
+                event.currentTarget.style.borderColor = t.border;
+                event.currentTarget.style.color = t.muted;
               }}
             >
               {cacheState === "done" ? "已缓存 ✓" : "缓存配置"}

@@ -419,7 +419,6 @@ export function ExploreCatalog({
   const [retryNonce, setRetryNonce] = useState(0);
   const isInitialRender = useRef(true);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
@@ -482,6 +481,7 @@ export function ExploreCatalog({
     category?.slug,
     copy.loadingError,
     featuredOnly,
+    initialResult,
     locale,
     motionOnly,
     page,

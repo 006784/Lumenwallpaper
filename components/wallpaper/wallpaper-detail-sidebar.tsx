@@ -504,7 +504,6 @@ export function WallpaperDetailSidebar({
       {/* 元数据表格 */}
       <div className="mt-8 divide-y divide-ink/6 rounded-[16px] border border-ink/8 dark:divide-paper/8 dark:border-paper/10">
         {[
-          ["slug", slug],
           [labels.dimensions, width && height ? `${width} × ${height}` : labels.unrecorded],
           [labels.download, String(downloadsCount)],
           [labels.favorites, String(likesCount)],

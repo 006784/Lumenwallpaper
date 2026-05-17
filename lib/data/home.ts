@@ -18,7 +18,6 @@ export const navLinks: NavLink[] = [
   { label: "INS 专区", href: "/ins" },
   { label: "暗室精选", href: "/darkroom" },
   { label: "创作者", href: "/creator/studio" },
-  { label: "4K 库", href: "/explore" },
 ];
 
 export function getLocalizedNavLinks(locale: SupportedLocale): NavLink[] {
@@ -29,7 +28,6 @@ export function getLocalizedNavLinks(locale: SupportedLocale): NavLink[] {
     { label: copy.nav.ins, href: "/ins" },
     { label: copy.nav.darkroom, href: "/darkroom" },
     { label: copy.nav.creator, href: "/creator/studio" },
-    { label: copy.nav.library, href: "/explore" },
   ];
 }
 
