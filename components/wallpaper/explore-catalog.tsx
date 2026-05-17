@@ -413,6 +413,7 @@ export function ExploreCatalog({
   const [retryNonce, setRetryNonce] = useState(0);
   const isInitialRender = useRef(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
@@ -617,7 +618,7 @@ export function ExploreCatalog({
                 className={
                   isActive
                     ? "glass-chip-active shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
-                    : "glass-chip shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-ink transition hover:text-red"
+                    : "glass-chip shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-red focus-visible:text-red focus-visible:outline-none"
                 }
                 href={buildExploreHref(item.slug, {
                   q: query || undefined,
@@ -643,7 +644,7 @@ export function ExploreCatalog({
                 className={
                   isActive
                     ? "glass-chip-active shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em]"
-                    : "glass-chip shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-ink"
+                    : "glass-chip shrink-0 whitespace-nowrap px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-muted transition hover:text-red focus-visible:text-red focus-visible:outline-none"
                 }
                 href={buildExploreHref(category?.slug, {
                   q: query || undefined,
@@ -937,20 +938,22 @@ export function ExploreCatalog({
             ) : null}
           </>
         ) : (
-          <div className="glass-surface mt-10 flex flex-col items-center gap-6 px-6 py-16 text-center">
-            <span className="select-none font-mono text-[40px] leading-none text-ink/10">
-              [ ]
-            </span>
-            <div>
-              <p className="font-display text-[22px] italic text-ink/40">
+          <div className="glass-surface mt-10 flex flex-col items-center gap-8 px-6 py-20 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-ink/8 bg-ink/4 dark:border-paper/8 dark:bg-paper/4">
+              <span className="select-none font-mono text-[22px] leading-none text-ink/20 dark:text-paper/20">
+                ∅
+              </span>
+            </div>
+            <div className="max-w-xs space-y-2">
+              <p className="font-body text-[18px] font-medium text-ink/55 dark:text-paper/55">
                 {copy.emptyTitle}
               </p>
-              <p className="mt-2 max-w-sm text-[11px] uppercase tracking-[0.18em] text-muted/60">
+              <p className="text-[12px] leading-6 text-muted/70">
                 {copy.emptyBody}
               </p>
             </div>
             <Link
-              className="glass-control px-5 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition"
+              className="glass-control px-6 py-2.5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink transition hover:text-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red/30"
               href={buildExploreHref(undefined, {})}
             >
               {copy.clearAll}

@@ -308,7 +308,15 @@ function buildFilmHint(label: string, fmt: DownloadFormat, size: string) {
   return `${label} · ${getFormatDisplayName(fmt)} · ${size}`;
 }
 
-function FilmHoles({ count }: { count: number }) {
+function FilmHoles({
+  count,
+  filmBg,
+  filmHole,
+}: {
+  count: number;
+  filmBg: string;
+  filmHole: string;
+}) {
   return (
     <div className="flex items-center gap-[6px]">
       {Array.from({ length: count }, (_, index) => (
@@ -316,8 +324,8 @@ function FilmHoles({ count }: { count: number }) {
           key={index}
           className="block h-2 w-[11px] rounded-[2px]"
           style={{
-            background: t.filmBg,
-            border: `1px solid ${t.filmHole}`,
+            background: filmBg,
+            border: `1px solid ${filmHole}`,
           }}
         />
       ))}
@@ -748,7 +756,7 @@ export function DownloadPanel({
               borderBottom: `1px solid ${t.borderDk}`,
             }}
           >
-            <FilmHoles count={5} />
+            <FilmHoles count={5} filmBg={t.filmBg} filmHole={t.filmHole} />
             <p
               className="text-center"
               style={{
@@ -760,7 +768,7 @@ export function DownloadPanel({
             >
               FRAME™ · 2026 · ISO 400 · f/1.8 · 1/250s
             </p>
-            <FilmHoles count={5} />
+            <FilmHoles count={5} filmBg={t.filmBg} filmHole={t.filmHole} />
           </div>
 
           <div
@@ -926,7 +934,7 @@ export function DownloadPanel({
               borderTop: `1px solid ${t.borderDk}`,
             }}
           >
-            <FilmHoles count={3} />
+            <FilmHoles count={3} filmBg={t.filmBg} filmHole={t.filmHole} />
             <p
               className="text-center"
               style={{
@@ -938,7 +946,7 @@ export function DownloadPanel({
             >
               {filmHint}
             </p>
-            <FilmHoles count={3} />
+            <FilmHoles count={3} filmBg={t.filmBg} filmHole={t.filmHole} />
           </div>
         </div>
 
