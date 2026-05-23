@@ -216,6 +216,7 @@ type LocalizedHomeDataCopy = {
   nav: {
     creator: string;
     darkroom: string;
+    desktop: string;
     explore: string;
     ins: string;
     library: string;
@@ -1316,6 +1317,7 @@ const LOCALIZED_HOME_DATA_COPY = {
     nav: {
       creator: "创作者",
       darkroom: "暗室精选",
+      desktop: "电脑壁纸",
       explore: "探索",
       ins: "INS 专区",
       library: "4K 库",
@@ -1383,6 +1385,7 @@ const LOCALIZED_HOME_DATA_COPY = {
     nav: {
       creator: "Creators",
       darkroom: "Darkroom",
+      desktop: "Desktop",
       explore: "Explore",
       ins: "INS Picks",
       library: "4K Library",
@@ -1450,6 +1453,7 @@ const LOCALIZED_HOME_DATA_COPY = {
     nav: {
       creator: "クリエイター",
       darkroom: "暗室セレクト",
+      desktop: "デスクトップ",
       explore: "探索",
       ins: "INS セレクト",
       library: "4K ライブラリ",
@@ -1517,6 +1521,7 @@ const LOCALIZED_HOME_DATA_COPY = {
     nav: {
       creator: "크리에이터",
       darkroom: "다크룸",
+      desktop: "데스크톱",
       explore: "탐색",
       ins: "INS 픽",
       library: "4K 라이브러리",

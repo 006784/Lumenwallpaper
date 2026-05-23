@@ -6,6 +6,26 @@
 
 ## 进行中
 
+### TASK-049 · 新增电脑壁纸公开页
+
+- **状态**: ✅ codex done
+- **内容**: 用户要求新增一个电脑壁纸页面，视觉需要好看，并与当前 Lumen UI/UX 保持一致
+- **Codex 完成**:
+  - 需要新增公开路由 `app/(public)/desktop/page.tsx`
+  - 页面复用现有公开壁纸缓存、`WallpaperGridCard`、R2 图片展示与站点 metadata 体系
+  - 新增 `/desktop` 桌面壁纸策展页：胶片式大标题、桌面比例指标、横向 spotlight、16:10 网格、带鱼屏精选区
+  - 数据优先读取 `aspect=desktop + landscape + 4k`，无 4K 命中时回退到桌面横向作品
+  - `app/sitemap.ts` 已加入 `/desktop`
+  - 用户要求 Codex 代 Claude 补导航入口；已在统一导航数据里加入 `/desktop`，桌面 Header 与移动菜单都会显示
+- **验证**:
+  - `pnpm type-check`
+  - `pnpm lint`
+  - `pnpm build`
+  - 本地 Next 14 dev server 跑在 `http://localhost:3001`，Playwright 截图复查桌面与移动端：`/private/tmp/lumen-desktop-page.png`、`/private/tmp/lumen-desktop-page-mobile.png`
+  - 追加 Playwright 截图复查 Header 导航：`/private/tmp/lumen-desktop-nav.png`
+- **协作说明**:
+  - 未改动 `components/layout/site-header.tsx` 组件结构；导航入口通过 `lib/data/home.ts` 和 `lib/i18n-ui.ts` 的现有数据源注入
+
 ### TASK-048 · UI/UX 细节与暗色模式打磨
 
 - **状态**: ✅ codex done

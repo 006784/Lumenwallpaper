@@ -38,6 +38,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: getSiteUrl("/desktop"),
+      changeFrequency: "daily",
+      priority: 0.86,
+    },
+    {
       url: getSiteUrl("/darkroom"),
       changeFrequency: "weekly",
       priority: 0.8,
