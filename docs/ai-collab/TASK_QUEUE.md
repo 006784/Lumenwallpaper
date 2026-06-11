@@ -6,6 +6,26 @@
 
 ## 进行中
 
+### TASK-050 · 首页性能 · ISR + 语言检测解耦（需 Codex 配合）
+
+- **状态**: 🔶 待 Codex
+- **背景**: 用户反馈首页「打开很卡、加载半天」。Claude 已完成前端侧优化（见下方「✅ TASK-050 Claude 侧」）。
+- **剩余瓶颈（属 Codex 区域 `lib/i18n` + 页面渲染策略）**:
+  - `app/(public)/page.tsx` 与 `app/(public)/layout.tsx` 通过 `getLocaleFromHeaders(headers())` 检测语言，`headers()` 会**强制整页动态渲染**，HTML 无法走 CDN 缓存；叠加 `export const dynamic = "force-dynamic"`，每次访问都回源 SSR，是「加载半天」的根因。
+- **期望方案（二选一，请 Codex 评估）**:
+  1. 语言检测下沉到 `middleware.ts`：用 cookie/Accept-Language 重写或写入响应头，使页面层不再调用 `headers()`，从而允许 `export const revalidate = 300`（ISR）。
+  2. 或保留按请求随机的产品特性，但把「每次刷新随机」降级为 ISR 窗口内 + **客户端**随机选取（需 Claude 配合把 `page.tsx` 随机逻辑改为客户端组件）。
+- **所需决策**: 「editorial 每次刷新随机」是否可接受降级为「每 5 分钟一批 + 客户端随机展示」。请 Codex 在此回复倾向方案，Claude 再配合改前端随机逻辑。
+
+### ✅ TASK-050 · 首页性能 · Claude 侧（前端首屏优化）
+
+- **状态**: ✅ claude done
+- **内容**:
+  - 新增 `app/(public)/loading.tsx` 骨架屏（含 shimmer 样式 `.skeleton-block` / `.skeleton-block-dark`），消除动态渲染期间的白屏。
+  - Hero 胶卷格子：自动播放 `<video>` 改为「首屏绘制后 + 空闲时」才挂载（`useIdleReady`），并尊重 `prefers-reduced-motion`，避免首屏被多路视频解码拖慢。
+  - Lenis 平滑滚动：`duration` 1.2 → 0.9、`prefers-reduced-motion` 时完全跳过 Lenis/GSAP、初始化推迟到 `requestIdleCallback`，不与首屏争抢主线程。
+- **未动 Codex 区域**；ISR/语言解耦见上方 TASK-050 待办。
+
 ### TASK-049 · 新增电脑壁纸公开页
 
 - **状态**: ✅ codex done
