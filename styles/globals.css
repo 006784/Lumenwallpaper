@@ -614,6 +614,38 @@ textarea:focus-visible {
   animation-play-state: paused;
 }
 
+/* 骨架屏占位 */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-block {
+  background-image: linear-gradient(
+    100deg,
+    rgba(var(--color-ink-rgb), 0.05) 30%,
+    rgba(var(--color-ink-rgb), 0.1) 50%,
+    rgba(var(--color-ink-rgb), 0.05) 70%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-block-dark {
+  background-image: linear-gradient(
+    100deg,
+    rgba(var(--color-paper-rgb), 0.04) 30%,
+    rgba(var(--color-paper-rgb), 0.09) 50%,
+    rgba(var(--color-paper-rgb), 0.04) 70%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
 /* CRT 扫描线 */
 .scanlines::before {
   content: "";

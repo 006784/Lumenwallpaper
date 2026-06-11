@@ -7,6 +7,46 @@ import { GRADIENTS } from "@/lib/gradients";
 import { heroFilmRows } from "@/lib/data/home";
 import type { FilmCellData } from "@/types/home";
 
+// ─── 性能 hooks ───────────────────────────────────────────────────────────────
+
+/** 浏览器空闲后才返回 true，用于把重活（视频）推迟到首屏绘制之后。 */
+function useIdleReady() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    type IdleWindow = Window & {
+      requestIdleCallback?: (cb: () => void) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const w = window as IdleWindow;
+
+    if (typeof w.requestIdleCallback === "function") {
+      const handle = w.requestIdleCallback(() => setReady(true));
+      return () => w.cancelIdleCallback?.(handle);
+    }
+
+    const timer = window.setTimeout(() => setReady(true), 600);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return ready;
+}
+
+/** 监听用户的 prefers-reduced-motion 偏好。 */
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  return reduced;
+}
+
 // ─── 齿孔装饰 ────────────────────────────────────────────────────────────────
 
 function SprocketColumn({ side }: { side: "left" | "right" }) {
@@ -30,17 +70,21 @@ function AnimatedCell({
   cell,
   animIndex,
   shouldPlay,
+  canLoadVideo,
   onPlay,
 }: {
   cell: FilmCellData;
   animIndex: number;
   shouldPlay: boolean;
+  canLoadVideo: boolean;
   onPlay: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoReady, setVideoReady] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
   const hasPlayableVideo = Boolean(cell.videoUrl && !videoFailed);
+  // 只有空闲后才挂载 <video>，避免首屏被多路视频解码拖慢
+  const showVideo = hasPlayableVideo && canLoadVideo;
 
   useEffect(() => {
     const video = videoRef.current;
@@ -74,7 +118,7 @@ function AnimatedCell({
               backgroundImage: `linear-gradient(to top, rgba(10,8,4,0.18), rgba(10,8,4,0.08)), url("${cell.previewUrl}")`,
             }}
           />
-          {cell.videoUrl && !videoFailed ? (
+          {showVideo ? (
             <video
               ref={videoRef}
               autoPlay
@@ -269,6 +313,10 @@ type HeroFilmPanelProps = {
 export function HeroFilmPanel({ rows = heroFilmRows }: HeroFilmPanelProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [paused, setPaused] = useState(false);
+  const idleReady = useIdleReady();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  // 首屏绘制后、且用户未要求减少动效时，才加载自动播放视频
+  const canLoadVideo = idleReady && !prefersReducedMotion;
 
   // 把二维 rows 压平成一维，保留对 cell 数据的访问
   const allCells = rows.flatMap((row) => row);
@@ -347,6 +395,7 @@ export function HeroFilmPanel({ rows = heroFilmRows }: HeroFilmPanelProps) {
                 <AnimatedCell
                   key={cell.label}
                   animIndex={rowIndex * 3 + cellIndex}
+                  canLoadVideo={canLoadVideo}
                   cell={cell}
                   shouldPlay={!paused && !activeCell}
                   onPlay={() => handlePlay(rowIndex * 3 + cellIndex)}
